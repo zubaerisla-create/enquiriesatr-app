@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 
@@ -20,7 +22,7 @@ interface Message {
   timestamp: string;
 }
 
-// ─── Quick-topic chips ────────────────────────────────────────────────────────
+// ─── Quick Topics ─────────────────────────────────────────────────────────────
 
 const QUICK_TOPICS = [
   "House search",
@@ -32,10 +34,8 @@ const QUICK_TOPICS = [
 // ─── Header ───────────────────────────────────────────────────────────────────
 
 const Header = () => (
-  <View className="flex-row items-center justify-between px-4 py-3 border-b border-[#1E2D45]">
-    {/* Left: avatar + title */}
+  <View className="flex-row items-center justify-between px-4 py-3 pt-16 border-b border-[#1E2D45]">
     <View className="flex-row items-center gap-3">
-      {/* Avatar */}
       <View className="w-9 h-9 rounded-full bg-[#7C1A1A] items-center justify-center">
         <Text className="text-white text-base">✦</Text>
       </View>
@@ -48,29 +48,25 @@ const Header = () => (
       </View>
     </View>
 
-    {/* Right: history icon */}
     <TouchableOpacity className="w-9 h-9 rounded-full border border-[#2D3748] items-center justify-center">
       <Text className="text-gray-300 text-sm">🕐</Text>
     </TouchableOpacity>
   </View>
 );
 
-// ─── AI Message bubble ────────────────────────────────────────────────────────
+// ─── AI Message ───────────────────────────────────────────────────────────────
 
 const AIMessage = ({ message }: { message: Message }) => (
-  <View className="mb-1">
-    {/* Label + timestamp */}
+  <View className="mb-6">
     <View className="flex-row items-center gap-2 mb-2 px-4">
-      <Text className="text-[#4A90D9] text-xs font-bold tracking-widest">CPTAN AI</Text>
-      <Text className="text-gray-500 text-xs">{message.timestamp}</Text>
+      <Text className="text-[#4A90D9] mt-4 text-xs font-bold tracking-widest">CPTAN AI</Text>
+      <Text className="text-gray-500 mt-4 text-xs">{message.timestamp}</Text>
     </View>
 
-    {/* Bubble */}
     <View className="mx-4 bg-[#1B3558] rounded-2xl p-4">
       <Text className="text-white text-sm leading-6">{message.text}</Text>
     </View>
 
-    {/* Copy / Save actions */}
     <View className="flex-row items-center gap-4 px-5 mt-2">
       <TouchableOpacity className="flex-row items-center gap-1">
         <Text className="text-gray-500 text-xs">⧉ Copy</Text>
@@ -82,24 +78,20 @@ const AIMessage = ({ message }: { message: Message }) => (
   </View>
 );
 
-// ─── User Message bubble ──────────────────────────────────────────────────────
+// ─── User Message ─────────────────────────────────────────────────────────────
 
 const UserMessage = ({ message }: { message: Message }) => (
-  <View className="items-end px-4 mb-3">
+  <View className="items-end px-4 mb-4">
     <View className="bg-[#2A4A6B] rounded-2xl rounded-tr-sm px-4 py-3 max-w-[80%]">
       <Text className="text-white text-sm leading-6">{message.text}</Text>
     </View>
   </View>
 );
 
-// ─── Quick Topic Chips ────────────────────────────────────────────────────────
+// ─── Quick Topics ─────────────────────────────────────────────────────────────
 
-const QuickTopics = ({
-  onSelect,
-}: {
-  onSelect: (topic: string) => void;
-}) => (
-  <View className="flex-row flex-wrap gap-2 px-4 mt-4">
+const QuickTopics = ({ onSelect }: { onSelect: (topic: string) => void }) => (
+  <View className="flex-row flex-wrap gap-2 px-4 mt-6 mb-8">
     {QUICK_TOPICS.map((topic) => (
       <TouchableOpacity
         key={topic}
@@ -123,44 +115,49 @@ const InputBar = ({
   onChange: (t: string) => void;
   onSend: () => void;
 }) => (
-  <View className="flex-row items-center px-4 py-3 border-t border-[#1E2D45] bg-[#111827] gap-3">
-    {/* Attachment */}
-    <TouchableOpacity>
-      <Text className="text-gray-500 text-xl">📎</Text>
-    </TouchableOpacity>
+  <View className="px-4 py-4 border-t border-[#1E2D45] bg-[#111827]">
+    <View className="flex-row items-center gap-3">
+      <TouchableOpacity>
+        <Text className="text-gray-500 text-xl">📎</Text>
+      </TouchableOpacity>
 
-    {/* Text field */}
-    <TextInput
-      className="flex-1 text-gray-300 text-sm py-2"
-      placeholder="Ask anything about close protection..."
-      placeholderTextColor="#4B5563"
-      value={value}
-      onChangeText={onChange}
-      multiline
-    />
+      <TextInput
+        className="flex-1 bg-[#1F2A3C] text-gray-300 text-sm px-4 py-3 rounded-2xl"
+        placeholder="Ask anything about close protection..."
+        placeholderTextColor="#4B5563"
+        value={value}
+        onChangeText={onChange}
+        multiline
+        maxLength={500}
+        blurOnSubmit={false}
+        returnKeyType="send"
+        onSubmitEditing={onSend}
+      />
 
-    {/* Mic */}
-    <TouchableOpacity>
-      <Text className="text-gray-400 text-xl">🎤</Text>
-    </TouchableOpacity>
+      <TouchableOpacity>
+        <Text className="text-gray-400 text-xl">🎤</Text>
+      </TouchableOpacity>
 
-    {/* Send */}
-    <TouchableOpacity
-      onPress={onSend}
-      className="w-9 h-9 rounded-full bg-[#2563EB] items-center justify-center"
-    >
-      <Text className="text-white text-sm">➤</Text>
-    </TouchableOpacity>
+      <TouchableOpacity
+        onPress={onSend}
+        disabled={!value.trim()}
+        className={`w-10 h-10 rounded-full items-center justify-center ${
+          value.trim() ? "bg-[#2563EB]" : "bg-[#334155]"
+        }`}
+      >
+        <Text className="text-white text-lg font-bold">➤</Text>
+      </TouchableOpacity>
+    </View>
   </View>
 );
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
+// ─── Main Screen ──────────────────────────────────────────────────────────────
 
 const INITIAL_MESSAGES: Message[] = [
   {
     id: "1",
     role: "ai",
-    text: "Hello. I'm the CPTAN AI — trained on close protection doctrine, procedures, and operational best practices.  Ask me anything about CP, or choose a quick topic below.",
+    text: "Hello. I'm the CPTAN AI — trained on close protection doctrine, procedures, and operational best practices. Ask me anything about CP, or choose a quick topic below.",
     timestamp: "09:08",
   },
 ];
@@ -168,20 +165,32 @@ const INITIAL_MESSAGES: Message[] = [
 export default function Gradian() {
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  const sendMessage = (text: string) => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
+  // Auto scroll to bottom when new message arrives
+  useEffect(() => {
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 150);
+  }, [messages]);
+
+  const sendMessage = (text?: string) => {
+    const messageText = (text || input).trim();
+    if (!messageText) return;
 
     const now = new Date();
     const timestamp = `${String(now.getHours()).padStart(2, "0")}:${String(
       now.getMinutes()
     ).padStart(2, "0")}`;
 
-    setMessages((prev) => [
-      ...prev,
-      { id: String(Date.now()), role: "user", text: trimmed, timestamp },
-    ]);
+    const userMsg: Message = {
+      id: String(Date.now()),
+      role: "user",
+      text: messageText,
+      timestamp,
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
     setInput("");
   };
 
@@ -189,39 +198,39 @@ export default function Gradian() {
     <SafeAreaView className="flex-1 bg-[#0F1824]">
       <StatusBar style="light" />
 
-      {/* Header */}
       <Header />
 
-      {/* Messages + quick topics */}
+      {/* Keyboard Avoiding View - This is the key fix */}
       <KeyboardAvoidingView
-        className="flex-1"
+        style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
       >
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ paddingTop: 20, paddingBottom: 12 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {messages.map((msg) =>
-            msg.role === "ai" ? (
-              <AIMessage key={msg.id} message={msg} />
-            ) : (
-              <UserMessage key={msg.id} message={msg} />
-            )
-          )}
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            ref={scrollViewRef}
+            className="flex-1"
+            contentContainerStyle={{ paddingBottom: 20 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {messages.map((msg) =>
+              msg.role === "ai" ? (
+                <AIMessage key={msg.id} message={msg} />
+              ) : (
+                <UserMessage key={msg.id} message={msg} />
+              )
+            )}
 
-          {/* Show quick topics only after the first AI message with no replies yet */}
-          {messages.length === 1 && (
-            <QuickTopics onSelect={(t) => sendMessage(t)} />
-          )}
-        </ScrollView>
+            {messages.length === 1 && <QuickTopics onSelect={sendMessage} />}
+          </ScrollView>
+        </TouchableWithoutFeedback>
 
-        {/* Input bar */}
+        {/* Input Bar - This will move up when keyboard opens */}
         <InputBar
           value={input}
           onChange={setInput}
-          onSend={() => sendMessage(input)}
+          onSend={() => sendMessage()}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

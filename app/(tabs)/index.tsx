@@ -3,6 +3,7 @@ import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Dimensions } fr
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import Svg, { Circle } from "react-native-svg";
+import { router, useRouter } from "expo-router";
 
 interface CircularProgressProps {
   progress: number;
@@ -20,6 +21,7 @@ export default function Home() {
     const radius = center - strokeWidth;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference - (progress / total) * circumference;
+    const router  = useRouter();
 
     return (
       <View className="items-center">
@@ -72,31 +74,34 @@ export default function Home() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        
-        {/* Header */}
-        <View className="px-6 py-4 flex-row justify-between items-center">
-          <View className="flex-row items-center">
-            <Text className="text-4xl font-black italic tracking-tighter text-[#1a1a1a]">AT<Text className="text-[#D82C15]">R</Text></Text>
-            <View className="ml-1 justify-center mt-1">
-              <Text className="text-[6px] font-bold text-gray-500 uppercase leading-none">Advanced Tactical</Text>
-              <Text className="text-[6px] font-bold text-gray-500 uppercase leading-none">Resources</Text>
-            </View>
-          </View>
-          
-          <View className="flex-row items-center gap-4">
-            <TouchableOpacity className="relative">
-              <Feather name="bell" size={24} color="#1a1a1a" />
-              <View className="absolute -top-1 -right-1 bg-[#D82C15] rounded-full w-4 h-4 items-center justify-center border border-white">
-                <Text className="text-white text-[9px] font-bold">3</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity className="w-10 h-10 bg-[#D82C15] rounded-full items-center justify-center">
-              <Text className="text-white font-bold tracking-widest text-sm">JH</Text>
-            </TouchableOpacity>
+      
+      {/* Header */}
+      <View className="px-6 pt-16 py-4 flex-row justify-between items-center z-10 bg-white">
+        <View className="flex-row items-center">
+          <Text className="text-4xl font-black italic tracking-tighter text-[#1a1a1a]">AT<Text className="text-[#D82C15]">R</Text></Text>
+          <View className="ml-1 justify-center mt-1">
+            <Text className="text-[6px] font-bold text-gray-500 uppercase leading-none">Advanced Tactical</Text>
+            <Text className="text-[6px] font-bold text-gray-500 uppercase leading-none">Resources</Text>
           </View>
         </View>
+        
+        <View className="flex-row items-center gap-4">
+          <TouchableOpacity onPress={()=> router.push("/notifications")} className="relative">
+            <Feather name="bell" size={24} color="#1a1a1a" />
+            <View className="absolute -top-1 -right-1 bg-[#D82C15] rounded-full w-4 h-4 items-center justify-center border border-white">
+              <Text className="text-white text-[9px] font-bold">3</Text>
+            </View>
+          </TouchableOpacity>
 
+
+          <TouchableOpacity onPress={()=> router.push("/profile")} className="w-10 h-10 bg-[#D82C15] rounded-full items-center justify-center">
+            <Text className="text-white font-bold tracking-widest text-sm">JH</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: 10 }}>
+        
         {/* Content */}
         <View className="px-6 pb-10">
           
@@ -119,7 +124,7 @@ export default function Home() {
               <Text className="text-gray-400 text-xs font-bold">68%</Text>
             </View>
             
-            <TouchableOpacity className="bg-[#D82C15] w-full py-4 rounded-xl flex-row items-center justify-center shadow-lg shadow-red-500/20 active:opacity-80">
+            <TouchableOpacity onPress={()=>router.push("/threat-assessment-checklist")} className="bg-[#D82C15] w-full py-4 rounded-xl flex-row items-center justify-center shadow-lg shadow-red-500/20 active:opacity-80">
               <Text className="text-white font-bold uppercase tracking-wider mr-2">Continue</Text>
               <Feather name="chevron-right" size={18} color="white" />
             </TouchableOpacity>
@@ -131,14 +136,14 @@ export default function Home() {
             
             {/* Grid 2x2 */}
             <View className="flex-row gap-4 mb-4">
-              <TouchableOpacity className="flex-1 bg-[#1e2a38] rounded-2xl p-5 shadow-sm active:opacity-80">
+              <TouchableOpacity onPress={()=>router.push("/(tabs)/learn")} className="flex-1 bg-[#1e2a38] rounded-2xl p-5 shadow-sm active:opacity-80">
                 <View className="w-10 h-10 bg-red-500/10 rounded-xl items-center justify-center mb-4 border border-red-500/20">
                   <Feather name="book-open" size={20} color="#ef4444" />
                 </View>
                 <Text className="text-white font-bold text-base">Learn</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity className="flex-1 bg-[#1e2a38] rounded-2xl p-5 shadow-sm active:opacity-80">
+              <TouchableOpacity onPress={()=>router.push("/(tabs)/gradian")} className="flex-1 bg-[#1e2a38] rounded-2xl p-5 shadow-sm active:opacity-80">
                 <View className="w-10 h-10 bg-yellow-500/10 rounded-xl items-center justify-center mb-4 border border-yellow-500/20">
                   <MaterialCommunityIcons name="robot-outline" size={22} color="#eab308" />
                 </View>
@@ -147,14 +152,14 @@ export default function Home() {
             </View>
             
             <View className="flex-row gap-4">
-              <TouchableOpacity className="flex-1 bg-[#1e2a38] rounded-2xl p-5 shadow-sm active:opacity-80">
+              <TouchableOpacity onPress={()=>router.push("/(tabs)/tools")} className="flex-1 bg-[#1e2a38] rounded-2xl p-5 shadow-sm active:opacity-80">
                 <View className="w-10 h-10 bg-teal-500/10 rounded-xl items-center justify-center mb-4 border border-teal-500/20">
                   <Feather name="check-square" size={20} color="#14b8a6" />
                 </View>
                 <Text className="text-white font-bold text-base">Tools</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity className="flex-1 bg-[#1e2a38] rounded-2xl p-5 shadow-sm active:opacity-80">
+              <TouchableOpacity onPress={()=>router.push("/(tabs)/profile/my-notes")} className="flex-1 bg-[#1e2a38] rounded-2xl p-5 shadow-sm active:opacity-80">
                 <View className="w-10 h-10 bg-blue-500/10 rounded-xl items-center justify-center mb-4 border border-blue-500/20">
                   <Feather name="file-text" size={20} color="#3b82f6" />
                 </View>
@@ -174,7 +179,7 @@ export default function Home() {
           </View>
 
           {/* New Module Banner */}
-          <TouchableOpacity className="bg-[#1c2431] rounded-2xl p-5 flex-row items-center border border-gray-800 shadow-sm active:opacity-80">
+          <TouchableOpacity onPress={()=> router.push("/lesson")} className="bg-[#1c2431] rounded-2xl p-5 flex-row items-center border border-gray-800 shadow-sm active:opacity-80">
             <View className="w-12 h-12 bg-yellow-600/20 rounded-xl items-center justify-center mr-4 border border-yellow-600/30">
               <MaterialCommunityIcons name="medal-outline" size={24} color="#eab308" />
             </View>

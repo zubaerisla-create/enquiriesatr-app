@@ -7,6 +7,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { router } from "expo-router";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -126,7 +127,11 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
   const tag = tagStyle(tool.tagColor);
 
   return (
-    <View className="mx-4 mb-3 bg-[#141E2B] rounded-2xl p-4 flex-row items-center gap-4">
+    <TouchableOpacity 
+      activeOpacity={0.8}
+      onPress={() => router.navigate("/tool-details")}
+      className="mx-4 mb-4 bg-[#141E2B] rounded-2xl p-4 flex-row items-center gap-4"
+    >
       {/* Icon box */}
       <View
         style={{ backgroundColor: tool.iconBg }}
@@ -137,7 +142,6 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
 
       {/* Content */}
       <View className="flex-1">
-        {/* Title row */}
         <View className="flex-row items-center gap-2 mb-0.5 flex-wrap">
           <Text className="text-white font-bold text-base leading-tight">
             {tool.title}
@@ -146,35 +150,38 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
             style={{ backgroundColor: tag.bg }}
             className="px-2 py-0.5 rounded"
           >
-            <Text style={{ color: tag.text }} className="text-[10px] font-bold tracking-widest">
+            <Text 
+              style={{ color: tag.text }} 
+              className="text-[10px] font-bold tracking-widest"
+            >
               {tool.tag}
             </Text>
           </View>
         </View>
-        {/* Description */}
         <Text className="text-gray-400 text-xs leading-5 mt-1">
           {tool.description}
         </Text>
       </View>
 
       {/* Start button */}
-      <TouchableOpacity className="bg-[#C0392B] rounded-xl px-4 py-2.5 ml-1">
+      <TouchableOpacity 
+        onPress={() => router.navigate("/tool-details")}
+        className="bg-[#C0392B] rounded-xl px-4 py-2.5 ml-1"
+      >
         <Text className="text-white font-semibold text-sm">Start</Text>
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 };
 
 // ─── Saved Document Row ───────────────────────────────────────────────────────
 
 const SavedDocRow = ({ doc }: { doc: SavedDoc }) => (
-  <TouchableOpacity className="mx-4 mb-2 bg-[#141E2B] rounded-2xl px-4 py-4 flex-row items-center gap-3">
-    {/* Icon */}
+  <TouchableOpacity className="mx-4 mb-3 bg-[#141E2B] rounded-2xl px-4 py-4 flex-row items-center gap-3">
     <View className="w-9 h-9 rounded-lg bg-[#1E2D45] items-center justify-center">
       <Text className="text-gray-400 text-sm">📄</Text>
     </View>
 
-    {/* Text */}
     <View className="flex-1">
       <Text className="text-white text-sm font-semibold">{doc.title}</Text>
       <Text className="text-gray-500 text-xs mt-0.5">
@@ -182,7 +189,6 @@ const SavedDocRow = ({ doc }: { doc: SavedDoc }) => (
       </Text>
     </View>
 
-    {/* Chevron */}
     <Text className="text-gray-500 text-lg">›</Text>
   </TouchableOpacity>
 );
@@ -194,12 +200,9 @@ export default function Tools() {
     <SafeAreaView className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      >
-        {/* Page header */}
-        <View className="px-4 pt-6 pb-5">
+      {/* Sticky Page Header */}
+      <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D]">
+        <View className="px-4 pt-12 pb-6">
           <Text className="text-white text-2xl font-extrabold tracking-wider uppercase">
             Operational Tools
           </Text>
@@ -207,14 +210,20 @@ export default function Tools() {
             Procedures and templates for the field
           </Text>
         </View>
+      </View>
 
-        {/* Tool cards */}
+      {/* Scrollable Content - Cards are now lower */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: 20, paddingBottom: 40 }}
+      >
+        {/* Tool cards - increased top spacing */}
         {TOOLS.map((tool) => (
           <ToolCard key={tool.id} tool={tool} />
         ))}
 
         {/* Saved documents section */}
-        <View className="px-4 mt-4 mb-3">
+        <View className="px-4 mt-8 mb-3">
           <Text className="text-gray-400 text-xs font-bold tracking-widest uppercase">
             My Saved Documents
           </Text>

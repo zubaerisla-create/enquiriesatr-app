@@ -8,48 +8,10 @@ import {
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { router } from "expo-router";
+import { useNotesStore, deleteNote, Note, NoteType } from "./notesStore";
 
 type FilterTab = "ALL" | "LESSONS" | "AI" | "PERSONAL";
-type NoteType = "LESSON" | "AI ASSISTANT" | "PERSONAL";
-
-interface Note {
-  id: string;
-  type: NoteType;
-  title: string;
-  body: string;
-  source: string;
-  date: string;
-}
-
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-const NOTES: Note[] = [
-  {
-    id: "1",
-    type: "LESSON",
-    title: "Threat Matrix Notes",
-    body: "Intent + Capability + Opportunity = Threat exists. Always evaluate all three axes before escalating",
-    source: "Lesson: Threat & Risk Assessment",
-    date: "22 Mar 2026",
-  },
-  {
-    id: "2",
-    type: "AI ASSISTANT",
-    title: "House Search Procedure",
-    body: "Key points saved from AI: 1. Establish perimeter first 2. Two-person search method 3. Clear entry point",
-    source: "AI Assistant",
-    date: "26 Mar 2026",
-  },
-  {
-    id: "3",
-    type: "LESSON",
-    title: "SDR Planning Reminders",
-    body: "SDR must have multiple decision points. Vary the route each time. Use natural cover changes (shops,",
-    source: "Lesson: Surveillance Detection Routes",
-    date: "18 Mar 2026",
-  },
-];
 
 const FILTER_TABS: FilterTab[] = ["ALL", "LESSONS", "AI", "PERSONAL"];
 
@@ -80,7 +42,11 @@ const NoteCard = ({ note }: { note: Note }) => {
   const style = typeStyle(note.type);
 
   return (
-    <View className="mx-4 mb-3 bg-[#141E2B] rounded-2xl p-4">
+    <TouchableOpacity 
+      activeOpacity={0.8}
+      onPress={() => router.push({ pathname: '/profile/note-editor', params: { id: note.id } })}
+      className="mx-4 mb-3 bg-[#141E2B] rounded-2xl p-4"
+    >
       {/* Type label row */}
       <View className="flex-row items-center justify-between mb-2">
         <View className="flex-row items-center gap-1.5">
@@ -94,7 +60,7 @@ const NoteCard = ({ note }: { note: Note }) => {
             {note.type}
           </Text>
         </View>
-        <TouchableOpacity className="p-1">
+        <TouchableOpacity className="p-1" onPress={() => deleteNote(note.id)}>
           <Text className="text-gray-500 text-base">🗑</Text>
         </TouchableOpacity>
       </View>
@@ -110,7 +76,7 @@ const NoteCard = ({ note }: { note: Note }) => {
         <Text className="text-gray-600 text-xs">{note.source}</Text>
         <Text className="text-gray-600 text-xs">{note.date}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -118,29 +84,19 @@ const NoteCard = ({ note }: { note: Note }) => {
 
 export default function MyNotes() {
   const [activeTab, setActiveTab] = useState<FilterTab>("ALL");
+  const notes = useNotesStore();
 
-  const filtered = NOTES.filter((n) => filterMatch(n, activeTab));
+  const filtered = notes.filter((n) => filterMatch(n, activeTab));
 
   return (
     <SafeAreaView className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
 
-      {/* Back nav */}
-      <TouchableOpacity className="flex-row items-center gap-1 px-4 pt-4 pb-2">
-        <Text className="text-gray-400 text-base">←</Text>
-        <Text className="text-gray-400 text-sm">Profile</Text>
-      </TouchableOpacity>
+   
 
-      {/* Header */}
-      <View className="flex-row items-end justify-between px-4 mb-4">
-        <Text className="text-white text-2xl font-extrabold tracking-wider uppercase">
-          My Notes
-        </Text>
-        <Text className="text-gray-500 text-sm">{NOTES.length} notes</Text>
-      </View>
 
       {/* Filter tabs */}
-      <View className="flex-row gap-2 px-4 mb-5">
+      <View className="flex-row gap-2 px-4 mb-4 mt-4">
         {FILTER_TABS.map((tab) => {
           const isActive = tab === activeTab;
           return (
@@ -177,6 +133,7 @@ export default function MyNotes() {
 
       {/* FAB */}
       <TouchableOpacity
+        onPress={() => router.push('/profile/note-editor')}
         className="absolute bottom-8 right-6 w-14 h-14 rounded-full bg-[#E05252] items-center justify-center shadow-lg"
         style={{
           shadowColor: "#E05252",

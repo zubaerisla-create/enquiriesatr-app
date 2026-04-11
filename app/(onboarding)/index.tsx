@@ -69,10 +69,10 @@ export default function Onboarding() {
         <View className="flex-row items-center">
           <Image 
             source={require("../../assets/images/logo.png")} 
-            className="w-8 h-8 mr-2" 
+            className="w-8 h-8 mr-2 mt-4" 
             resizeMode="contain"
           />
-          <Text className="text-[#D82C15] font-black text-lg italic uppercase">
+          <Text className="pt-10 text-[#D82C15] font-black text-lg italic uppercase">
             ATR GUARDIAN TRAINING
           </Text>
         </View>

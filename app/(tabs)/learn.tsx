@@ -3,12 +3,15 @@ import {
   View,
   Text,
   TextInput,
-  ScrollView,
   TouchableOpacity,
   FlatList,
+  Dimensions,
+  StyleSheet,
 } from "react-native";
+import { router } from "expo-router";
+import { Feather } from "@expo/vector-icons";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type Category = "ALL" | "FOUNDATION" | "TACTICAL" | "OPERATIONS" | "LEGAL";
 
@@ -21,7 +24,7 @@ interface Module {
   lessons: number;
   hours: number;
   minutes: number;
-  progress: number; // 0–100, or -1 for locked
+  progress: number;
   status: "in_progress" | "completed" | "not_started" | "locked";
 }
 
@@ -119,11 +122,10 @@ const TABS: { label: string; value: Category }[] = [
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 const SearchBar = () => (
-  <View className="flex-row items-center bg-[#1E2535] rounded-xl px-4 py-3 mx-4 mb-4">
-    {/* Search icon */}
-    <Text className="text-gray-400 text-base mr-2">🔍</Text>
+  <View style={styles.searchBar}>
+    <Text style={styles.searchIcon}>🔍</Text>
     <TextInput
-      className="flex-1 text-gray-300 text-sm"
+      style={styles.searchInput}
       placeholder="Search modules..."
       placeholderTextColor="#6B7280"
     />
@@ -136,197 +138,374 @@ const FilterTabs = ({
 }: {
   active: Category;
   onChange: (c: Category) => void;
-}) => (
-  <ScrollView
-    horizontal
-    showsHorizontalScrollIndicator={false}
-    className="px-4 mb-4"
-    contentContainerStyle={{ gap: 8 }}
-  >
-    {TABS.map((tab) => (
-      <TouchableOpacity
-        key={tab.value}
-        onPress={() => onChange(tab.value)}
-        className={`px-4 py-2 rounded-full border ${
-          active === tab.value
-            ? "bg-white border-white"
-            : "bg-transparent border-[#2D3748]"
-        }`}
-      >
-        <Text
-          className={`text-xs font-semibold tracking-widest ${
-            active === tab.value ? "text-[#0F1624]" : "text-gray-400"
-          }`}
-        >
-          {tab.label}
-        </Text>
-      </TouchableOpacity>
-    ))}
-  </ScrollView>
-);
+}) => {
+  const screenWidth = Dimensions.get("window").width;
+  const tabMinWidth = screenWidth < 380 ? 75 : 82;
 
-const ProgressBar = ({
-  progress,
-  color,
-}: {
-  progress: number;
-  color: string;
-}) => (
-  <View className="h-1 bg-[#2D3748] rounded-full overflow-hidden">
-    <View
-      style={{ width: `${progress}%`, backgroundColor: color }}
-      className="h-full rounded-full"
-    />
+  return (
+    <View style={styles.tabsWrapper}>
+      <FlatList
+        data={TABS}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item) => item.value}
+        contentContainerStyle={{ gap: 8, paddingRight: 20 }}
+        renderItem={({ item: tab }) => {
+          const isActive = active === tab.value;
+          return (
+            <TouchableOpacity
+              onPress={() => onChange(tab.value)}
+              activeOpacity={0.85}
+              style={[
+                styles.tabPill,
+                { minWidth: tabMinWidth },
+                isActive ? styles.tabPillActive : styles.tabPillInactive,
+              ]}
+            >
+              <Text style={[styles.tabLabel, isActive ? styles.tabLabelActive : styles.tabLabelInactive]}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        }}
+      />
+    </View>
+  );
+};
+
+const ProgressBar = ({ progress, color }: { progress: number; color: string }) => (
+  <View style={styles.progressTrack}>
+    <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: color }]} />
   </View>
 );
 
 const StatusBadge = ({ status }: { status: Module["status"] }) => {
   if (status === "completed")
     return (
-      <View className="flex-row items-center">
-        <View className="w-2 h-2 rounded-full bg-green-400 mr-1" />
-        <Text className="text-green-400 text-xs">Completed</Text>
+      <View style={styles.badgeRow}>
+        <View style={[styles.badgeDot, { backgroundColor: "#4ade80" }]} />
+        <Text style={[styles.badgeText, { color: "#4ade80" }]}>Completed</Text>
       </View>
     );
   if (status === "in_progress")
     return (
-      <View className="flex-row items-center">
-        <View className="w-2 h-2 rounded-full bg-blue-400 mr-1" />
-        <Text className="text-blue-400 text-xs">In progress</Text>
+      <View style={styles.badgeRow}>
+        <View style={[styles.badgeDot, { backgroundColor: "#60a5fa" }]} />
+        <Text style={[styles.badgeText, { color: "#60a5fa" }]}>In progress</Text>
       </View>
     );
   if (status === "not_started")
     return (
-      <View className="flex-row items-center">
-        <View className="w-2 h-2 rounded-full bg-gray-500 mr-1" />
-        <Text className="text-gray-400 text-xs">Not started</Text>
+      <View style={styles.badgeRow}>
+        <View style={[styles.badgeDot, { backgroundColor: "#6b7280" }]} />
+        <Text style={[styles.badgeText, { color: "#9ca3af" }]}>Not started</Text>
       </View>
     );
   return null;
 };
 
-const LockIcon = () => (
-  <Text className="text-gray-500 text-lg">🔒</Text>
-);
-
 const ModuleCard = ({ module }: { module: Module }) => {
   const isLocked = module.status === "locked";
 
   return (
-    <View
-      className={`mx-4 mb-3 rounded-2xl p-4 border ${
-        isLocked ? "border-[#2D3748] bg-[#141B2A]" : "border-[#1E2D45] bg-[#131C2E]"
-      }`}
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() => {
+        if (!isLocked) {
+          if (module.id === "2") {
+            router.push("/threat-assessment-details");
+          } else {
+            router.push(`/module-details?id=${module.id}`);
+          }
+        }
+      }}
+      style={[styles.card, isLocked ? styles.cardLocked : styles.cardActive]}
     >
-      {/* Header row */}
-      <View className="flex-row items-start justify-between mb-2">
-        {/* Category pill */}
-        <View
-          style={{ backgroundColor: module.categoryColor + "22" }}
-          className="px-2 py-0.5 rounded"
-        >
-          <Text
-            style={{ color: module.categoryColor }}
-            className="text-[10px] font-bold tracking-widest"
-          >
+      {/* Category badge + status icon row */}
+      <View style={styles.cardTopRow}>
+        <View style={[styles.categoryBadge, { backgroundColor: module.categoryColor + "22" }]}>
+          <Text style={[styles.categoryText, { color: module.categoryColor }]}>
             {module.category}
           </Text>
         </View>
-        {isLocked && <LockIcon />}
+        {isLocked && <Text style={styles.lockIcon}>🔒</Text>}
         {module.status === "completed" && (
-          <View className="w-6 h-6 rounded-full bg-green-500 items-center justify-center">
-            <Text className="text-white text-xs font-bold">✓</Text>
+          <View style={styles.completedBadge}>
+            <Text style={styles.completedCheck}>✓</Text>
           </View>
         )}
       </View>
 
       {/* Title */}
-      <Text
-        className={`text-base font-bold mb-1 ${
-          isLocked ? "text-gray-500" : "text-white"
-        }`}
-      >
+      <Text style={[styles.cardTitle, isLocked && styles.cardTitleLocked]}>
         {module.title}
       </Text>
 
       {/* Description */}
-      <Text
-        className={`text-xs leading-5 mb-3 ${
-          isLocked ? "text-gray-600" : "text-gray-400"
-        }`}
-      >
+      <Text style={[styles.cardDesc, isLocked && styles.cardDescLocked]}>
         {module.description}
       </Text>
 
       {/* Meta row */}
-      <View className="flex-row items-center mb-3 gap-3">
-        <Text className={`text-xs ${isLocked ? "text-gray-600" : "text-gray-400"}`}>
+      <View style={styles.metaRow}>
+        <Text style={[styles.metaText, isLocked && styles.metaTextLocked]}>
           📋 {module.lessons} lessons
         </Text>
-        <Text className="text-gray-600">·</Text>
-        <Text className={`text-xs ${isLocked ? "text-gray-600" : "text-gray-400"}`}>
+        <Text style={styles.metaDivider}>·</Text>
+        <Text style={[styles.metaText, isLocked && styles.metaTextLocked]}>
           🕐 {module.hours}h {module.minutes}m
         </Text>
       </View>
 
-      {/* Progress / Upgrade */}
+      {/* Progress / Lock CTA */}
       {isLocked ? (
-        <TouchableOpacity className="bg-[#1E2535] border border-[#2D3748] rounded-xl py-2.5 items-center">
-          <Text className="text-gray-300 text-xs font-semibold">
-            🔒 Upgrade to unlock
-          </Text>
+        <TouchableOpacity style={styles.upgradeBtn}>
+          <Text style={styles.upgradeBtnText}>🔒 Upgrade to unlock</Text>
         </TouchableOpacity>
       ) : (
         <View>
           <ProgressBar
             progress={module.progress}
-            color={
-              module.status === "completed"
-                ? "#22C55E"
-                : module.categoryColor
-            }
+            color={module.status === "completed" ? "#22C55E" : module.categoryColor}
           />
-          <View className="flex-row items-center justify-between mt-2">
+          <View style={styles.progressFooter}>
             <StatusBadge status={module.status} />
-            <Text className="text-gray-500 text-xs">{module.progress}%</Text>
+            <Text style={styles.progressPercent}>{module.progress}%</Text>
           </View>
         </View>
       )}
-    </View>
+    </TouchableOpacity>
   );
 };
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
+// ─── Main Screen ─────────────────────────────────────────────────────────────
 
 export default function ModulesLibrary() {
   const [activeTab, setActiveTab] = useState<Category>("ALL");
 
-  const filtered =
+  const filteredModules =
     activeTab === "ALL"
       ? MODULES
       : MODULES.filter((m) => m.category === activeTab);
 
   return (
-    <View className="flex-1 bg-[#0B1120] pt-14">
-      {/* Title */}
-      <Text className="text-white text-2xl font-extrabold tracking-wider px-4 mb-4">
-        MODULES LIBRARY
-      </Text>
-
-      {/* Search */}
+    <View style={styles.screen}>
+      <Text style={styles.screenTitle}>MODULES LIBRARY</Text>
       <SearchBar />
-
-      {/* Filter tabs */}
       <FilterTabs active={activeTab} onChange={setActiveTab} />
-
-      {/* Cards */}
       <FlatList
-        data={filtered}
+        data={filteredModules}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <ModuleCard module={item} />}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 40 }}
       />
     </View>
   );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: "#0B1120",
+    paddingTop: 56,
+  },
+  screenTitle: {
+    color: "#ffffff",
+    fontSize: 24,
+    fontWeight: "800",
+    letterSpacing: 1.5,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+
+  // Search
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1E2535",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  searchIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    color: "#D1D5DB",
+    fontSize: 14,
+  },
+
+  // Filter Tabs
+  tabsWrapper: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  tabPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: "center",
+  },
+  tabPillActive: {
+    backgroundColor: "#ffffff",
+    borderColor: "#ffffff",
+  },
+  tabPillInactive: {
+    backgroundColor: "transparent",
+    borderColor: "#2D3748",
+  },
+  tabLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 1.5,
+    textAlign: "center",
+  },
+  tabLabelActive: {
+    color: "#0F1624",
+  },
+  tabLabelInactive: {
+    color: "#9ca3af",
+  },
+
+  // Progress bar
+  progressTrack: {
+    height: 4,
+    backgroundColor: "#2D3748",
+    borderRadius: 2,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: 2,
+  },
+
+  // Status badge
+  badgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  badgeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 4,
+  },
+  badgeText: {
+    fontSize: 12,
+  },
+
+  // Module Card
+  card: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+  },
+  cardActive: {
+    backgroundColor: "#131C2E",
+    borderColor: "#1E2D45",
+  },
+  cardLocked: {
+    backgroundColor: "#141B2A",
+    borderColor: "#2D3748",
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  categoryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  categoryText: {
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 1.5,
+  },
+  lockIcon: {
+    fontSize: 18,
+    color: "#6b7280",
+  },
+  completedBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#22C55E",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  completedCheck: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  cardTitle: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  cardTitleLocked: {
+    color: "#6b7280",
+  },
+  cardDesc: {
+    color: "#9ca3af",
+    fontSize: 12,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  cardDescLocked: {
+    color: "#4B5563",
+  },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+  },
+  metaText: {
+    color: "#9ca3af",
+    fontSize: 12,
+  },
+  metaTextLocked: {
+    color: "#4B5563",
+  },
+  metaDivider: {
+    color: "#4B5563",
+  },
+  upgradeBtn: {
+    backgroundColor: "#1E2535",
+    borderWidth: 1,
+    borderColor: "#2D3748",
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  upgradeBtnText: {
+    color: "#D1D5DB",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  progressFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 8,
+  },
+  progressPercent: {
+    color: "#6b7280",
+    fontSize: 12,
+  },
+});

@@ -7,6 +7,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { useRouter } from "expo-router";
 
 // ─── Stat item ────────────────────────────────────────────────────────────────
 
@@ -19,9 +20,9 @@ interface StatItem {
 
 const STATS: StatItem[] = [
   { icon: "□", iconColor: "#E05252", value: "12", label: "Lessons Done" },
-  { icon: "◎", iconColor: "#F5A623", value: "1",  label: "Modules\nComplete" },
+  { icon: "◎", iconColor: "#F5A623", value: "1", label: "Modules\nComplete" },
   { icon: "✦", iconColor: "#5B8DEF", value: "34", label: "AI Chats" },
-  { icon: "♦", iconColor: "#4CAF82", value: "7",  label: "Day Streak" },
+  { icon: "♦", iconColor: "#4CAF82", value: "7", label: "Day Streak" },
 ];
 
 // ─── Menu row ─────────────────────────────────────────────────────────────────
@@ -35,9 +36,9 @@ interface MenuRow {
 }
 
 const CONTENT_ROWS: MenuRow[] = [
-  { icon: "✏️", label: "My Notes",      badge: { text: "3", color: "#fff", bg: "#E05252" }, route: "/profile/my-notes" },
+  { icon: "✏️", label: "My Notes", badge: { text: "3", color: "#fff", bg: "#E05252" }, route: "/profile/my-notes" },
   { icon: "📋", label: "My Documents", route: "/profile/my-documents" },
-  { icon: "🎯", label: "Assessments",   badge: { text: "1/6 passed", color: "#4CAF82", bg: "#0D2318" }, route: "/profile/assessments" },
+  { icon: "🎯", label: "Assessments", badge: { text: "1/6 passed", color: "#4CAF82", bg: "#0D2318" }, route: "/profile/assessments" },
 ];
 
 const ACCOUNT_ROWS: MenuRow[] = [
@@ -48,7 +49,7 @@ const ACCOUNT_ROWS: MenuRow[] = [
 const SUPPORT_ROWS: MenuRow[] = [
   { icon: "❓", label: "Help & Support", route: "/profile/help-support" },
   { icon: "📄", label: "Terms & Conditions", route: "/profile/terms-condition" },
-  { icon: "🚪", label: "Log Out", danger: true },
+  { icon: "🚪", label: "Log Out", route: "/login", danger: true },
 ];
 
 // ─── Circular progress ────────────────────────────────────────────────────────
@@ -62,7 +63,6 @@ const CircularProgress = ({ percent }: { percent: number }) => {
 
   return (
     <View style={{ width: size, height: size }} className="items-center justify-center">
-      {/* SVG-like with border trick */}
       <View
         style={{
           width: size,
@@ -73,7 +73,6 @@ const CircularProgress = ({ percent }: { percent: number }) => {
           position: "absolute",
         }}
       />
-      {/* Red arc — approximate with a colored arc using overflow hidden */}
       <View
         style={{
           width: size,
@@ -112,14 +111,20 @@ const SectionLabel = ({ title }: { title: string }) => (
   </Text>
 );
 
-import { useRouter } from "expo-router";
-
 const MenuRowItem = ({ row, isLast }: { row: MenuRow; isLast: boolean }) => {
   const router = useRouter();
 
   return (
     <TouchableOpacity
-      onPress={() => row.route && router.push(row.route as any)}
+      onPress={() => {
+        if (row.route) {
+          if (row.danger) {
+            router.replace(row.route as any);
+          } else {
+            router.push(row.route as any);
+          }
+        }
+      }}
       className={`flex-row items-center px-4 py-4 ${
         !isLast ? "border-b border-[#1E2D3D]" : ""
       }`}
@@ -155,24 +160,16 @@ const MenuSection = ({ rows }: { rows: MenuRow[] }) => (
   </View>
 );
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
+// ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function Profile() {
   return (
     <SafeAreaView className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      >
-        {/* Page title */}
-        <Text className="text-white text-2xl font-extrabold tracking-wider uppercase px-4 pt-6 pb-4">
-          Profile
-        </Text>
-
-        {/* User card */}
-        <View className="mx-4 mb-4">
+      {/* Sticky User Card */}
+      <View className="bg-[#0D1520] z-10 pt-12 pb-4 border-b border-[#1E2D3D]">
+        <View className="mx-4">
           <View className="flex-row items-center gap-4">
             {/* Avatar */}
             <View className="w-14 h-14 rounded-2xl bg-[#C0392B] items-center justify-center">
@@ -194,9 +191,15 @@ export default function Profile() {
             </View>
           </View>
         </View>
+      </View>
 
+      {/* Scrollable Content */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
         {/* Stats strip */}
-        <View className="mx-4 mb-4 bg-[#141E2B] rounded-2xl px-3 py-4 flex-row">
+        <View className="mx-4 mt-4 mb-4 bg-[#141E2B] rounded-2xl px-3 py-4 flex-row">
           {STATS.map((s) => (
             <StatCell key={s.label} stat={s} />
           ))}
