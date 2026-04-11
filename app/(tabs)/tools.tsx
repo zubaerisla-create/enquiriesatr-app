@@ -9,13 +9,25 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
 
+import { 
+  LucideIcon, 
+  Search, 
+  ClipboardList, 
+  MapPin, 
+  Home, 
+  Plane, 
+  ShieldCheck, 
+  FileText, 
+  ChevronRight
+} from "lucide-react-native";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type TagColor = "operations" | "planning" | "tactical";
 
 interface Tool {
   id: string;
-  icon: string;
+  icon: LucideIcon;
   iconBg: string;
   title: string;
   tag: string;
@@ -35,7 +47,7 @@ interface SavedDoc {
 const TOOLS: Tool[] = [
   {
     id: "1",
-    icon: "🔍",
+    icon: Search,
     iconBg: "#1E1214",
     title: "Search\nOperations",
     tag: "OPERATIONS",
@@ -45,7 +57,7 @@ const TOOLS: Tool[] = [
   },
   {
     id: "2",
-    icon: "📋",
+    icon: ClipboardList,
     iconBg: "#1A1420",
     title: "Venue\nSecurity",
     tag: "OPERATIONS",
@@ -54,7 +66,7 @@ const TOOLS: Tool[] = [
   },
   {
     id: "3",
-    icon: "📍",
+    icon: MapPin,
     iconBg: "#181C14",
     title: "Advance Work",
     tag: "PLANNING",
@@ -64,7 +76,7 @@ const TOOLS: Tool[] = [
   },
   {
     id: "4",
-    icon: "🏠",
+    icon: Home,
     iconBg: "#1E1214",
     title: "Residential\nSecurity",
     tag: "OPERATIONS",
@@ -74,7 +86,7 @@ const TOOLS: Tool[] = [
   },
   {
     id: "5",
-    icon: "✈️",
+    icon: Plane,
     iconBg: "#181C14",
     title: "Travel\nSecurity",
     tag: "PLANNING",
@@ -83,7 +95,7 @@ const TOOLS: Tool[] = [
   },
   {
     id: "6",
-    icon: "🛡️",
+    icon: ShieldCheck,
     iconBg: "#141A1E",
     title: "Escort\nProcedures",
     tag: "TACTICAL",
@@ -137,7 +149,7 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
         style={{ backgroundColor: tool.iconBg }}
         className="w-12 h-12 rounded-xl items-center justify-center border border-[#2A2A3A]"
       >
-        <Text className="text-xl">{tool.icon}</Text>
+        <tool.icon size={20} color={tag.text} />
       </View>
 
       {/* Content */}
@@ -179,7 +191,7 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
 const SavedDocRow = ({ doc }: { doc: SavedDoc }) => (
   <TouchableOpacity className="mx-4 mb-3 bg-[#141E2B] rounded-2xl px-4 py-4 flex-row items-center gap-3">
     <View className="w-9 h-9 rounded-lg bg-[#1E2D45] items-center justify-center">
-      <Text className="text-gray-400 text-sm">📄</Text>
+      <FileText size={18} color="#9ca3af" />
     </View>
 
     <View className="flex-1">
@@ -189,7 +201,7 @@ const SavedDocRow = ({ doc }: { doc: SavedDoc }) => (
       </Text>
     </View>
 
-    <Text className="text-gray-500 text-lg">›</Text>
+    <ChevronRight size={18} color="#4B5563" />
   </TouchableOpacity>
 );
 

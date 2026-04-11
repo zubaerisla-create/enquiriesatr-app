@@ -2,7 +2,11 @@ import React from "react";
 import { View, Text, TouchableOpacity, SafeAreaView, ScrollView } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { 
+  ArrowLeft, 
+  Target, 
+  ChevronRight 
+} from "lucide-react-native";
 
 export default function ThreatAssessmentIntro() {
   return (
@@ -12,7 +16,7 @@ export default function ThreatAssessmentIntro() {
       {/* Header */}
       <View className="px-5 pt-12 pb-2 flex-row items-center">
         <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
-          <Feather name="arrow-left" size={24} color="#1f2937" />
+          <ArrowLeft size={24} color="#1f2937" />
         </TouchableOpacity>
         <Text className="text-[#1f2937]  font-medium ml-2 text-base">Threat Assessment</Text>
       </View>
@@ -21,7 +25,7 @@ export default function ThreatAssessmentIntro() {
         <View className="px-5 pt-6 items-center">
           {/* Icon Box */}
           <View className="w-24 h-24 rounded-2xl bg-[#FFE4E1] items-center justify-center mb-6 border border-[#FCA5A5]/30">
-            <Feather name="target" size={40} color="#D82C15" />
+            <Target size={40} color="#D82C15" />
           </View>
 
           {/* Badge */}
@@ -72,7 +76,7 @@ export default function ThreatAssessmentIntro() {
           className="w-full bg-[#D82C15] py-4 rounded-xl flex-row items-center justify-center gap-2"
         >
           <Text className="text-white font-bold tracking-wide uppercase text-sm">START ASSESSMENT</Text>
-          <Feather name="chevron-right" size={18} color="white" />
+          <ChevronRight size={18} color="white" />
         </TouchableOpacity>
       </View>
     </SafeAreaView>

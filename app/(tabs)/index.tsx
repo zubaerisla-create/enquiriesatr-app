@@ -1,9 +1,18 @@
 import React from "react";
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Dimensions } from "react-native";
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { View, Text, SafeAreaView, ScrollView, TouchableOpacity } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import Svg, { Circle } from "react-native-svg";
 import { router, useRouter } from "expo-router";
+import { 
+  Flame, 
+  Bell, 
+  ChevronRight, 
+  BookOpen, 
+  Sparkles, 
+  CheckSquare, 
+  FileText, 
+  Trophy 
+} from "lucide-react-native";
 
 interface CircularProgressProps {
   progress: number;
@@ -52,7 +61,7 @@ export default function Home() {
           </Svg>
           <View className="absolute items-center justify-center">
             {title === "Day Streak" ? (
-              <Feather name="zap" size={20} color={color} />
+              <Flame size={20} color={color} />
             ) : (
               <View className="flex-row items-baseline">
                 <Text className="text-white font-bold text-lg">{progress}</Text>
@@ -87,7 +96,7 @@ export default function Home() {
         
         <View className="flex-row items-center gap-4">
           <TouchableOpacity onPress={()=> router.push("/notifications")} className="relative">
-            <Feather name="bell" size={24} color="#1a1a1a" />
+            <Bell size={24} color="#1a1a1a" />
             <View className="absolute -top-1 -right-1 bg-[#D82C15] rounded-full w-4 h-4 items-center justify-center border border-white">
               <Text className="text-white text-[9px] font-bold">3</Text>
             </View>
@@ -126,7 +135,7 @@ export default function Home() {
             
             <TouchableOpacity onPress={()=>router.push("/threat-assessment-checklist")} className="bg-[#D82C15] w-full py-4 rounded-xl flex-row items-center justify-center shadow-lg shadow-red-500/20 active:opacity-80">
               <Text className="text-white font-bold uppercase tracking-wider mr-2">Continue</Text>
-              <Feather name="chevron-right" size={18} color="white" />
+              <ChevronRight size={18} color="white" />
             </TouchableOpacity>
           </View>
 
@@ -138,14 +147,14 @@ export default function Home() {
             <View className="flex-row gap-4 mb-4">
               <TouchableOpacity onPress={()=>router.push("/(tabs)/learn")} className="flex-1 bg-[#1e2a38] rounded-2xl p-5 shadow-sm active:opacity-80">
                 <View className="w-10 h-10 bg-red-500/10 rounded-xl items-center justify-center mb-4 border border-red-500/20">
-                  <Feather name="book-open" size={20} color="#ef4444" />
+                  <BookOpen size={20} color="#ef4444" />
                 </View>
                 <Text className="text-white font-bold text-base">Learn</Text>
               </TouchableOpacity>
               
               <TouchableOpacity onPress={()=>router.push("/(tabs)/gradian")} className="flex-1 bg-[#1e2a38] rounded-2xl p-5 shadow-sm active:opacity-80">
                 <View className="w-10 h-10 bg-yellow-500/10 rounded-xl items-center justify-center mb-4 border border-yellow-500/20">
-                  <MaterialCommunityIcons name="robot-outline" size={22} color="#eab308" />
+                  <Sparkles size={22} color="#eab308" />
                 </View>
                 <Text className="text-white font-bold text-base">AI Assistant</Text>
               </TouchableOpacity>
@@ -154,14 +163,14 @@ export default function Home() {
             <View className="flex-row gap-4">
               <TouchableOpacity onPress={()=>router.push("/(tabs)/tools")} className="flex-1 bg-[#1e2a38] rounded-2xl p-5 shadow-sm active:opacity-80">
                 <View className="w-10 h-10 bg-teal-500/10 rounded-xl items-center justify-center mb-4 border border-teal-500/20">
-                  <Feather name="check-square" size={20} color="#14b8a6" />
+                  <CheckSquare size={20} color="#14b8a6" />
                 </View>
                 <Text className="text-white font-bold text-base">Tools</Text>
               </TouchableOpacity>
               
               <TouchableOpacity onPress={()=>router.push("/(tabs)/profile/my-notes")} className="flex-1 bg-[#1e2a38] rounded-2xl p-5 shadow-sm active:opacity-80">
                 <View className="w-10 h-10 bg-blue-500/10 rounded-xl items-center justify-center mb-4 border border-blue-500/20">
-                  <Feather name="file-text" size={20} color="#3b82f6" />
+                  <FileText size={20} color="#3b82f6" />
                 </View>
                 <Text className="text-white font-bold text-base">My Notes</Text>
               </TouchableOpacity>
@@ -181,13 +190,13 @@ export default function Home() {
           {/* New Module Banner */}
           <TouchableOpacity onPress={()=> router.push("/lesson")} className="bg-[#1c2431] rounded-2xl p-5 flex-row items-center border border-gray-800 shadow-sm active:opacity-80">
             <View className="w-12 h-12 bg-yellow-600/20 rounded-xl items-center justify-center mr-4 border border-yellow-600/30">
-              <MaterialCommunityIcons name="medal-outline" size={24} color="#eab308" />
+              <Trophy size={24} color="#eab308" />
             </View>
             <View className="flex-1 mr-2">
               <Text className="text-white font-bold text-sm mb-1 leading-tight">New: Specialist Operations Module</Text>
               <Text className="text-gray-400 text-xs">5 lessons • 3h 00m • Now available</Text>
             </View>
-            <Feather name="chevron-right" size={20} color="#9ca3af" />
+            <ChevronRight size={20} color="#9ca3af" />
           </TouchableOpacity>
           
         </View>

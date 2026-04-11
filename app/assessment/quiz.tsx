@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, StyleSheet } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { 
+  X, 
+  Check, 
+  ChevronRight 
+} from "lucide-react-native";
 
 export const QUESTIONS = [
   {
@@ -122,7 +126,7 @@ export default function AssessmentQuiz() {
       <View style={styles.headerStrip}>
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
-            <Feather name="x" size={24} color="#9ca3af" />
+            <X size={24} color="#9ca3af" />
           </TouchableOpacity>
           <Text style={styles.questionCounter}>
             {currIdx + 1} / {QUESTIONS.length}
@@ -158,12 +162,12 @@ export default function AssessmentQuiz() {
               </Text>
               {isAnswered && opt.id === question.correctId && (
                 <View style={styles.feedbackIcon}>
-                  <Feather name="check" size={12} color="white" />
+                  <Check size={12} color="white" strokeWidth={3} />
                 </View>
               )}
               {isAnswered && opt.id === selectedOption && opt.id !== question.correctId && (
                 <View style={[styles.feedbackIcon, { backgroundColor: "#EF4444" }]}>
-                  <Feather name="x" size={12} color="white" />
+                  <X size={12} color="white" strokeWidth={3} />
                 </View>
               )}
             </TouchableOpacity>
@@ -193,7 +197,7 @@ export default function AssessmentQuiz() {
             <Text style={styles.nextBtnText}>
               {currIdx < QUESTIONS.length - 1 ? "NEXT QUESTION" : "SEE RESULTS"}
             </Text>
-            <Feather name="chevron-right" size={18} color="white" />
+            <ChevronRight size={18} color="white" />
           </TouchableOpacity>
         </View>
       )}

@@ -1,15 +1,28 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
+import { 
+
+  Text, 
+  TouchableOpacity, 
+  ScrollView, 
+  StyleSheet, 
+  SafeAreaView, 
+
   FlatList,
-  Dimensions,
-  StyleSheet,
+  Dimensions
 } from "react-native";
 import { router } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import { 
+  Search, 
+  Lock, 
+  CheckCircle2, 
+  BookOpen, 
+  Clock, 
+  Zap,
+  CircleDot,
+  Circle
+} from "lucide-react-native";
+import { TextInput, View } from "react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -123,7 +136,7 @@ const TABS: { label: string; value: Category }[] = [
 
 const SearchBar = () => (
   <View style={styles.searchBar}>
-    <Text style={styles.searchIcon}>🔍</Text>
+    <Search size={18} color="#6B7280" style={{ marginRight: 8 }} />
     <TextInput
       style={styles.searchInput}
       placeholder="Search modules..."
@@ -183,21 +196,21 @@ const StatusBadge = ({ status }: { status: Module["status"] }) => {
   if (status === "completed")
     return (
       <View style={styles.badgeRow}>
-        <View style={[styles.badgeDot, { backgroundColor: "#4ade80" }]} />
+        <CheckCircle2 size={12} color="#4ade80" style={{ marginRight: 4 }} />
         <Text style={[styles.badgeText, { color: "#4ade80" }]}>Completed</Text>
       </View>
     );
   if (status === "in_progress")
     return (
       <View style={styles.badgeRow}>
-        <View style={[styles.badgeDot, { backgroundColor: "#60a5fa" }]} />
+        <CircleDot size={12} color="#60a5fa" style={{ marginRight: 4 }} />
         <Text style={[styles.badgeText, { color: "#60a5fa" }]}>In progress</Text>
       </View>
     );
   if (status === "not_started")
     return (
       <View style={styles.badgeRow}>
-        <View style={[styles.badgeDot, { backgroundColor: "#6b7280" }]} />
+        <Circle size={12} color="#6b7280" style={{ marginRight: 4 }} />
         <Text style={[styles.badgeText, { color: "#9ca3af" }]}>Not started</Text>
       </View>
     );
@@ -228,10 +241,10 @@ const ModuleCard = ({ module }: { module: Module }) => {
             {module.category}
           </Text>
         </View>
-        {isLocked && <Text style={styles.lockIcon}>🔒</Text>}
+        {isLocked && <Lock size={18} color="#6b7280" />}
         {module.status === "completed" && (
           <View style={styles.completedBadge}>
-            <Text style={styles.completedCheck}>✓</Text>
+            <CheckCircle2 size={14} color="white" />
           </View>
         )}
       </View>
@@ -248,19 +261,28 @@ const ModuleCard = ({ module }: { module: Module }) => {
 
       {/* Meta row */}
       <View style={styles.metaRow}>
-        <Text style={[styles.metaText, isLocked && styles.metaTextLocked]}>
-          📋 {module.lessons} lessons
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <BookOpen size={14} color={isLocked ? "#4B5563" : "#9ca3af"} style={{ marginRight: 4 }} />
+          <Text style={[styles.metaText, isLocked && styles.metaTextLocked]}>
+            {module.lessons} lessons
+          </Text>
+        </View>
         <Text style={styles.metaDivider}>·</Text>
-        <Text style={[styles.metaText, isLocked && styles.metaTextLocked]}>
-          🕐 {module.hours}h {module.minutes}m
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Clock size={14} color={isLocked ? "#4B5563" : "#9ca3af"} style={{ marginRight: 4 }} />
+          <Text style={[styles.metaText, isLocked && styles.metaTextLocked]}>
+            {module.hours}h {module.minutes}m
+          </Text>
+        </View>
       </View>
 
       {/* Progress / Lock CTA */}
       {isLocked ? (
         <TouchableOpacity style={styles.upgradeBtn}>
-          <Text style={styles.upgradeBtnText}>🔒 Upgrade to unlock</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Lock size={12} color="#D1D5DB" style={{ marginRight: 6 }} />
+            <Text style={styles.upgradeBtnText}>Upgrade to unlock</Text>
+          </View>
         </TouchableOpacity>
       ) : (
         <View>

@@ -1,12 +1,12 @@
+import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-  View,
+  SafeAreaView,
+  ScrollView,
   Text,
   TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
+  View,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
 
 import { router } from "expo-router";
 import { useNotesStore, deleteNote, Note, NoteType } from "./notesStore";
@@ -42,7 +42,7 @@ const NoteCard = ({ note }: { note: Note }) => {
   const style = typeStyle(note.type);
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       activeOpacity={0.8}
       onPress={() => router.push({ pathname: '/profile/note-editor', params: { id: note.id } })}
       className="mx-4 mb-3 bg-[#141E2B] rounded-2xl p-4"
@@ -92,7 +92,7 @@ export default function MyNotes() {
     <SafeAreaView className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
 
-   
+
 
 
       {/* Filter tabs */}
@@ -103,16 +103,14 @@ export default function MyNotes() {
             <TouchableOpacity
               key={tab}
               onPress={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-full ${
-                isActive
+              className={`px-4 py-2 rounded-full ${isActive
                   ? "bg-[#E05252]"
                   : "bg-transparent border border-[#2D3748]"
-              }`}
+                }`}
             >
               <Text
-                className={`text-xs font-bold tracking-widest ${
-                  isActive ? "text-white" : "text-gray-400"
-                }`}
+                className={`text-xs font-bold tracking-widest ${isActive ? "text-white" : "text-gray-400"
+                  }`}
               >
                 {tab}
               </Text>

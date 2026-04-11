@@ -2,7 +2,13 @@ import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { 
+  ArrowLeft, 
+  Clock, 
+  CheckCircle, 
+  Target, 
+  ChevronRight 
+} from "lucide-react-native";
 
 const LESSONS = [
   { id: "01", title: "Understanding Threat Levels", time: "30 min", status: "complete" },
@@ -19,7 +25,7 @@ export default function ThreatAssessmentDetails() {
       {/* Dark Header */}
       <View className="bg-[#111824] pt-14 pb-8 px-5 rounded-b-[32px]">
         <TouchableOpacity onPress={() => router.back()} className="flex-row items-center mb-6">
-          <Feather name="arrow-left" size={20} color="#9ca3af" />
+          <ArrowLeft size={20} color="#9ca3af" />
           <Text className="text-gray-400 font-medium ml-2  text-base">Modules</Text>
         </TouchableOpacity>
 
@@ -36,11 +42,11 @@ export default function ThreatAssessmentDetails() {
             </Text>
             <View className="flex-row items-center gap-4">
               <View className="flex-row items-center gap-1.5">
-                <Feather name="clock" size={14} color="#9ca3af" />
+                <Clock size={14} color="#9ca3af" />
                 <Text className="text-gray-400 text-xs font-mono">1h 55m</Text>
               </View>
               <View className="flex-row items-center gap-1.5">
-                <Feather name="check-circle" size={14} color="#9ca3af" />
+                <CheckCircle size={14} color="#9ca3af" />
                 <Text className="text-gray-400 text-xs font-mono">4/4 lessons</Text>
               </View>
             </View>
@@ -69,7 +75,7 @@ export default function ThreatAssessmentDetails() {
                   </View>
                 </View>
               </View>
-              <Feather name="check-circle" size={18} color="#059669" />
+              <CheckCircle size={18} color="#059669" />
             </View>
           ))}
 
@@ -78,7 +84,7 @@ export default function ThreatAssessmentDetails() {
           <View className="bg-[#111824] rounded-2xl p-4 flex-row items-center justify-between">
             <View className="flex-row items-center gap-4">
               <View className="w-12 h-12 rounded-xl bg-[#2D1A1E] items-center justify-center">
-                <Feather name="target" size={24} color="#D82C15" />
+                <Target size={24} color="#D82C15" />
               </View>
               <View>
                 <Text className="text-white font-semibold text-base mb-1">Threat Assessment Quiz</Text>
@@ -102,7 +108,7 @@ export default function ThreatAssessmentDetails() {
           className="w-full bg-[#D82C15] py-4 rounded-xl flex-row items-center justify-center gap-2"
         >
           <Text className="text-white font-bold tracking-wide uppercase text-sm">CONTINUE MODULE</Text>
-          <Feather name="chevron-right" size={18} color="white" />
+          <ChevronRight size={18} color="white" />
         </TouchableOpacity>
       </View>
     </View>

@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  TextInput, 
-  TouchableOpacity, 
-  Text, 
-  SafeAreaView, 
-  KeyboardAvoidingView, 
-  Platform, 
-  ScrollView 
-} from 'react-native';
-import { router, useLocalSearchParams, Stack } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import { addNote, updateNote, getNote, Note } from './notesStore';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import React, { useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { addNote, updateNote, getNote, Note } from './notesStore';
 
 export default function NoteEditor() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -26,9 +26,9 @@ export default function NoteEditor() {
 
   const handleSave = () => {
     if (!canSave) return;
-    
-    const dateStr = new Date().toLocaleDateString('en-GB', { 
-      day: '2-digit', month: 'short', year: 'numeric' 
+
+    const dateStr = new Date().toLocaleDateString('en-GB', {
+      day: '2-digit', month: 'short', year: 'numeric'
     });
 
     if (isEditing && existingNote) {
@@ -56,7 +56,7 @@ export default function NoteEditor() {
     <SafeAreaView className="flex-1 bg-[#FDFBF7]">
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="dark" />
-      
+
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 pt-16 py-4 border-b-2 border-red-200">
         <TouchableOpacity onPress={() => router.back()} className="p-2">
@@ -70,12 +70,12 @@ export default function NoteEditor() {
         </TouchableOpacity>
       </View>
 
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
-        <ScrollView 
-          className="flex-1 px-5" 
+        <ScrollView
+          className="flex-1 px-5"
           keyboardShouldPersistTaps="handled"
         >
           <TextInput

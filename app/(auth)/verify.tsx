@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { View, Text, TouchableOpacity, SafeAreaView, TextInput, KeyboardAvoidingView, Platform, NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native";
 import { useRouter } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { ArrowLeft } from "lucide-react-native";
 import Button from "../../components/ui/Button";
 import { StatusBar } from "expo-status-bar";
 
@@ -44,7 +44,7 @@ export default function Verify() {
           {/* Header Actions */}
           <View className="flex-row items-center justify-between mb-12">
             <TouchableOpacity onPress={() => router.back()}>
-              <Feather name="arrow-left" size={24} color="#1a1a1a" />
+              <ArrowLeft size={24} color="#1a1a1a" />
             </TouchableOpacity>
             <Text className="text-[#1a1a1a] font-black text-sm uppercase tracking-widest">AUTHENTICATION</Text>
             <Text className="text-[#1a1a1a] font-black text-sm uppercase">ATR</Text>

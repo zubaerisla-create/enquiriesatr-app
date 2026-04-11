@@ -8,6 +8,15 @@ import {
   SafeAreaView,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { 
+  LucideIcon, 
+  Search, 
+  FileText, 
+  ClipboardList, 
+  CheckCircle, 
+  Download, 
+  Trash2 
+} from "lucide-react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -16,7 +25,7 @@ type DocColor = "red" | "orange" | "green" | "yellow";
 
 interface Doc {
   id: string;
-  icon: string;
+  icon: LucideIcon;
   iconColor: DocColor;
   title: string;
   type: string;
@@ -29,7 +38,7 @@ interface Doc {
 const DOCUMENTS: Doc[] = [
   {
     id: "1",
-    icon: "📋",
+    icon: ClipboardList,
     iconColor: "red",
     title: "Premises Search — Knightsbridge",
     type: "Checklist",
@@ -38,7 +47,7 @@ const DOCUMENTS: Doc[] = [
   },
   {
     id: "2",
-    icon: "📄",
+    icon: FileText,
     iconColor: "orange",
     title: "Risk Assessment — Venue Advance",
     type: "Risk Assessment",
@@ -47,7 +56,7 @@ const DOCUMENTS: Doc[] = [
   },
   {
     id: "3",
-    icon: "✅",
+    icon: CheckCircle,
     iconColor: "green",
     title: "Travel Security Plan — Dubai",
     type: "Report",
@@ -56,7 +65,7 @@ const DOCUMENTS: Doc[] = [
   },
   {
     id: "4",
-    icon: "📄",
+    icon: FileText,
     iconColor: "yellow",
     title: "Residential Security Br",
     type: "Risk Assessment",
@@ -113,9 +122,7 @@ const DocRow = ({ doc }: { doc: Doc }) => {
         style={{ backgroundColor: style.bg, borderColor: style.border }}
         className="w-11 h-11 rounded-xl items-center justify-center border"
       >
-        <Text style={{ color: style.text }} className="text-lg">
-          {doc.icon}
-        </Text>
+        <doc.icon size={18} color={style.text} />
       </View>
 
       {/* Content */}
@@ -143,10 +150,10 @@ const DocRow = ({ doc }: { doc: Doc }) => {
       {/* Actions */}
       <View className="flex-row items-center gap-3">
         <TouchableOpacity>
-          <Text className="text-gray-500 text-base">⬇</Text>
+          <Download size={18} color="#4B5563" />
         </TouchableOpacity>
         <TouchableOpacity>
-          <Text className="text-gray-500 text-base">🗑</Text>
+          <Trash2 size={18} color="#4B5563" />
         </TouchableOpacity>
       </View>
     </View>
@@ -180,7 +187,7 @@ export default function MyDocuments() {
 
         {/* Search bar */}
         <View className="mx-4 mb-5 flex-row items-center bg-[#141E2B] rounded-xl px-4 py-3 gap-2">
-          <Text className="text-gray-500 text-base">🔍</Text>
+          <Search size={18} color="#4B5563" />
           <TextInput
             className="flex-1 text-gray-300 text-sm"
             placeholder="Search documents..."

@@ -9,26 +9,42 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 
+import { 
+  LucideIcon, 
+  BookOpen, 
+  CheckCircle, 
+  Sparkles, 
+  Flame, 
+  FileText, 
+  Folder, 
+  Target, 
+  CreditCard, 
+  Settings, 
+  LifeBuoy, 
+  ShieldCheck, 
+  LogOut 
+} from "lucide-react-native";
+
 // ─── Stat item ────────────────────────────────────────────────────────────────
 
 interface StatItem {
-  icon: string;
+  icon: LucideIcon;
   iconColor: string;
   value: string;
   label: string;
 }
 
 const STATS: StatItem[] = [
-  { icon: "□", iconColor: "#E05252", value: "12", label: "Lessons Done" },
-  { icon: "◎", iconColor: "#F5A623", value: "1", label: "Modules\nComplete" },
-  { icon: "✦", iconColor: "#5B8DEF", value: "34", label: "AI Chats" },
-  { icon: "♦", iconColor: "#4CAF82", value: "7", label: "Day Streak" },
+  { icon: BookOpen, iconColor: "#E05252", value: "12", label: "Lessons Done" },
+  { icon: CheckCircle, iconColor: "#F5A623", value: "1", label: "Modules\nComplete" },
+  { icon: Sparkles, iconColor: "#5B8DEF", value: "34", label: "AI Chats" },
+  { icon: Flame, iconColor: "#4CAF82", value: "7", label: "Day Streak" },
 ];
 
 // ─── Menu row ─────────────────────────────────────────────────────────────────
 
 interface MenuRow {
-  icon: string;
+  icon: LucideIcon;
   label: string;
   badge?: { text: string; color: string; bg: string };
   danger?: boolean;
@@ -36,20 +52,20 @@ interface MenuRow {
 }
 
 const CONTENT_ROWS: MenuRow[] = [
-  { icon: "✏️", label: "My Notes", badge: { text: "3", color: "#fff", bg: "#E05252" }, route: "/profile/my-notes" },
-  { icon: "📋", label: "My Documents", route: "/profile/my-documents" },
-  { icon: "🎯", label: "Assessments", badge: { text: "1/6 passed", color: "#4CAF82", bg: "#0D2318" }, route: "/profile/assessments" },
+  { icon: FileText, label: "My Notes", badge: { text: "3", color: "#fff", bg: "#E05252" }, route: "/profile/my-notes" },
+  { icon: Folder, label: "My Documents", route: "/profile/my-documents" },
+  { icon: Target, label: "Assessments", badge: { text: "1/6 passed", color: "#4CAF82", bg: "#0D2318" }, route: "/profile/assessments" },
 ];
 
 const ACCOUNT_ROWS: MenuRow[] = [
-  { icon: "💳", label: "Subscription & Billing", route: "/profile/subscription-billing" },
-  { icon: "⚙️", label: "Settings", route: "/profile/settings" },
+  { icon: CreditCard, label: "Subscription & Billing", route: "/profile/subscription-billing" },
+  { icon: Settings, label: "Settings", route: "/profile/settings" },
 ];
 
 const SUPPORT_ROWS: MenuRow[] = [
-  { icon: "❓", label: "Help & Support", route: "/profile/help-support" },
-  { icon: "📄", label: "Terms & Conditions", route: "/profile/terms-condition" },
-  { icon: "🚪", label: "Log Out", route: "/login", danger: true },
+  { icon: LifeBuoy, label: "Help & Support", route: "/profile/help-support" },
+  { icon: ShieldCheck, label: "Terms & Conditions", route: "/profile/terms-condition" },
+  { icon: LogOut, label: "Log Out", route: "/login", danger: true },
 ];
 
 // ─── Circular progress ────────────────────────────────────────────────────────
@@ -95,9 +111,9 @@ const CircularProgress = ({ percent }: { percent: number }) => {
 
 const StatCell = ({ stat }: { stat: StatItem }) => (
   <View className="items-center flex-1">
-    <Text style={{ color: stat.iconColor }} className="text-xl mb-1">
-      {stat.icon}
-    </Text>
+    <View className="mb-1">
+      <stat.icon size={20} color={stat.iconColor} />
+    </View>
     <Text className="text-white font-bold text-lg leading-tight">{stat.value}</Text>
     <Text className="text-gray-500 text-[10px] text-center leading-4 mt-0.5">
       {stat.label}
@@ -129,7 +145,9 @@ const MenuRowItem = ({ row, isLast }: { row: MenuRow; isLast: boolean }) => {
         !isLast ? "border-b border-[#1E2D3D]" : ""
       }`}
     >
-      <Text className="text-lg mr-3">{row.icon}</Text>
+      <View className="mr-3">
+        <row.icon size={18} color={row.danger ? "#E05252" : "#9CA3AF"} />
+      </View>
       <Text
         className={`flex-1 text-sm font-medium ${
           row.danger ? "text-[#E05252]" : "text-white"

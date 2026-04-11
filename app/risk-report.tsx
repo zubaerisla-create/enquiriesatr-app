@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, SafeAreaView, ScrollView } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { ArrowLeft, Download } from "lucide-react-native";
 
 const KEY_FINDINGS = [
   "All 38 checklist items completed (100%)",
@@ -47,7 +47,7 @@ export default function RiskReport() {
       {/* Header */}
       <View className="px-5 pt-12 pb-4 flex-row items-center border-b border-gray-100">
         <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
-          <Feather name="arrow-left" size={22} color="#1f2937" />
+          <ArrowLeft size={22} color="#1f2937" />
         </TouchableOpacity>
         <Text className="text-[#1f2937] font-semibold ml-2 text-base">Back to Checklist</Text>
       </View>
@@ -142,7 +142,7 @@ export default function RiskReport() {
           <Text className="text-[#131C2E] font-semibold text-sm">Back to Checklist</Text>
         </TouchableOpacity>
         <TouchableOpacity className="flex-1 bg-[#131C2E] py-4 rounded-xl flex-row items-center justify-center gap-2">
-          <Feather name="download" size={16} color="white" />
+          <Download size={16} color="white" />
           <Text className="text-white font-bold text-sm">Export Report</Text>
         </TouchableOpacity>
       </View>

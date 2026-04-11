@@ -1,13 +1,18 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, SafeAreaView } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
+import { 
+  LucideIcon, 
+  BookOpen, 
+  Sparkles, 
+  Flame, 
+  Settings, 
+  Trophy, 
+  BellOff, 
+  X,
+  ArrowLeft
+} from "lucide-react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -93,12 +98,12 @@ const NOTIFICATIONS: Notification[] = [
 
 // ─── Icon config ──────────────────────────────────────────────────────────────
 
-const TYPE_CONFIG: Record<NotifType, { icon: string; bg: string; color: string }> = {
-  lesson:      { icon: "📖", bg: "#0D1E3A", color: "#5B8DEF" },
-  ai:          { icon: "✦",  bg: "#1A1030", color: "#A78BFA" },
-  streak:      { icon: "🔥", bg: "#2D1A08", color: "#F5A623" },
-  system:      { icon: "⚙️", bg: "#141E2B", color: "#6B7280" },
-  achievement: { icon: "🏆", bg: "#0D2318", color: "#4CAF82" },
+const TYPE_CONFIG: Record<NotifType, { icon: LucideIcon; bg: string; color: string }> = {
+  lesson:      { icon: BookOpen, bg: "#0D1E3A", color: "#5B8DEF" },
+  ai:          { icon: Sparkles, bg: "#1A1030", color: "#A78BFA" },
+  streak:      { icon: Flame, bg: "#2D1A08", color: "#F5A623" },
+  system:      { icon: Settings, bg: "#141E2B", color: "#6B7280" },
+  achievement: { icon: Trophy, bg: "#0D2318", color: "#4CAF82" },
 };
 
 // ─── Notification Row ─────────────────────────────────────────────────────────
@@ -137,7 +142,7 @@ const NotifRow = ({
         style={{ backgroundColor: cfg.bg }}
         className="w-12 h-12 rounded-2xl items-center justify-center mr-3 shrink-0"
       >
-        <Text className="text-xl">{cfg.icon}</Text>
+        <cfg.icon size={20} color={cfg.color} />
         {!item.read && (
           <View
             style={{ backgroundColor: cfg.color }}
@@ -167,7 +172,7 @@ const NotifRow = ({
         hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         className="ml-2 mt-0.5"
       >
-        <Text className="text-gray-600 text-sm">✕</Text>
+        <X size={14} color="#4B5563" />
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -188,7 +193,7 @@ const SectionLabel = ({ title }: { title: string }) => (
 const EmptyState = () => (
   <View className="flex-1 items-center justify-center py-32">
     <View className="w-20 h-20 rounded-full bg-[#141E2B] items-center justify-center mb-4">
-      <Text className="text-4xl">🔔</Text>
+      <BellOff size={32} color="#4B5563" />
     </View>
     <Text className="text-white font-bold text-base mb-1">You're all caught up</Text>
     <Text className="text-gray-500 text-sm text-center px-10 leading-5">
@@ -219,7 +224,7 @@ export default function Notifications() {
       <View className="flex-row items-center justify-between px-4 pt-4 pb-3 border-b border-[#1A2535]">
         {/* Back */}
         <TouchableOpacity onPress={()=>router.back()} className="w-9 mt-12 h-9 items-start justify-center">
-          <Text className="text-gray-400 text-xl">←</Text>
+          <ArrowLeft size={24} color="#9ca3af" />
         </TouchableOpacity>
 
         {/* Title + badge */}

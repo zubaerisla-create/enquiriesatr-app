@@ -9,12 +9,19 @@ import {
   Platform,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { 
+  LucideIcon, 
+  Bell, 
+  BookOpen, 
+  AlertTriangle, 
+  ChevronRight 
+} from "lucide-react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface NotificationSetting {
   id: string;
-  icon: string;
+  icon: LucideIcon;
   iconBg: string;
   iconColor: string;
   title: string;
@@ -26,7 +33,7 @@ interface NotificationSetting {
 const NOTIFICATION_SETTINGS: NotificationSetting[] = [
   {
     id: "push",
-    icon: "🔔",
+    icon: Bell,
     iconBg: "#2D1010",
     iconColor: "#E05252",
     title: "Push Notifications",
@@ -34,7 +41,7 @@ const NOTIFICATION_SETTINGS: NotificationSetting[] = [
   },
   {
     id: "lessons",
-    icon: "📖",
+    icon: BookOpen,
     iconBg: "#0D1828",
     iconColor: "#5B8DEF",
     title: "Lesson Reminders",
@@ -42,7 +49,7 @@ const NOTIFICATION_SETTINGS: NotificationSetting[] = [
   },
   {
     id: "streak",
-    icon: "🔔",
+    icon: Bell,
     iconBg: "#2D2510",
     iconColor: "#D4A843",
     title: "Streak Alerts",
@@ -93,9 +100,7 @@ const NotificationRow = ({
       style={{ backgroundColor: item.iconBg }}
       className="w-10 h-10 rounded-xl items-center justify-center mr-3"
     >
-      <Text style={{ color: item.iconColor }} className="text-lg">
-        {item.icon}
-      </Text>
+      <item.icon size={18} color={item.iconColor} />
     </View>
 
     {/* Text */}
@@ -167,7 +172,7 @@ export default function Settings() {
           <TouchableOpacity className="flex-row items-center px-4 py-4">
             {/* Icon */}
             <View className="w-10 h-10 rounded-xl bg-[#2D1010] items-center justify-center mr-3">
-              <Text className="text-[#E05252] text-lg">⚠️</Text>
+              <AlertTriangle size={18} color="#E05252" />
             </View>
 
             {/* Text */}
@@ -181,7 +186,7 @@ export default function Settings() {
             </View>
 
             {/* Chevron */}
-            <Text className="text-gray-500 text-lg">›</Text>
+            <ChevronRight size={18} color="#4B5563" />
           </TouchableOpacity>
         </View>
       </ScrollView>

@@ -7,6 +7,12 @@ import {
   SafeAreaView,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { 
+  Check, 
+  Star, 
+  Zap, 
+  ChevronRight 
+} from "lucide-react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -48,9 +54,7 @@ const CheckItem = ({
   color?: string;
 }) => (
   <View className="flex-row items-center gap-2 mb-1.5">
-    <Text style={{ color: muted ? "#4B5563" : color }} className="text-sm font-bold">
-      ✓
-    </Text>
+    <Check size={14} color={muted ? "#4B5563" : color} strokeWidth={3} />
     <Text className={`text-sm ${muted ? "text-gray-600" : "text-gray-300"}`}>
       {text}
     </Text>
@@ -143,7 +147,7 @@ const AnnualCard = ({ selected, onPress }: { selected: boolean; onPress: () => v
   >
     {/* RECOMMENDED badge */}
     <View className="absolute -top-3 right-4 bg-[#E05252] rounded-full px-3 py-0.5 flex-row items-center gap-1">
-      <Text className="text-white text-[10px]">★</Text>
+      <Star size={10} color="white" fill="white" />
       <Text className="text-white text-[10px] font-bold tracking-widest">RECOMMENDED</Text>
     </View>
 
@@ -176,7 +180,7 @@ const AnnualCard = ({ selected, onPress }: { selected: boolean; onPress: () => v
 
     {/* CTA */}
     <TouchableOpacity className="mt-4 bg-[#E05252] rounded-xl py-3.5 flex-row items-center justify-center gap-2">
-      <Text className="text-white text-sm">⚡</Text>
+      <Zap size={16} color="white" fill="white" />
       <Text className="text-white font-bold text-sm">Choose Annual</Text>
     </TouchableOpacity>
   </TouchableOpacity>
@@ -219,7 +223,7 @@ export default function UpgradeAccess() {
       {/* Sticky bottom CTA */}
       <View className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-4 bg-[#0D1520]">
         <TouchableOpacity className="bg-[#E05252] rounded-2xl py-4 flex-row items-center justify-center gap-2">
-          <Text className="text-white text-base">⚡</Text>
+          <Zap size={18} color="white" fill="white" />
           <Text className="text-white font-bold text-sm tracking-widest uppercase">
             Continue with Annual
           </Text>

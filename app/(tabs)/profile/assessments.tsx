@@ -7,6 +7,11 @@ import {
   SafeAreaView,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { 
+  Target, 
+  Lock, 
+  ChevronRight 
+} from "lucide-react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -123,22 +128,9 @@ const StatCard = ({
 const RingIcon = ({ color, locked }: { color: string; locked: boolean }) => (
   <View className="w-10 h-10 items-center justify-center">
     {locked ? (
-      <Text className="text-gray-500 text-2xl">🔒</Text>
+      <Lock size={20} color="#4B5563" />
     ) : (
-      <View
-        style={{ borderColor: color }}
-        className="w-9 h-9 rounded-full border-2 items-center justify-center"
-      >
-        <View
-          style={{ borderColor: color }}
-          className="w-5 h-5 rounded-full border-2 items-center justify-center"
-        >
-          <View
-            style={{ backgroundColor: color }}
-            className="w-2 h-2 rounded-full"
-          />
-        </View>
-      </View>
+      <Target size={24} color={color} />
     )}
   </View>
 );

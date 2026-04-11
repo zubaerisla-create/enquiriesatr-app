@@ -14,7 +14,17 @@ import {
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { 
+  ArrowLeft, 
+  Bookmark, 
+  ChevronRight, 
+  ChevronLeft, 
+  Edit2, 
+  CheckCircle, 
+  Check, 
+  X, 
+  Save 
+} from "lucide-react-native";
 
 export default function LessonReadingView() {
   const [currentLesson, setCurrentLesson] = useState(1);
@@ -76,11 +86,11 @@ export default function LessonReadingView() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-          <Feather name="arrow-left" size={22} color="#1f2937" />
+          <ArrowLeft size={22} color="#1f2937" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Threat &amp; Risk Assessment</Text>
         <TouchableOpacity style={styles.headerBtn}>
-          <Feather name="bookmark" size={20} color="#6b7280" />
+          <Bookmark size={20} color="#6b7280" />
         </TouchableOpacity>
       </View>
 
@@ -95,7 +105,7 @@ export default function LessonReadingView() {
           {/* Breadcrumbs */}
           <View style={styles.breadcrumb}>
             <Text style={styles.breadcrumbBase}>CP Fundamentals</Text>
-            <Feather name="chevron-right" size={10} color="#9ca3af" />
+            <ChevronRight size={10} color="#9ca3af" />
             <Text style={styles.breadcrumbActive}>Lesson {currentLesson}/{totalLessons}</Text>
           </View>
 
@@ -172,7 +182,7 @@ export default function LessonReadingView() {
               onPress={handlePrev}
               style={[styles.navBtn, isFirst && styles.navBtnDisabled]}
             >
-              <Feather name="chevron-left" size={16} color={isFirst ? "#9CA3AF" : "#1f2937"} />
+              <ChevronLeft size={16} color={isFirst ? "#9CA3AF" : "#1f2937"} />
               <Text style={[styles.navBtnText, isFirst && styles.navBtnTextDisabled]}>Previous</Text>
             </TouchableOpacity>
 
@@ -182,7 +192,7 @@ export default function LessonReadingView() {
               style={[styles.navBtn, isLast && styles.navBtnDisabled]}
             >
               <Text style={[styles.navBtnText, isLast && styles.navBtnTextDisabled]}>Next</Text>
-              <Feather name="chevron-right" size={16} color={isLast ? "#9CA3AF" : "#1f2937"} />
+              <ChevronRight size={16} color={isLast ? "#9CA3AF" : "#1f2937"} />
             </TouchableOpacity>
           </View>
 
@@ -193,7 +203,7 @@ export default function LessonReadingView() {
       <View style={styles.footer}>
         {/* Save Note */}
         <TouchableOpacity style={styles.footerSaveBtn} onPress={() => setNoteModalVisible(true)}>
-          <Feather name="edit-2" size={16} color="#D82C15" style={{ marginRight: 8 }} />
+          <Edit2 size={16} color="#D82C15" style={{ marginRight: 8 }} />
           <Text style={styles.footerSaveBtnText}>Save Note</Text>
         </TouchableOpacity>
 
@@ -207,10 +217,10 @@ export default function LessonReadingView() {
           activeOpacity={isCurrentCompleted ? 1 : 0.8}
         >
           {!isLast && !isCurrentCompleted && (
-            <Feather name="check-circle" size={16} color="white" style={{ marginRight: 8 }} />
+            <CheckCircle size={16} color="white" style={{ marginRight: 8 }} />
           )}
           {isCurrentCompleted && (
-            <Feather name="check" size={16} color="white" style={{ marginRight: 8 }} />
+            <Check size={16} color="white" style={{ marginRight: 8 }} />
           )}
           <Text style={styles.footerActionBtnText}>
             {isCurrentCompleted ? "Completed ✓" : isLast ? "MARK COMPLETE" : "Mark Complete"}
@@ -245,7 +255,7 @@ export default function LessonReadingView() {
                 <Text style={styles.modalSubtitle}>Lesson {currentLesson} — Threat &amp; Risk Assessment</Text>
               </View>
               <TouchableOpacity onPress={() => setNoteModalVisible(false)} style={styles.modalCloseBtn}>
-                <Feather name="x" size={18} color="#6b7280" />
+                <X size={18} color="#6b7280" />
               </TouchableOpacity>
             </View>
 
@@ -274,7 +284,7 @@ export default function LessonReadingView() {
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalSaveBtn} onPress={handleSaveNote}>
-                <Feather name="save" size={15} color="white" style={{ marginRight: 6 }} />
+                <Save size={15} color="white" style={{ marginRight: 6 }} />
                 <Text style={styles.modalSaveText}>Save Note</Text>
               </TouchableOpacity>
             </View>

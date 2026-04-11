@@ -9,7 +9,31 @@ import {
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { 
+  ArrowLeft, 
+  Shield, 
+  AlertTriangle, 
+  Users, 
+  Activity, 
+  Camera, 
+  AlertCircle, 
+  Grid, 
+  FileText, 
+  ChevronUp, 
+  ChevronDown, 
+  Check 
+} from "lucide-react-native";
+
+const ICON_MAP = {
+  shield: Shield,
+  "alert-triangle": AlertTriangle,
+  users: Users,
+  activity: Activity,
+  camera: Camera,
+  "alert-circle": AlertCircle,
+  grid: Grid,
+  "file-text": FileText,
+};
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -180,7 +204,7 @@ export default function ThreatAssessmentChecklist() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Feather name="arrow-left" size={22} color="#9ca3af" />
+          <ArrowLeft size={22} color="#9ca3af" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Threat Assessment</Text>
       </View>
@@ -207,6 +231,7 @@ export default function ThreatAssessmentChecklist() {
             const isOpen = expanded[cat.id];
             const done = catChecked(cat);
             const catPercent = Math.round((done / cat.items.length) * 100);
+            const CatIcon = ICON_MAP[cat.icon as keyof typeof ICON_MAP];
 
             return (
               <View key={cat.id} style={styles.categoryWrap}>
@@ -218,7 +243,7 @@ export default function ThreatAssessmentChecklist() {
                 >
                   <View style={styles.categoryHeaderLeft}>
                     <View style={[styles.categoryIcon, { backgroundColor: cat.iconBg }]}>
-                      <Feather name={cat.icon as any} size={18} color={cat.iconColor} />
+                      <CatIcon size={18} color={cat.iconColor} />
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.categoryTitle}>{cat.title}</Text>
@@ -227,7 +252,11 @@ export default function ThreatAssessmentChecklist() {
                   </View>
                   <View style={styles.categoryHeaderRight}>
                     <Text style={styles.categoryPercent}>{catPercent}%</Text>
-                    <Feather name={isOpen ? "chevron-up" : "chevron-down"} size={16} color="#6B7280" />
+                    {isOpen ? (
+                      <ChevronUp size={16} color="#6B7280" />
+                    ) : (
+                      <ChevronDown size={16} color="#6B7280" />
+                    )}
                   </View>
                 </TouchableOpacity>
 
@@ -253,7 +282,7 @@ export default function ThreatAssessmentChecklist() {
                                 styles.checkbox,
                                 isChecked ? styles.checkboxChecked : styles.checkboxUnchecked,
                               ]}>
-                                {isChecked && <Feather name="check" size={12} color="white" />}
+                                {isChecked && <Check size={12} color="white" />}
                               </View>
                               <Text style={[styles.itemText, isChecked && styles.itemTextChecked]}>
                                 {item}
@@ -272,7 +301,7 @@ export default function ThreatAssessmentChecklist() {
                                 <Text style={[styles.severityBtnText, { color: sevColors.text }]}>
                                   {sev || "Severity"}
                                 </Text>
-                                <Feather name="chevron-down" size={10} color="#6B7280" />
+                                <ChevronDown size={10} color="#6B7280" />
                               </TouchableOpacity>
 
                               {showDrop && (

@@ -2,7 +2,15 @@ import React from "react";
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { 
+  ArrowLeft, 
+  Clock, 
+  CheckCircle, 
+  PlayCircle, 
+  Lock, 
+  Target, 
+  ChevronRight 
+} from "lucide-react-native";
 
 const LESSONS = [
   { id: "01", title: "Introduction to Close Protection", time: "25 min", status: "complete" },
@@ -20,7 +28,7 @@ export default function ModuleDetails() {
       {/* Dark Header */}
       <View style={styles.darkHeader}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Feather name="arrow-left" size={20} color="#9ca3af" />
+          <ArrowLeft size={20} color="#9ca3af" />
           <Text style={styles.backText}>Modules</Text>
         </TouchableOpacity>
 
@@ -35,11 +43,11 @@ export default function ModuleDetails() {
             </Text>
             <View style={styles.metaRow}>
               <View style={styles.metaItem}>
-                <Feather name="clock" size={14} color="#9ca3af" />
+                <Clock size={14} color="#9ca3af" />
                 <Text style={styles.metaText}>2h 30m</Text>
               </View>
               <View style={styles.metaItem}>
-                <Feather name="check-circle" size={14} color="#9ca3af" />
+                <CheckCircle size={14} color="#9ca3af" />
                 <Text style={styles.metaText}>2/5 lessons</Text>
               </View>
             </View>
@@ -100,9 +108,9 @@ export default function ModuleDetails() {
                     </View>
                   </View>
                 </View>
-                {isComplete && <Feather name="check-circle" size={18} color="#059669" />}
-                {isProgress && <Feather name="play-circle" size={18} color="#D82C15" />}
-                {isLocked && <Feather name="lock" size={16} color="#e5e7eb" />}
+                {isComplete && <CheckCircle size={18} color="#059669" />}
+                {isProgress && <PlayCircle size={18} color="#D82C15" />}
+                {isLocked && <Lock size={16} color="#e5e7eb" />}
               </CardEl>
             );
           })}
@@ -112,7 +120,7 @@ export default function ModuleDetails() {
           <View style={styles.assessmentCard}>
             <View style={styles.assessmentLeft}>
               <View style={styles.assessmentIcon}>
-                <Feather name="target" size={24} color="#D82C15" />
+                <Target size={24} color="#D82C15" />
               </View>
               <View>
                 <Text style={styles.assessmentTitle}>CP Fundamentals</Text>
@@ -137,7 +145,7 @@ export default function ModuleDetails() {
           style={styles.continueBtn}
         >
           <Text style={styles.continueBtnText}>CONTINUE MODULE</Text>
-          <Feather name="chevron-right" size={18} color="white" />
+          <ChevronRight size={18} color="white" />
         </TouchableOpacity>
       </View>
     </View>

@@ -8,7 +8,13 @@ import {
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { 
+  ArrowLeft, 
+  Check, 
+  ChevronRight, 
+  FileText, 
+  Save 
+} from "lucide-react-native";
 
 // ─── Data ───────────────────────────────────────────────────────────────────
 
@@ -48,7 +54,7 @@ export default function ToolDetails() {
             onPress={() => router.back()} 
             className="flex-row items-center mb-6"
           >
-            <Feather name="arrow-left" size={20} color="#9ca3af" />
+            <ArrowLeft size={20} color="#9ca3af" />
             <Text className="text-gray-400 font-medium ml-2">Operational Tools</Text>
           </TouchableOpacity>
 
@@ -128,7 +134,7 @@ export default function ToolDetails() {
              textClasses = "text-gray-400 line-through";
              checkboxContent = (
                <View className="w-5 h-5 rounded bg-[#3B82F6] items-center justify-center bg-[#2E8B57]">
-                 <Feather name="check" size={12} color="white" strokeWidth={3} />
+                 <Check size={12} color="white" strokeWidth={3} />
                </View>
              );
           } else if (step.status === "active") {
@@ -155,7 +161,7 @@ export default function ToolDetails() {
                 {step.text}
               </Text>
               {step.status === "done" && step.id === 3 && (
-                <Feather name="chevron-right" size={16} color="#9ca3af" />
+                <ChevronRight size={16} color="#9ca3af" />
               )}
             </TouchableOpacity>
           );
@@ -165,14 +171,14 @@ export default function ToolDetails() {
       {/* Footer Fixed Action Buttons */}
       <View className="absolute bottom-0 w-full bg-white border-t border-gray-100 flex-row px-5 py-4 pb-8 items-center justify-between gap-4">
         <TouchableOpacity className="bg-[#2A3B54] w-[110px] py-3.5 rounded-xl flex-row items-center justify-center gap-2">
-          <Feather name="file-text" size={16} color="white" />
+          <FileText size={16} color="white" />
           <Text className="text-white font-semibold">Report</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           onPress={() => router.navigate("/tool-complete")}
           className="flex-1 bg-[#D82C15] py-3.5 rounded-xl flex-row items-center justify-center gap-2"
         >
-          <Feather name="save" size={18} color="white" />
+          <Save size={18} color="white" />
           <Text className="text-white font-bold tracking-wide">COMPLETE & SAVE</Text>
         </TouchableOpacity>
       </View>

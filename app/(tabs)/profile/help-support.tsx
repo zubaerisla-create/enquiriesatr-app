@@ -10,6 +10,13 @@ import {
   UIManager,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { 
+  LucideIcon, 
+  MessageSquare, 
+  Mail, 
+  ChevronRight, 
+  AlertTriangle 
+} from "lucide-react-native";
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -21,7 +28,7 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 const CONTACT_OPTIONS = [
   {
     id: "chat",
-    icon: "💬",
+    icon: MessageSquare,
     iconBg: "#0D1828",
     iconColor: "#5B8DEF",
     title: "Live Chat",
@@ -29,7 +36,7 @@ const CONTACT_OPTIONS = [
   },
   {
     id: "email",
-    icon: "✉️",
+    icon: Mail,
     iconBg: "#0D1828",
     iconColor: "#5B8DEF",
     title: "Email Support",
@@ -56,7 +63,7 @@ const ContactRow = ({
   item,
   isLast,
 }: {
-  item: (typeof CONTACT_OPTIONS)[0];
+  item: typeof CONTACT_OPTIONS[0];
   isLast: boolean;
 }) => (
   <TouchableOpacity
@@ -69,7 +76,7 @@ const ContactRow = ({
       style={{ backgroundColor: item.iconBg }}
       className="w-10 h-10 rounded-xl items-center justify-center mr-3 border border-[#1E3050]"
     >
-      <Text className="text-lg">{item.icon}</Text>
+      <item.icon size={18} color={item.iconColor} />
     </View>
 
     {/* Text */}
@@ -79,7 +86,7 @@ const ContactRow = ({
     </View>
 
     {/* Chevron */}
-    <Text className="text-gray-500 text-lg">›</Text>
+    <ChevronRight size={18} color="#4B5563" />
   </TouchableOpacity>
 );
 
@@ -108,13 +115,9 @@ const FaqRow = ({
         <Text className="text-white text-sm flex-1 pr-3 leading-5">
           {item.question}
         </Text>
-        <Text
-          className={`text-gray-500 text-lg transition-transform ${
-            open ? "rotate-90" : ""
-          }`}
-        >
-          ›
-        </Text>
+        <View style={{ transform: [{ rotate: open ? '90deg' : '0deg' }] }}>
+          <ChevronRight size={18} color="#4B5563" />
+        </View>
       </View>
       {open && (
         <Text className="text-gray-400 text-xs leading-5 mt-2">
@@ -169,9 +172,7 @@ export default function HelpSupport() {
 
         {/* Disclaimer card */}
         <View className="mx-4 bg-[#1A0E0E] border border-[#3D1A1A] rounded-2xl px-4 py-4 flex-row items-start gap-3">
-          <View className="w-8 h-8 rounded-full border-2 border-[#E05252] items-center justify-center mt-0.5 shrink-0">
-            <Text className="text-[#E05252] text-xs font-bold">!</Text>
-          </View>
+          <AlertTriangle size={20} color="#E05252" style={{ marginTop: 2, flexShrink: 0 }} />
           <Text className="text-gray-400 text-xs leading-5 flex-1">
             CPTAN is a training and operational reference tool. It does not replace formal SIA-accredited CP training, legal advice, or professional operational judgment. Always act within your training, competence, and the law.
           </Text>

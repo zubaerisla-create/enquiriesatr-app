@@ -2,7 +2,13 @@ import React from "react";
 import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, StyleSheet } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router, useLocalSearchParams } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { 
+  Award, 
+  AlertCircle, 
+  CheckCircle, 
+  XCircle, 
+  RefreshCcw 
+} from "lucide-react-native";
 import { QUESTIONS } from "./quiz";
 
 export default function AssessmentResults() {
@@ -36,7 +42,11 @@ export default function AssessmentResults() {
 
         {/* Pass/Fail Badge */}
         <View style={[styles.badge, passed ? styles.badgePassed : styles.badgeFailed]}>
-          <Feather name={passed ? "award" : "alert-circle"} size={14} color={passed ? "#34D399" : "#FCA5A5"} />
+          {passed ? (
+             <Award size={14} color="#34D399" />
+          ) : (
+             <AlertCircle size={14} color="#FCA5A5" />
+          )}
           <Text style={[styles.badgeText, passed ? styles.badgeTextPassed : styles.badgeTextFailed]}>
             {passed ? "PASSED" : "FAILED"}
           </Text>
@@ -67,11 +77,11 @@ export default function AssessmentResults() {
                     <Text style={styles.questionText}>{q.text}</Text>
                   </View>
                   <View style={{ marginTop: 4 }}>
-                    <Feather
-                      name={isCorrect ? "check-circle" : "x-circle"}
-                      size={16}
-                      color={isCorrect ? "#34D399" : "#EF4444"}
-                    />
+                    {isCorrect ? (
+                      <CheckCircle size={16} color="#34D399" />
+                    ) : (
+                      <XCircle size={16} color="#EF4444" />
+                    )}
                   </View>
                 </View>
 
@@ -103,14 +113,14 @@ export default function AssessmentResults() {
           onPress={() => router.replace("/assessment/quiz")}
           style={styles.retakeBtn}
         >
-          <Feather name="refresh-cw" size={16} color="white" />
+          <RefreshCcw size={16} color="white" />
           <Text style={styles.retakeBtnText}>Retake</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => router.navigate("/(tabs)/learn")}
           style={styles.continueBtn}
         >
-          <Feather name="check-circle" size={16} color="white" />
+          <CheckCircle size={16} color="white" />
           <Text style={styles.continueBtnText}>Continue Learning</Text>
         </TouchableOpacity>
       </View>

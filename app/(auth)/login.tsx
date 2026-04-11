@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, SafeAreaView, ScrollView } from "react-native";
 import { useRouter, Link } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { ArrowLeft } from "lucide-react-native";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import SocialButton from "../../components/ui/SocialButton";
@@ -24,7 +24,7 @@ export default function Login() {
         <View className="px-6 pt-12 pb-10 flex-1">
           {/* Back Button */}
           <TouchableOpacity onPress={() => router.back()} className="mb-8">
-            <Feather name="arrow-left" size={24} color="#1a1a1a" />
+            <ArrowLeft size={24} color="#1a1a1a" />
           </TouchableOpacity>
 
           {/* Header */}

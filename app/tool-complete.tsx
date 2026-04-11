@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, SafeAreaView } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { Check } from "lucide-react-native";
 
 export default function ToolComplete() {
   return (
@@ -13,7 +13,7 @@ export default function ToolComplete() {
         {/* Success Icon */}
         <View className="w-24 h-24 rounded-full bg-[#E8F5E9] border-2 border-[#4CAF50] items-center justify-center mb-6">
           <View className="w-12 h-12 rounded-full border-[3px] border-[#4CAF50] items-center justify-center">
-            <Feather name="check" size={24} color="#4CAF50" strokeWidth={3} />
+            <Check size={24} color="#4CAF50" strokeWidth={3} />
           </View>
         </View>
 

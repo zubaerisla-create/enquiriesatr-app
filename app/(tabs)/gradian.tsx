@@ -12,6 +12,15 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { 
+  Sparkles, 
+  History, 
+  Copy, 
+  Bookmark, 
+  Paperclip, 
+  Mic, 
+  SendHorizontal 
+} from "lucide-react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -37,7 +46,7 @@ const Header = () => (
   <View className="flex-row items-center justify-between px-4 py-3 pt-16 border-b border-[#1E2D45]">
     <View className="flex-row items-center gap-3">
       <View className="w-9 h-9 rounded-full bg-[#7C1A1A] items-center justify-center">
-        <Text className="text-white text-base">✦</Text>
+        <Sparkles size={18} color="white" />
       </View>
       <View>
         <Text className="text-white font-bold text-base leading-tight">Gradian</Text>
@@ -49,7 +58,7 @@ const Header = () => (
     </View>
 
     <TouchableOpacity className="w-9 h-9 rounded-full border border-[#2D3748] items-center justify-center">
-      <Text className="text-gray-300 text-sm">🕐</Text>
+      <History size={16} color="#9CA3AF" />
     </TouchableOpacity>
   </View>
 );
@@ -68,11 +77,13 @@ const AIMessage = ({ message }: { message: Message }) => (
     </View>
 
     <View className="flex-row items-center gap-4 px-5 mt-2">
-      <TouchableOpacity className="flex-row items-center gap-1">
-        <Text className="text-gray-500 text-xs">⧉ Copy</Text>
+      <TouchableOpacity className="flex-row items-center gap-1.5">
+        <Copy size={12} color="#6B7280" />
+        <Text className="text-gray-500 text-xs">Copy</Text>
       </TouchableOpacity>
-      <TouchableOpacity className="flex-row items-center gap-1">
-        <Text className="text-gray-500 text-xs">🔖 Save</Text>
+      <TouchableOpacity className="flex-row items-center gap-1.5">
+        <Bookmark size={12} color="#6B7280" />
+        <Text className="text-gray-500 text-xs">Save</Text>
       </TouchableOpacity>
     </View>
   </View>
@@ -118,7 +129,7 @@ const InputBar = ({
   <View className="px-4 py-4 border-t border-[#1E2D45] bg-[#111827]">
     <View className="flex-row items-center gap-3">
       <TouchableOpacity>
-        <Text className="text-gray-500 text-xl">📎</Text>
+        <Paperclip size={20} color="#6B7280" />
       </TouchableOpacity>
 
       <TextInput
@@ -135,7 +146,7 @@ const InputBar = ({
       />
 
       <TouchableOpacity>
-        <Text className="text-gray-400 text-xl">🎤</Text>
+        <Mic size={20} color="#6B7280" />
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -145,7 +156,7 @@ const InputBar = ({
           value.trim() ? "bg-[#2563EB]" : "bg-[#334155]"
         }`}
       >
-        <Text className="text-white text-lg font-bold">➤</Text>
+        <SendHorizontal size={18} color="white" />
       </TouchableOpacity>
     </View>
   </View>

@@ -1,5 +1,11 @@
 import { Tabs } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { 
+  Home, 
+  BookOpen, 
+  Cpu, 
+  SquareCheck, 
+  User 
+} from "lucide-react-native";
 
 export default function TabLayout() {
   return (
@@ -27,7 +33,7 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="home" size={20} color={color} />
+            <Home size={20} color={color} />
           ),
         }}
       />
@@ -36,7 +42,7 @@ export default function TabLayout() {
         options={{
           title: "Learn",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="book-open" size={20} color={color} />
+            <BookOpen size={20} color={color} />
           ),
         }}
       />
@@ -45,7 +51,7 @@ export default function TabLayout() {
         options={{
           title: "Gradian",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="cpu" size={20} color={color} />
+            <Cpu size={20} color={color} />
           ),
         }}
       />
@@ -54,7 +60,7 @@ export default function TabLayout() {
         options={{
           title: "Tools",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="check-square" size={20} color={color} />
+            <SquareCheck size={20} color={color} />
           ),
         }}
       />
@@ -63,7 +69,7 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="user" size={20} color={color} />
+            <User size={20} color={color} />
           ),
         }}
       />

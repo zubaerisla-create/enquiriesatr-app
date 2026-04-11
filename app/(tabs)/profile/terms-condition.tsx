@@ -8,14 +8,26 @@ import {
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 
+import { 
+  ArrowLeft, 
+  Shield, 
+  Lock, 
+  AlertTriangle, 
+  FileText 
+} from "lucide-react-native";
+import { router } from "expo-router";
+
 // ─── Reusable building blocks ─────────────────────────────────────────────────
 
 /** Numbered section heading e.g. "01. OPERATIONAL USAGE" */
-const SectionHeading = ({ number, title }: { number: string; title: string }) => (
-  <View className="border-t border-[#1E2D3D] pt-4 mt-5 mb-3">
-    <Text className="text-white font-extrabold text-sm tracking-wider uppercase">
-      {number}. {title}
-    </Text>
+const SectionHeading = ({ number, title, Icon }: { number: string; title: string, Icon?: any }) => (
+  <View className="border-t border-[#1E2D3D] pt-6 mt-8 mb-4">
+    <View className="flex-row items-center gap-3 mb-2">
+      {Icon && <Icon size={18} color="#D82C15" />}
+      <Text className="text-white font-extrabold text-sm tracking-widest uppercase">
+        {number}. {title}
+      </Text>
+    </View>
   </View>
 );
 
@@ -80,27 +92,35 @@ export default function TermsAndConditions() {
     <SafeAreaView className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
 
+      {/* Header */}
+      <View className="px-5 pt-12 pb-4 flex-row items-center border-b border-[#1E2D3D]">
+        <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
+          <ArrowLeft size={24} color="#9ca3af" />
+        </TouchableOpacity>
+        <View className="ml-2">
+            <Text className="text-white font-bold text-lg">Terms of Service</Text>
+            <Text className="text-gray-500 text-[10px] uppercase tracking-widest font-bold">LEG_PROTOCOLS // v2.4</Text>
+        </View>
+      </View>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 48 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
       >
-      
-
-        {/* Page header */}
-     
-        <Text className="text-gray-500 text-sm mt-1 mb-2">
-          Answers, guides, and contact options
-        </Text>
-
+        <View className="py-6">
+            <Text className="text-gray-400 text-xs leading-5">
+              These terms and conditions govern the use of the CPTAN tactical interface. By accessing this system, you confirm adherence to active-duty protocols and professional security standards.
+            </Text>
+        </View>
 
         {/* ── 01. OPERATIONAL USAGE ── */}
-        <SectionHeading number="01" title="Operational Usage" />
+        <SectionHeading number="01" title="Operational Usage" Icon={FileText} />
         <BodyText>
           The CPTAN application is engineered strictly for professional security personnel, tactical operators, and certified training organizations. Usage is contingent upon the user maintaining active credentials within their respective jurisdiction. Any deployment of CPTAN for unauthorized surveillance, non-professional activities, or outside regulated training environments is strictly prohibited.
         </BodyText>
 
         {/* ── 02. DATA PRIVACY & ENCRYPTION ── */}
-        <SectionHeading number="02" title="Data Privacy & Encryption" />
+        <SectionHeading number="02" title="Data Privacy & Encryption" Icon={Shield} />
 
         <InsetBlock
           label="Local-First Architecture"
@@ -117,7 +137,7 @@ export default function TermsAndConditions() {
         </BodyText>
 
         {/* ── 03. LIABILITY LIMITATIONS ── */}
-        <SectionHeading number="03" title="Liability Limitations" />
+        <SectionHeading number="03" title="Liability Limitations" Icon={AlertTriangle} />
 
         <WarningBlock body="Critical Warning: The CPTAN interface is a tactical reference tool. It does not replace professional field judgment, standard operating procedures (SOP), or primary military-grade communication channels." />
 
@@ -126,7 +146,7 @@ export default function TermsAndConditions() {
         </BodyText>
 
         {/* ── 04. SUBSCRIPTION TERMS ── */}
-        <SectionHeading number="04" title="Subscription Terms" />
+        <SectionHeading number="04" title="Subscription Terms" Icon={Lock} />
 
         <TermRow
           badge="Term"

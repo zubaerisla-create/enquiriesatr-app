@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, SafeAreaView, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { ArrowLeft, Check } from "lucide-react-native";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import SocialButton from "../../components/ui/SocialButton";
@@ -27,7 +27,7 @@ export default function Signup() {
           {/* Header Actions */}
           <View className="flex-row items-center justify-between mb-8">
             <TouchableOpacity onPress={() => router.back()}>
-              <Feather name="arrow-left" size={24} color="#1a1a1a" />
+              <ArrowLeft size={24} color="#1a1a1a" />
             </TouchableOpacity>
             <View className="h-1 w-12 bg-[#D82C15] rounded-full" />
           </View>
@@ -74,7 +74,7 @@ export default function Signup() {
               onPress={() => setAgreed(!agreed)}
             >
               <View className={`w-6 h-6 rounded border-2 mr-3 items-center justify-center ${agreed ? 'bg-[#D82C15] border-[#D82C15]' : 'border-gray-300'}`}>
-                {agreed && <Feather name="check" size={16} color="white" />}
+                {agreed && <Check size={16} color="white" />}
               </View>
               <Text className="text-gray-500 flex-1">
                 I agree to the <Text className="text-[#D82C15] font-bold">Terms of Service</Text> and <Text className="text-[#D82C15] font-bold">Privacy Policy</Text>
