@@ -12,7 +12,7 @@ const DATA = [
     title: "30 PROFESSIONAL LESSONS",
     highlight: "AT YOUR FINGERTIPS",
     description: "Access curated close protection knowledge anytime, anywhere. Built for the modern professional operating in high-stakes environments.",
-    image: require("../../assets/images/onboarding_1.png"),
+    image: require("../../assets/images/onboarding_1.jpeg"),
     module: "MODULE 04 // CLOSE PROTECTION FUNDAMENTALS",
     progress: 75,
   },
@@ -21,7 +21,7 @@ const DATA = [
     title: "AN AI ASSISTANT THAT",
     highlight: "KNOWS CP INSIDE OUT",
     description: "Get instant tactical advice and procedure guidance in the field. Your virtual operational commander is active 24/7.",
-    image: require("../../assets/images/onboarding_2.png"),
+    image: require("../../assets/images/onboarding_2.jpeg"),
     module: "SYSTEM_RESPONSE // ADVICE",
   },
   {
@@ -29,7 +29,7 @@ const DATA = [
     title: "PROCEDURES AND TEMPLATES,",
     highlight: "READY WHEN YOU NEED THEM",
     description: "Complete search logs, risk assessments, and checklists on the go. High-speed data entry for high-stakes environments.",
-    image: require("../../assets/images/onboarding_3.png"),
+    image: require("../../assets/images/onboarding_3.jpeg"),
     module: "MODULE 03 // OPERATE",
   },
 ];
@@ -68,7 +68,7 @@ export default function Onboarding() {
       <View className="flex-row justify-between items-center px-6 py-4">
         <View className="flex-row items-center">
           <Image 
-            source={require("../../assets/images/logo.png")} 
+            source={require("../../assets/images/logo.jpeg")} 
             className="w-8 h-8 mr-2 mt-4" 
             resizeMode="contain"
           />
