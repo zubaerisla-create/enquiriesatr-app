@@ -6,6 +6,8 @@ import {
   SquareCheck, 
   User 
 } from "lucide-react-native";
+import { rs, rf } from "../../utils/responsive";
+
 
 export default function TabLayout() {
   return (
@@ -16,16 +18,17 @@ export default function TabLayout() {
           backgroundColor: "#15202B",
           borderTopColor: "#1a2634",
           borderTopWidth: 1,
-          height: 80,
-          paddingBottom: 12,
-          paddingTop: 1,
+          height: rs(70),
+          paddingBottom: rs(10),
+          paddingTop: rs(10),
         },
         tabBarActiveTintColor: "#D82C15",
         tabBarInactiveTintColor: "#9ca3af",
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: rf(10),
           fontWeight: "bold",
         },
+
       }}
     >
       <Tabs.Screen
@@ -33,8 +36,9 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => (
-            <Home size={20} color={color} />
+            <Home size={rs(20)} color={color} />
           ),
+
         }}
       />
       <Tabs.Screen
@@ -42,8 +46,9 @@ export default function TabLayout() {
         options={{
           title: "Learn",
           tabBarIcon: ({ color, size }) => (
-            <BookOpen size={20} color={color} />
+            <BookOpen size={rs(20)} color={color} />
           ),
+
         }}
       />
       <Tabs.Screen
@@ -51,8 +56,9 @@ export default function TabLayout() {
         options={{
           title: "Gradian",
           tabBarIcon: ({ color, size }) => (
-            <Cpu size={20} color={color} />
+            <Cpu size={rs(20)} color={color} />
           ),
+
         }}
       />
       <Tabs.Screen
@@ -60,8 +66,9 @@ export default function TabLayout() {
         options={{
           title: "Tools",
           tabBarIcon: ({ color, size }) => (
-            <SquareCheck size={20} color={color} />
+            <SquareCheck size={rs(20)} color={color} />
           ),
+
         }}
       />
       <Tabs.Screen
@@ -69,8 +76,9 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <User size={20} color={color} />
+            <User size={rs(20)} color={color} />
           ),
+
         }}
       />
     </Tabs>

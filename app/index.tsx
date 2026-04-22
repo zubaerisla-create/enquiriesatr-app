@@ -1,14 +1,19 @@
 import React, { useEffect } from "react";
-import { View, Image, Animated, Dimensions } from "react-native";
+import { View, Image, Animated, useWindowDimensions } from "react-native";
+import { rs, wp } from "../utils/responsive";
+
 
 
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
-const { width } = Dimensions.get("window");
+// Hook used inside component
+
 
 export default function SplashScreen() {
+  const { width } = useWindowDimensions();
   const router = useRouter();
+
   const fadeAnim = new Animated.Value(0);
   const scaleAnim = new Animated.Value(0.9);
 
@@ -46,11 +51,16 @@ export default function SplashScreen() {
       >
         <Image
           source={require("../assets/images/logo.jpeg")}
-          style={{ width: width * 0.5, height: width * 0.5 }}
+          style={{ width: wp(40), height: wp(40) }}
           resizeMode="contain"
         />
+
         <View className="mt-8">
-            <View className="h-1 w-40 bg-gray-100 rounded-full overflow-hidden">
+            <View 
+              style={{ width: wp(40) }}
+              className="h-1 bg-gray-100 rounded-full overflow-hidden"
+            >
+
                 <Animated.View 
                     className="h-full bg-[#D82C15]"
                     style={{
@@ -58,8 +68,9 @@ export default function SplashScreen() {
                         transform: [{
                             translateX: fadeAnim.interpolate({
                                 inputRange: [0, 1],
-                                outputRange: [-160, 0]
-                            })
+                            outputRange: [-wp(40), 0]
+                        })
+
                         }]
                     }}
                 />

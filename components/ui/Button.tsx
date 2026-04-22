@@ -1,5 +1,7 @@
 import React from "react";
 import { TouchableOpacity, Text, ActivityIndicator } from "react-native";
+import { rs, rf } from "../../utils/responsive";
+
 
 interface ButtonProps {
   title: string;
@@ -44,19 +46,23 @@ const Button: React.FC<ButtonProps> = ({
     <TouchableOpacity
       onPress={onPress}
       disabled={loading}
-      className={`h-[56px] rounded-xl flex-row items-center justify-center px-6 ${getVariantStyles()} ${className} ${
+      style={{ height: rs(56) }}
+      className={`rounded-xl flex-row items-center justify-center px-6 ${getVariantStyles()} ${className} ${
         loading ? "opacity-70" : ""
       }`}
       activeOpacity={0.8}
     >
+
       {loading ? (
         <ActivityIndicator color={variant === "outline" ? "#1a1a1a" : "white"} />
       ) : (
         <Text
-          className={`text-lg font-bold tracking-wider uppercase ${getTextColor()} ${textClassName}`}
+          style={{ fontSize: rf(18) }}
+          className={`font-bold tracking-wider uppercase ${getTextColor()} ${textClassName}`}
         >
           {title}
         </Text>
+
       )}
     </TouchableOpacity>
   );

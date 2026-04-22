@@ -6,6 +6,8 @@ import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import SocialButton from "../../components/ui/SocialButton";
 import { StatusBar } from "expo-status-bar";
+import { rs, rf } from "../../utils/responsive";
+
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -24,16 +26,24 @@ export default function Login() {
         <View className="px-6 pt-12 pb-10 flex-1">
           {/* Back Button */}
           <TouchableOpacity onPress={() => router.back()} className="mb-8">
-            <ArrowLeft size={24} color="#1a1a1a" />
+            <ArrowLeft size={rs(24)} color="#1a1a1a" />
           </TouchableOpacity>
 
+
           {/* Header */}
-          <Text className="text-[#1a1a1a] text-4xl font-black uppercase leading-tight mb-2">
+          <Text 
+            style={{ fontSize: rf(36) }}
+            className="text-[#1a1a1a] font-black uppercase leading-tight mb-2"
+          >
             Welcome Back
           </Text>
-          <Text className="text-gray-500 text-lg mb-10">
+          <Text 
+            style={{ fontSize: rf(18) }}
+            className="text-gray-500 mb-10"
+          >
             Log in to your ATR Guardian account.
           </Text>
+
 
           {/* Form */}
           <View>
@@ -52,8 +62,9 @@ export default function Login() {
             />
             
             <TouchableOpacity className="self-end mb-8">
-              <Text className="text-[#D82C15] font-bold">Forgot Password?</Text>
+              <Text style={{ fontSize: rf(14) }} className="text-[#D82C15] font-bold">Forgot Password?</Text>
             </TouchableOpacity>
+
 
             <Button title="LOG IN" onPress={handleLogin} />
           </View>
@@ -61,8 +72,9 @@ export default function Login() {
           {/* Divider */}
           <View className="flex-row items-center my-10">
             <View className="flex-1 h-[1px] bg-gray-200" />
-            <Text className="mx-4 text-gray-400 font-bold text-sm uppercase">or</Text>
+            <Text style={{ fontSize: rf(12) }} className="mx-4 text-gray-400 font-bold uppercase">or</Text>
             <View className="flex-1 h-[1px] bg-gray-200" />
+
           </View>
 
           {/* Social Logins */}
@@ -73,11 +85,12 @@ export default function Login() {
 
           {/* Sign Up Link */}
           <View className="flex-row justify-center mt-auto">
-            <Text className="text-gray-500 text-lg">Don't have an account? </Text>
+            <Text style={{ fontSize: rf(16) }} className="text-gray-500">Don't have an account? </Text>
             <TouchableOpacity onPress={() => router.push("/(auth)/signup")}>
-              <Text className="text-[#1a1a1a] font-black text-lg underline">Sign Up</Text>
+              <Text style={{ fontSize: rf(16) }} className="text-[#1a1a1a] font-black underline">Sign Up</Text>
             </TouchableOpacity>
           </View>
+
         </View>
       </ScrollView>
     </SafeAreaView>

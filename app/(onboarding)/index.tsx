@@ -1,10 +1,13 @@
 import React, { useState, useRef } from "react";
-import { View, Text, Image, TouchableOpacity, FlatList, Dimensions, Animated, SafeAreaView, ViewToken } from "react-native";
+import { View, Text, Image, TouchableOpacity, FlatList, Animated, SafeAreaView, ViewToken, useWindowDimensions } from "react-native";
+import { rs, rf, wp, hp } from "../../utils/responsive";
+
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import Button from "../../components/ui/Button";
 
-const { width, height } = Dimensions.get("window");
+// We will use useWindowDimensions hook inside the component
+
 
 const DATA = [
   {
@@ -35,7 +38,9 @@ const DATA = [
 ];
 
 export default function Onboarding() {
+  const { width } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
+
   const scrollX = useRef(new Animated.Value(0)).current;
   const slidesRef = useRef<FlatList>(null);
   const router = useRouter();
@@ -69,16 +74,26 @@ export default function Onboarding() {
         <View className="flex-row items-center">
           <Image 
             source={require("../../assets/images/logo.jpeg")} 
-            className="w-8 h-8 mr-2 mt-4" 
+            style={{ width: rs(32), height: rs(32) }}
+            className="mr-2 mt-4" 
             resizeMode="contain"
           />
-          <Text className="pt-10 text-[#D82C15] font-black text-lg italic uppercase">
+          <Text 
+            style={{ fontSize: rf(18) }}
+            className="pt-10 text-[#D82C15] font-black italic uppercase"
+          >
             ATR GUARDIAN TRAINING
           </Text>
         </View>
         <TouchableOpacity onPress={skip}>
-          <Text className="text-gray-400 font-bold uppercase text-xs tracking-tighter">SKIP</Text>
+          <Text 
+            style={{ fontSize: rf(12) }}
+            className="text-gray-400 font-bold uppercase tracking-tighter"
+          >
+            SKIP
+          </Text>
         </TouchableOpacity>
+
       </View>
 
       <FlatList
@@ -86,7 +101,7 @@ export default function Onboarding() {
         renderItem={({ item }) => (
           <View style={{ width }} className="px-6 flex-1">
             <View className="flex-1 justify-center items-center">
-                <View className="w-full aspect-square rounded-3xl overflow-hidden shadow-2xl elevation-10 bg-gray-900 border-4 border-gray-100">
+                <View style={{ width: wp(85), height: wp(85) }} className="rounded-3xl overflow-hidden shadow-2xl elevation-10 bg-gray-900 border-4 border-gray-100">
                     <Image 
                         source={item.image} 
                         className="w-full h-full"
@@ -94,26 +109,47 @@ export default function Onboarding() {
                     />
                     {/* Mock Overlay from UI Design */}
                     <View className="absolute top-4 left-4 right-4 bg-black/60 p-4 rounded-xl border-l-2 border-[#D82C15]">
-                        <Text className="text-white text-[10px] font-bold opacity-60 uppercase mb-1">{item.module}</Text>
-                        <Text className="text-white font-bold text-sm uppercase leading-tight">Tactical positioning for high-threat environments.</Text>
+                        <Text 
+                          style={{ fontSize: rf(10) }}
+                          className="text-white font-bold opacity-60 uppercase mb-1"
+                        >
+                          {item.module}
+                        </Text>
+                        <Text 
+                          style={{ fontSize: rf(14) }}
+                          className="text-white font-bold uppercase leading-tight"
+                        >
+                          Tactical positioning for high-threat environments.
+                        </Text>
                     </View>
                 </View>
+
             </View>
 
-            <View className="py-10">
-              <Text className="text-[#1a1a1a] text-4xl font-black uppercase leading-tight">
+            <View className="py-6">
+              <Text 
+                style={{ fontSize: rf(36) }}
+                className="text-[#1a1a1a] font-black uppercase leading-tight"
+              >
                 {item.title}
               </Text>
-              <Text className="text-[#D82C15] text-4xl font-black uppercase leading-tight">
+              <Text 
+                style={{ fontSize: rf(36) }}
+                className="text-[#D82C15] font-black uppercase leading-tight"
+              >
                 {item.highlight}
               </Text>
               
               <View className="border-l-2 border-[#D82C15] pl-4 mt-6">
-                <Text className="text-gray-500 text-lg leading-relaxed">
+                <Text 
+                  style={{ fontSize: rf(18) }}
+                  className="text-gray-500 leading-relaxed"
+                >
                   {item.description}
                 </Text>
               </View>
             </View>
+
           </View>
         )}
         horizontal
