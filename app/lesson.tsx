@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Modal,
@@ -12,6 +11,7 @@ import {
   Platform,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { rs, rf } from "../utils/responsive";
 
 import { StatusBar } from "expo-status-bar";

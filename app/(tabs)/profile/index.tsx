@@ -4,25 +4,27 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
+  Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
+import { useAuth } from "../../../hooks/useAuth";
 
-import { 
-  LucideIcon, 
-  BookOpen, 
-  CheckCircle, 
-  Sparkles, 
-  Flame, 
-  FileText, 
-  Folder, 
-  Target, 
-  CreditCard, 
-  Settings, 
-  LifeBuoy, 
-  ShieldCheck, 
-  LogOut 
+import {
+  LucideIcon,
+  BookOpen,
+  CheckCircle,
+  Sparkles,
+  Flame,
+  FileText,
+  Folder,
+  Target,
+  CreditCard,
+  Settings,
+  LifeBuoy,
+  ShieldCheck,
+  LogOut
 } from "lucide-react-native";
 
 // ─── Stat item ────────────────────────────────────────────────────────────────
@@ -49,6 +51,7 @@ interface MenuRow {
   badge?: { text: string; color: string; bg: string };
   danger?: boolean;
   route?: string;
+  onPress?: () => void;
 }
 
 const CONTENT_ROWS: MenuRow[] = [
@@ -65,7 +68,7 @@ const ACCOUNT_ROWS: MenuRow[] = [
 const SUPPORT_ROWS: MenuRow[] = [
   { icon: LifeBuoy, label: "Help & Support", route: "/profile/help-support" },
   { icon: ShieldCheck, label: "Terms & Conditions", route: "/profile/terms-condition" },
-  { icon: LogOut, label: "Log Out", route: "/login", danger: true },
+  { icon: LogOut, label: "Log Out", danger: true },
 ];
 
 // ─── Circular progress ────────────────────────────────────────────────────────
@@ -133,6 +136,10 @@ const MenuRowItem = ({ row, isLast }: { row: MenuRow; isLast: boolean }) => {
   return (
     <TouchableOpacity
       onPress={() => {
+        if (row.onPress) {
+          row.onPress();
+          return;
+        }
         if (row.route) {
           if (row.danger) {
             router.replace(row.route as any);
@@ -141,17 +148,15 @@ const MenuRowItem = ({ row, isLast }: { row: MenuRow; isLast: boolean }) => {
           }
         }
       }}
-      className={`flex-row items-center px-4 py-4 ${
-        !isLast ? "border-b border-[#1E2D3D]" : ""
-      }`}
+      className={`flex-row items-center px-4 py-4 ${!isLast ? "border-b border-[#1E2D3D]" : ""
+        }`}
     >
       <View className="mr-3">
         <row.icon size={18} color={row.danger ? "#E05252" : "#9CA3AF"} />
       </View>
       <Text
-        className={`flex-1 text-sm font-medium ${
-          row.danger ? "text-[#E05252]" : "text-white"
-        }`}
+        className={`flex-1 text-sm font-medium ${row.danger ? "text-[#E05252]" : "text-white"
+          }`}
       >
         {row.label}
       </Text>
@@ -181,6 +186,43 @@ const MenuSection = ({ rows }: { rows: MenuRow[] }) => (
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function Profile() {
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    Alert.alert(
+      "Log Out",
+      "Are you sure you want to log out?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Log Out",
+          style: "destructive",
+          onPress: async () => {
+            await logout();
+            router.replace("/(auth)/login");
+          },
+        },
+      ]
+    );
+  };
+
+  const supportRows = SUPPORT_ROWS.map((row) =>
+    row.label === "Log Out" ? { ...row, onPress: handleLogout } : row
+  );
+
+  const displayName = user?.full_name || "User";
+  const initials = displayName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "U";
+  const email = user?.email || "user@example.com";
+  const planLabel = user?.subscription?.plan_name
+    ? `${user.subscription.plan_name.toUpperCase()} PLAN`
+    : "FREE PLAN";
+
   return (
     <SafeAreaView className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
@@ -191,19 +233,19 @@ export default function Profile() {
           <View className="flex-row items-center gap-4">
             {/* Avatar */}
             <View className="w-14 h-14 rounded-2xl bg-[#C0392B] items-center justify-center">
-              <Text className="text-white font-bold text-lg">JH</Text>
+              <Text className="text-white font-bold text-lg">{initials}</Text>
             </View>
 
             {/* Name + email + plan */}
             <View>
-              <Text className="text-white font-bold text-lg">James Harwick</Text>
+              <Text className="text-white font-bold text-lg">{displayName}</Text>
               <Text className="text-gray-400 text-xs mb-1.5">
-                j.harwick@email.com
+                {email}
               </Text>
               <View className="flex-row items-center bg-[#2D1010] border border-[#E05252] rounded-full px-3 py-0.5 self-start">
                 <View className="w-1.5 h-1.5 rounded-full bg-[#E05252] mr-1.5" />
                 <Text className="text-[#E05252] text-[10px] font-bold tracking-widest">
-                  ANNUAL PLAN
+                  {planLabel}
                 </Text>
               </View>
             </View>
@@ -244,7 +286,7 @@ export default function Profile() {
 
         {/* Support section */}
         <SectionLabel title="Support" />
-        <MenuSection rows={SUPPORT_ROWS} />
+        <MenuSection rows={supportRows} />
       </ScrollView>
     </SafeAreaView>
   );

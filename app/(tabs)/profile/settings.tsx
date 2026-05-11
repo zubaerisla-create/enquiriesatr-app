@@ -5,16 +5,20 @@ import {
   TouchableOpacity,
   Switch,
   ScrollView,
-  SafeAreaView,
   Platform,
+  Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { 
-  LucideIcon, 
-  Bell, 
-  BookOpen, 
-  AlertTriangle, 
-  ChevronRight 
+import { useRouter } from "expo-router";
+import { useAuth } from "../../../hooks/useAuth";
+import {
+  LucideIcon,
+  Bell,
+  BookOpen,
+  AlertTriangle,
+  ChevronRight,
+  LogOut,
 } from "lucide-react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -91,9 +95,8 @@ const NotificationRow = ({
   isLast: boolean;
 }) => (
   <View
-    className={`flex-row items-center px-4 py-4 ${
-      !isLast ? "border-b border-[#1E2D3D]" : ""
-    }`}
+    className={`flex-row items-center px-4 py-4 ${!isLast ? "border-b border-[#1E2D3D]" : ""
+      }`}
   >
     {/* Icon */}
     <View
@@ -127,6 +130,27 @@ export default function Settings() {
     setToggles((prev) => ({ ...prev, [id]: val }));
   };
 
+  const { logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    Alert.alert(
+      "Log Out",
+      "Are you sure you want to log out?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Log Out",
+          style: "destructive",
+          onPress: async () => {
+            await logout();
+            router.replace("/(auth)/login");
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
@@ -135,7 +159,7 @@ export default function Settings() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-   
+
 
 
         {/* Notifications section */}
@@ -169,7 +193,7 @@ export default function Settings() {
           </View>
 
           {/* Delete Account row */}
-          <TouchableOpacity className="flex-row items-center px-4 py-4">
+          <TouchableOpacity className="flex-row items-center px-4 py-4 border-b border-[#3D1A1A]">
             {/* Icon */}
             <View className="w-10 h-10 rounded-xl bg-[#2D1010] items-center justify-center mr-3">
               <AlertTriangle size={18} color="#E05252" />
@@ -182,6 +206,30 @@ export default function Settings() {
               </Text>
               <Text className="text-gray-500 text-xs leading-4">
                 Permanently delete your account and all data
+              </Text>
+            </View>
+
+            {/* Chevron */}
+            <ChevronRight size={18} color="#4B5563" />
+          </TouchableOpacity>
+
+          {/* Log Out row */}
+          <TouchableOpacity
+            className="flex-row items-center px-4 py-4"
+            onPress={handleLogout}
+          >
+            {/* Icon */}
+            <View className="w-10 h-10 rounded-xl bg-[#2D1010] items-center justify-center mr-3">
+              <LogOut size={18} color="#E05252" />
+            </View>
+
+            {/* Text */}
+            <View className="flex-1">
+              <Text className="text-[#E05252] font-semibold text-sm mb-0.5">
+                Log Out
+              </Text>
+              <Text className="text-gray-500 text-xs leading-4">
+                Sign out of your account
               </Text>
             </View>
 

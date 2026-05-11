@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
-import { View, Text, Image, TouchableOpacity, FlatList, Animated, SafeAreaView, ViewToken, useWindowDimensions } from "react-native";
+import { View, Text, Image, TouchableOpacity, FlatList, Animated, ViewToken, useWindowDimensions } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { rs, rf, wp, hp } from "../../utils/responsive";
 
 import { useRouter } from "expo-router";

@@ -5,8 +5,6 @@ import {
   TouchableOpacity, 
   ScrollView, 
   StyleSheet, 
-  SafeAreaView, 
-
   FlatList,
   Dimensions
 } from "react-native";
