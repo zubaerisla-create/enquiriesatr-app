@@ -6,6 +6,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -16,6 +17,8 @@ import {
   Star,
   Zap,
   ArrowLeft,
+  Trophy,
+  Rocket,
 } from "lucide-react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
@@ -49,9 +52,14 @@ const CheckItem = ({
   muted?: boolean;
   color?: string;
 }) => (
-  <View className="flex-row items-center gap-2 mb-1.5">
-    <Check size={14} color={muted ? "#4B5563" : color} strokeWidth={3} />
-    <Text className={`text-sm ${muted ? "text-gray-600" : "text-gray-300"}`}>
+  <View className="flex-row items-center gap-3 mb-2">
+    <View
+      style={{ backgroundColor: muted ? "#1F2937" : `${color}15` }}
+      className="w-5 h-5 rounded-full items-center justify-center"
+    >
+      <Check size={12} color={muted ? "#4B5563" : color} strokeWidth={4} />
+    </View>
+    <Text className={`text-sm ${muted ? "text-gray-600" : "text-gray-200"}`}>
       {text}
     </Text>
   </View>
@@ -70,75 +78,118 @@ const PlanCard = ({
 }) => {
   const isAnnual = plan.interval === "year";
   const isMonthly = plan.interval === "month";
-  const isTrial = !plan.interval || plan.amount === 0;
 
-  const borderColor = isAnnual ? "#E05252" : isMonthly ? "#3B5FBF" : "#2D3748";
-  const bgColor = isAnnual ? "#1A0A0A" : isMonthly ? "#131D30" : "#141E2B";
-  const accentColor = isAnnual ? "#E05252" : isMonthly ? "#5B8DEF" : "#9CA3AF";
+  const accentColor = isAnnual ? "#E05252" : isMonthly ? "#3B82F6" : "#9CA3AF";
+  const bgColor = selected ? "#1A2433" : "#111827";
 
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={isCurrent}
-      style={{ borderColor: selected ? accentColor : "#2D3748", backgroundColor: bgColor }}
-      className={`mx-4 mb-3 rounded-2xl p-4 border-2 ${isCurrent ? "opacity-70" : ""}`}
+      activeOpacity={0.8}
+      style={{
+        borderColor: selected ? accentColor : "#1F2937",
+        backgroundColor: bgColor,
+        borderWidth: 2
+      }}
+      className={`mx-4 mb-4 rounded-3xl p-5 shadow-sm ${isCurrent ? "opacity-60" : ""}`}
     >
       {isAnnual && (
-        <View className="absolute -top-3 right-4 bg-[#E05252] rounded-full px-3 py-0.5 flex-row items-center gap-1">
-          <Star size={10} color="white" fill="white" />
-          <Text className="text-white text-[10px] font-bold tracking-widest">RECOMMENDED</Text>
+        <View className="absolute -top-3 right-6 bg-[#E05252] rounded-full px-4 py-1 shadow-lg">
+          <Text className="text-white text-[10px] font-black tracking-widest uppercase">Best Value</Text>
         </View>
       )}
 
-      <View className="flex-row items-center justify-between mb-3 mt-1">
-        <View className="flex-row items-center gap-2">
-          <View
-            style={{ borderColor: selected ? accentColor : "#3D4F62" }}
-            className="w-5 h-5 rounded-full border-2 items-center justify-center"
-          >
-            {selected && (
-              <View style={{ backgroundColor: accentColor }} className="w-2.5 h-2.5 rounded-full" />
-            )}
-          </View>
-          <Text className="text-white font-extrabold text-base tracking-wider uppercase">
+      <View className="flex-row justify-between items-start mb-4">
+        <View className="flex-1 mr-4">
+          <Text className="text-gray-400 text-[10px] font-bold tracking-widest uppercase mb-1">
+            {plan.interval === 'year' ? 'Annual Plan' : 'Monthly Plan'}
+          </Text>
+          <Text className="text-white font-black text-xl tracking-tight">
             {plan.plan_name}
           </Text>
-          {isCurrent && (
-            <View className="bg-green-600 rounded-full px-2 py-0.5">
-              <Text className="text-white text-[10px] font-bold">CURRENT</Text>
-            </View>
-          )}
         </View>
-        <View className="flex-row items-end gap-0.5">
-          <Text style={{ color: isAnnual ? "white" : accentColor }} className="font-extrabold text-xl">
-            {(plan.currency || "GBP").toUpperCase()} {((plan.amount || 0) / 100).toFixed(2)}
+        <View className="items-end">
+          <View className="flex-row items-baseline">
+            <Text className="text-white font-black text-2xl tracking-tighter">
+              {(plan.currency || "GBP").toUpperCase()} {((plan.amount || 0) / 100).toFixed(2)}
+            </Text>
+          </View>
+          <Text className="text-gray-500 text-[10px] font-bold uppercase tracking-wider">
+            Per {plan.interval}
           </Text>
-          <Text className="text-gray-500 text-xs mb-0.5">/{plan.interval || "one-time"}</Text>
         </View>
       </View>
 
-      {(plan.features || []).map((f, i) => (
-        <CheckItem key={i} text={f} color={accentColor} muted={isTrial} />
-      ))}
+      <View className="space-y-1">
+        {(plan.features || []).map((f, i) => (
+          <CheckItem key={i} text={f} color={accentColor} />
+        ))}
+      </View>
 
-      {!isCurrent && (
-        <View
-          style={{ backgroundColor: isAnnual ? accentColor : "transparent", borderColor: isMonthly ? "#2A3D5E" : "transparent" }}
-          className={`mt-4 rounded-xl py-3 items-center ${isMonthly ? "border" : ""}`}
-        >
-          <Text className={`${isAnnual ? "text-white" : "text-gray-400"} text-sm font-bold`}>
-            Choose {plan.plan_name}
-          </Text>
-        </View>
-      )}
+      <View className="mt-4 pt-4 border-t border-gray-800/50 flex-row items-center justify-between">
+        <Text className="text-gray-500 text-[10px] font-medium italic">
+          {isAnnual ? "Billed annually. Secure checkout." : "Cancel anytime. Billed monthly."}
+        </Text>
+        {selected && !isCurrent && (
+          <View style={{ backgroundColor: accentColor }} className="rounded-full p-1">
+            <Check size={12} color="white" strokeWidth={4} />
+          </View>
+        )}
+      </View>
     </TouchableOpacity>
   );
 };
+
+const SuccessOverlay = ({
+  visible,
+  planName,
+  onClose
+}: {
+  visible: boolean;
+  planName: string;
+  onClose: () => void
+}) => (
+  <Modal visible={visible} animationType="fade" transparent>
+    <View className="flex-1 bg-[#030712] items-center justify-center px-8">
+      <View className="items-center mb-8">
+        <View className="w-24 h-24 bg-[#22C55E] rounded-full items-center justify-center mb-6 shadow-2xl">
+          <Trophy size={48} color="white" />
+        </View>
+        <Text className="text-white font-black text-4xl text-center tracking-tighter">
+          You're All Set!
+        </Text>
+        <Text className="text-gray-400 text-lg text-center mt-3 font-medium">
+          Welcome to the Premium experience.
+        </Text>
+      </View>
+
+      <View className="w-full mb-12">
+        <View className="flex-row items-center gap-4 bg-[#111827] p-5 rounded-2xl mb-4">
+          <Zap size={22} color="#E05252" fill="#E05252" />
+          <Text className="text-gray-200 font-bold text-base">Unlimited AI Features Unlocked</Text>
+        </View>
+        <View className="flex-row items-center gap-4 bg-[#111827] p-5 rounded-2xl">
+          <Rocket size={22} color="#E05252" />
+          <Text className="text-gray-200 font-bold text-base">Full Lesson Library Access</Text>
+        </View>
+      </View>
+
+      <TouchableOpacity
+        onPress={onClose}
+        className="bg-white w-full py-5 rounded-2xl items-center shadow-lg"
+      >
+        <Text className="text-black font-black text-lg tracking-tight">Start Exploring</Text>
+      </TouchableOpacity>
+    </View>
+  </Modal>
+);
 
 export default function UpgradeAccess() {
   const queryClient = useQueryClient();
   const { subscribe, loading: paymentLoading } = useStripePayment();
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const { data: plans, isLoading: plansLoading } = useQuery({
     queryKey: ["subscription-plans"],
@@ -175,6 +226,7 @@ export default function UpgradeAccess() {
     await subscribe(selectedPlan.plan_slug, async () => {
       await queryClient.invalidateQueries({ queryKey: ["my-subscription"] });
       await refreshUser();
+      setShowSuccess(true);
     });
   };
 
@@ -194,7 +246,7 @@ export default function UpgradeAccess() {
 
   if (plansLoading || mySubLoading) {
     return (
-      <View className="flex-1 bg-[#0D1520] items-center justify-center">
+      <View className="flex-1 bg-[#030712] items-center justify-center">
         <ActivityIndicator size="large" color="#E05252" />
       </View>
     );
@@ -202,25 +254,34 @@ export default function UpgradeAccess() {
 
   if (!plans || plans.length === 0) {
     return (
-      <View className="flex-1 bg-[#0D1520] items-center justify-center px-8">
+      <View className="flex-1 bg-[#030712] items-center justify-center px-8">
         <Text className="text-white text-center font-bold text-lg">No Plans Available</Text>
-        <Text className="text-gray-500 text-center mt-2">Please check back later or contact support if this persists.</Text>
+        <Text className="text-gray-500 text-center mt-2">Please check back later.</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-[#0D1520]">
+    <View className="flex-1 bg-[#030712]">
       <StatusBar style="light" />
+
+      <SuccessOverlay
+        visible={showSuccess}
+        planName={selectedPlan?.plan_name || "Premium"}
+        onClose={() => {
+          setShowSuccess(false);
+          router.replace("/(tabs)/profile");
+        }}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: 160 }}
       >
-        <View className="px-4 mb-6 mt-4">
-          <Text className="text-white font-bold text-2xl">Upgrade Access</Text>
-          <Text className="text-gray-500 text-sm mt-2 leading-5">
-            Full access to all 30 lessons, unlimited AI queries, and all operational tools.
+        <View className="px-6 mb-8 mt-6">
+          <Text className="text-white font-black text-3xl tracking-tight">Level Up Your App</Text>
+          <Text className="text-gray-400 text-sm mt-3 leading-6 font-medium">
+            Unlock premium features, unlimited AI access, and priority operational support to accelerate your development.
           </Text>
         </View>
 
@@ -234,37 +295,50 @@ export default function UpgradeAccess() {
           />
         ))}
 
-        <Text className="text-gray-600 text-xs text-center px-8 mt-2 leading-5">
-          Cancel anytime. Prices shown in {plans?.[0]?.currency.toUpperCase() || "GBP"} and may vary by region. Securely processed by Stripe.
-        </Text>
+        <View className="px-10 mt-4">
+          <Text className="text-gray-600 text-[10px] font-bold text-center leading-4 uppercase tracking-widest">
+            Secured by Stripe • End-to-end Encrypted • Cancel Anytime
+          </Text>
+        </View>
 
         {mySub?.plan_slug && (
-          <TouchableOpacity onPress={handleManage} className="mt-8 items-center">
-            <Text className="text-[#5B8DEF] font-bold text-sm">Manage Current Subscription</Text>
+          <TouchableOpacity
+            onPress={handleManage}
+            className="mt-10 mx-6 py-4 rounded-2xl border border-gray-800 items-center bg-[#111827]"
+          >
+            <Text className="text-gray-400 font-bold text-xs uppercase tracking-widest">Manage Billing & Invoices</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-4 bg-[#0D1520]">
+      <View className="absolute bottom-0 left-0 right-0 px-6 pb-10 pt-6 bg-[#030712]/90 border-t border-gray-900">
         <TouchableOpacity
           onPress={handleContinue}
           disabled={paymentLoading || !selectedPlan || (!!mySub?.plan_slug && mySub?.plan_slug === selectedPlan?.plan_slug)}
-          className={`rounded-2xl py-4 flex-row items-center justify-center gap-2 ${paymentLoading || (!!mySub?.plan_slug && mySub?.plan_slug === selectedPlan?.plan_slug) ? "bg-gray-700" : "bg-[#E05252]"
+          className={`rounded-2xl py-5 flex-row items-center justify-center shadow-2xl ${paymentLoading || (!!mySub?.plan_slug && mySub?.plan_slug === selectedPlan?.plan_slug)
+            ? "bg-gray-800"
+            : "bg-[#E05252]"
             }`}
         >
           {paymentLoading ? (
             <ActivityIndicator color="white" />
           ) : (
-            <>
-              <Zap size={18} color="white" fill="white" />
-              <Text className="text-white font-bold text-sm tracking-widest uppercase">
+            <View className="flex-row items-center gap-3">
+              <Zap size={20} color="white" fill="white" />
+              <Text className="text-white font-black text-base tracking-tight">
                 {mySub?.plan_slug && mySub?.plan_slug === selectedPlan?.plan_slug
-                  ? "Already Active"
-                  : `Continue with ${selectedPlan?.plan_name}`}
+                  ? "Current Plan Active"
+                  : `Get ${selectedPlan?.plan_name} Now`}
               </Text>
-            </>
+            </View>
           )}
         </TouchableOpacity>
+
+        {!mySub?.plan_slug && (
+          <Text className="text-gray-500 text-[9px] text-center mt-3 font-bold uppercase tracking-widest">
+            Automatic renewal until cancelled in settings.
+          </Text>
+        )}
       </View>
     </View>
   );

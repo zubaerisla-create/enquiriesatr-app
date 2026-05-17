@@ -50,7 +50,7 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <StripeProvider
           publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
-          merchantIdentifier="merchant.com.rnwind" // optional
+          merchantIdentifier="merchant.com.rnwind"
         >
           <AuthProvider>
             <AuthGate>

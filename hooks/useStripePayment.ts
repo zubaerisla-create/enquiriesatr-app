@@ -5,8 +5,9 @@ import { api } from "../lib/api";
 
 interface PaymentSheetParams {
   paymentIntent: string;
-  ephemeralKey: string;
+  customerSessionClientSecret: string;
   customer: string;
+  publishableKey: string;
 }
 
 export function useStripePayment() {
@@ -18,7 +19,6 @@ export function useStripePayment() {
       "/subscriptions/payment-sheet/",
       {
         plan_slug: planSlug,
-        stripe_version: Constants.API_VERSIONS.CORE,
       },
       { requireAuth: true }
     );
@@ -31,14 +31,14 @@ export function useStripePayment() {
     try {
       const {
         paymentIntent,
-        ephemeralKey,
+        customerSessionClientSecret,
         customer,
       } = await fetchPaymentSheetParams(planSlug);
 
       const { error: initError } = await initPaymentSheet({
-        merchantDisplayName: "RN-Wind",
+        merchantDisplayName: "Enquiries App",
         customerId: customer,
-        customerEphemeralKeySecret: ephemeralKey,
+        customerSessionClientSecret: customerSessionClientSecret,
         paymentIntentClientSecret: paymentIntent,
         allowsDelayedPaymentMethods: true,
       });
@@ -56,7 +56,6 @@ export function useStripePayment() {
           Alert.alert("Error", presentError.message);
         }
       } else {
-        Alert.alert("Success", "Your subscription is confirmed!");
         if (onSuccess) {
           onSuccess();
         }
