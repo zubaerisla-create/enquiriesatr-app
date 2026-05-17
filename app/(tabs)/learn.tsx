@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useIsFocused } from "@react-navigation/native";
 import { 
   Search, 
   Lock, 
@@ -301,6 +302,7 @@ const ModuleCard = ({ module }: { module: Module }) => {
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
 export default function ModulesLibrary() {
+  const isFocused = useIsFocused();
   const [activeTab, setActiveTab] = useState<Category>("ALL");
 
   const filteredModules =
@@ -310,6 +312,7 @@ export default function ModulesLibrary() {
 
   return (
     <View style={styles.screen}>
+      {isFocused && <StatusBar style="light" />}
       <Text style={styles.screenTitle}>MODULES LIBRARY</Text>
       <SearchBar />
       <FilterTabs active={activeTab} onChange={setActiveTab} />

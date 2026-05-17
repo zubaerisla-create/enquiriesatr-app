@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useMemo, useReducer } fr
 import { useQueryClient } from "@tanstack/react-query";
 import {
     clearStoredTokens,
+    deleteAccount,
     fetchMe,
     forgotPasswordRequest,
     forgotPasswordReset,
@@ -83,6 +84,7 @@ export type AuthContextValue = AuthState & {
     verifyPasswordReset: (payload: { email: string; code: string }) => Promise<string>;
     resetPassword: (payload: { email: string; password_reset_token: string; new_password: string }) => Promise<void>;
     refreshUser: () => Promise<UserMe>;
+    deleteUserAccount: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -214,6 +216,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return user;
     }, [queryClient, state.accessToken, state.refreshToken]);
 
+    const deleteUserAccount = useCallback(async () => {
+        try {
+            await deleteAccount();
+        } finally {
+            await signOutFromGoogle();
+            await clearStoredTokens();
+            queryClient.clear();
+            dispatch({ type: "SIGNED_OUT" });
+        }
+    }, [queryClient]);
+
     const value = useMemo(
         () => ({
             ...state,
@@ -229,6 +242,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             verifyPasswordReset,
             resetPassword,
             refreshUser,
+            deleteUserAccount,
         }),
         [
             state,
@@ -244,6 +258,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             verifyPasswordReset,
             resetPassword,
             refreshUser,
+            deleteUserAccount,
         ]
     );
 

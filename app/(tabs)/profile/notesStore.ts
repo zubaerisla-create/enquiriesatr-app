@@ -75,3 +75,7 @@ export const deleteNote = (id: string) => {
 export const getNote = (id: string) => {
   return notes.find(n => n.id === id);
 };
+
+export default function NotesStoreRoute() {
+  return null;
+}

@@ -9,7 +9,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
+import { useIsFocused } from "@react-navigation/native";
 import { useAuth } from "../../../hooks/useAuth";
+import AlertModal from "../../../components/ui/AlertModal";
 
 import {
   LucideIcon,
@@ -186,25 +188,15 @@ const MenuSection = ({ rows }: { rows: MenuRow[] }) => (
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function Profile() {
+  const isFocused = useIsFocused();
   const { user, logout } = useAuth();
   const router = useRouter();
 
+  const [isLogoutModalVisible, setIsLogoutModalVisible] = React.useState(false);
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+
   const handleLogout = async () => {
-    Alert.alert(
-      "Log Out",
-      "Are you sure you want to log out?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Log Out",
-          style: "destructive",
-          onPress: async () => {
-            await logout();
-            router.replace("/(auth)/login");
-          },
-        },
-      ]
-    );
+    setIsLogoutModalVisible(true);
   };
 
   const supportRows = SUPPORT_ROWS.map((row) =>
@@ -224,11 +216,11 @@ export default function Profile() {
     : "FREE PLAN";
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0D1520]">
-      <StatusBar style="light" />
+    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0D1520]">
+      {isFocused && <StatusBar style="light" />}
 
       {/* Sticky User Card */}
-      <View className="bg-[#0D1520] z-10 pt-12 pb-4 border-b border-[#1E2D3D]">
+      <View className="bg-[#0D1520] z-10 py-4 border-b border-[#1E2D3D]">
         <View className="mx-4">
           <View className="flex-row items-center gap-4">
             {/* Avatar */}
@@ -288,6 +280,29 @@ export default function Profile() {
         <SectionLabel title="Support" />
         <MenuSection rows={supportRows} />
       </ScrollView>
+
+      <AlertModal
+        visible={isLogoutModalVisible}
+        title="Log Out"
+        description="Are you sure you want to log out?"
+        confirmText="Log Out"
+        cancelText="Cancel"
+        onConfirm={async () => {
+          setIsLoggingOut(true);
+          try {
+            await logout();
+            setIsLogoutModalVisible(false);
+            router.replace("/(auth)/login");
+          } catch (error) {
+            Alert.alert("Error", "Failed to log out. Please try again.");
+          } finally {
+            setIsLoggingOut(false);
+          }
+        }}
+        onCancel={() => setIsLogoutModalVisible(false)}
+        variant="danger"
+        loading={isLoggingOut}
+      />
     </SafeAreaView>
   );
 }

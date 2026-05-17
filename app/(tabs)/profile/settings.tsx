@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,18 +7,20 @@ import {
   ScrollView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../../hooks/useAuth";
+import { api } from "../../../lib/api";
+import AlertModal from "../../../components/ui/AlertModal";
 import {
   LucideIcon,
   Bell,
   BookOpen,
   AlertTriangle,
   ChevronRight,
-  LogOut,
 } from "lucide-react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -36,12 +38,12 @@ interface NotificationSetting {
 
 const NOTIFICATION_SETTINGS: NotificationSetting[] = [
   {
-    id: "push",
+    id: "new_content_added",
     icon: Bell,
     iconBg: "#2D1010",
     iconColor: "#E05252",
-    title: "Push Notifications",
-    description: "Receive app notifications on your device",
+    title: "New Content Alerts",
+    description: "Get notified when new lessons or resources are added",
   },
   {
     id: "lessons",
@@ -120,36 +122,82 @@ const NotificationRow = ({
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function Settings() {
+  const { deleteUserAccount } = useAuth();
+  const router = useRouter();
+
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [toggles, setToggles] = useState<Record<string, boolean>>({
-    push: true,
+    new_content_added: true,
     lessons: true,
     streak: true,
   });
+  const [loadingPreferences, setLoadingPreferences] = useState(true);
 
-  const handleToggle = (id: string, val: boolean) => {
+  useEffect(() => {
+    let active = true;
+    const loadPreferences = async () => {
+      try {
+        const response = await api.get<{
+          new_content_added: boolean;
+          lesson_reminder: boolean;
+          streak_alert: boolean;
+        }>("/notifications/preferance/", { requireAuth: true });
+        if (active) {
+          setToggles({
+            new_content_added: response.data.new_content_added,
+            lessons: response.data.lesson_reminder,
+            streak: response.data.streak_alert,
+          });
+        }
+      } catch (err) {
+        Alert.alert("Error", "Failed to load notification preferences.");
+      } finally {
+        if (active) {
+          setLoadingPreferences(false);
+        }
+      }
+    };
+    loadPreferences();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleToggle = async (id: string, val: boolean) => {
     setToggles((prev) => ({ ...prev, [id]: val }));
+    const fieldMap: Record<string, string> = {
+      new_content_added: "new_content_added",
+      lessons: "lesson_reminder",
+      streak: "streak_alert",
+    };
+    const field = fieldMap[id];
+    if (!field) return;
+    try {
+      await api.patch(
+        "/notifications/preferance/update/",
+        { [field]: val },
+        { requireAuth: true }
+      );
+    } catch (err) {
+      setToggles((prev) => ({ ...prev, [id]: !val }));
+      Alert.alert("Error", "Failed to update preference. Please try again.");
+    }
   };
 
-  const { logout } = useAuth();
-  const router = useRouter();
+  const handleDeleteAccount = () => {
+    setIsDeleteModalVisible(true);
+  };
 
-  const handleLogout = async () => {
-    Alert.alert(
-      "Log Out",
-      "Are you sure you want to log out?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Log Out",
-          style: "destructive",
-          onPress: async () => {
-            await logout();
-            router.replace("/(auth)/login");
-          },
-        },
-      ]
+  if (loadingPreferences) {
+    return (
+      <SafeAreaView className="flex-1 bg-[#0D1520] items-center justify-center">
+        <StatusBar style="light" />
+        <ActivityIndicator size="large" color="#C0392B" />
+      </SafeAreaView>
     );
-  };
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#0D1520]">
@@ -193,7 +241,7 @@ export default function Settings() {
           </View>
 
           {/* Delete Account row */}
-          <TouchableOpacity className="flex-row items-center px-4 py-4 border-b border-[#3D1A1A]">
+          <TouchableOpacity onPress={handleDeleteAccount} className="flex-row items-center px-4 py-4">
             {/* Icon */}
             <View className="w-10 h-10 rounded-xl bg-[#2D1010] items-center justify-center mr-3">
               <AlertTriangle size={18} color="#E05252" />
@@ -212,32 +260,31 @@ export default function Settings() {
             {/* Chevron */}
             <ChevronRight size={18} color="#4B5563" />
           </TouchableOpacity>
-
-          {/* Log Out row */}
-          <TouchableOpacity
-            className="flex-row items-center px-4 py-4"
-            onPress={handleLogout}
-          >
-            {/* Icon */}
-            <View className="w-10 h-10 rounded-xl bg-[#2D1010] items-center justify-center mr-3">
-              <LogOut size={18} color="#E05252" />
-            </View>
-
-            {/* Text */}
-            <View className="flex-1">
-              <Text className="text-[#E05252] font-semibold text-sm mb-0.5">
-                Log Out
-              </Text>
-              <Text className="text-gray-500 text-xs leading-4">
-                Sign out of your account
-              </Text>
-            </View>
-
-            {/* Chevron */}
-            <ChevronRight size={18} color="#4B5563" />
-          </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <AlertModal
+        visible={isDeleteModalVisible}
+        title="Delete Account"
+        description="Are you sure you want to permanently delete your account and all data? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={async () => {
+          setIsDeleting(true);
+          try {
+            await deleteUserAccount();
+            setIsDeleteModalVisible(false);
+            router.replace("/(auth)/login");
+          } catch (error) {
+            Alert.alert("Error", "Failed to delete account. Please try again.");
+          } finally {
+            setIsDeleting(false);
+          }
+        }}
+        onCancel={() => setIsDeleteModalVisible(false)}
+        variant="danger"
+        loading={isDeleting}
+      />
     </SafeAreaView>
   );
 }

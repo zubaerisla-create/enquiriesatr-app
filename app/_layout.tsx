@@ -5,6 +5,8 @@ import { AuthProvider } from "../contexts/AuthContext";
 import { useAuth } from "../hooks/useAuth";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import "../global.css";
 
 const queryClient = new QueryClient({
@@ -46,39 +48,43 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <StripeProvider
-          publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
-          merchantIdentifier="merchant.com.rnwind"
-        >
-          <AuthProvider>
-            <AuthGate>
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="index" />
-                <Stack.Screen name="(onboarding)/index" />
-                <Stack.Screen name="(auth)/login" />
-                <Stack.Screen name="(auth)/signup" />
-                <Stack.Screen name="(auth)/verify" />
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="(auth)/forgot-password" />
-                {/* Tools */}
-                <Stack.Screen name="tool-details" />
-                <Stack.Screen name="tool-complete" />
-                {/* Learn */}
-                <Stack.Screen name="module-details" />
-                <Stack.Screen name="lesson" />
-                <Stack.Screen name="threat-assessment-details" />
-                <Stack.Screen name="threat-assessment-intro" />
-                <Stack.Screen name="threat-assessment-checklist" />
-                <Stack.Screen name="risk-report" />
-                {/* Assessment */}
-                <Stack.Screen name="assessment" />
-              </Stack>
-            </AuthGate>
-          </AuthProvider>
-        </StripeProvider>
-      </QueryClientProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BottomSheetModalProvider>
+        <SafeAreaProvider>
+          <QueryClientProvider client={queryClient}>
+            <StripeProvider
+              publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
+              merchantIdentifier="merchant.com.rnwind"
+            >
+              <AuthProvider>
+                <AuthGate>
+                  <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="index" />
+                    <Stack.Screen name="(onboarding)/index" />
+                    <Stack.Screen name="(auth)/login" />
+                    <Stack.Screen name="(auth)/signup" />
+                    <Stack.Screen name="(auth)/verify" />
+                    <Stack.Screen name="(tabs)" />
+                    <Stack.Screen name="(auth)/forgot-password" />
+                    {/* Tools */}
+                    <Stack.Screen name="tool-details" />
+                    <Stack.Screen name="tool-complete" />
+                    {/* Learn */}
+                    <Stack.Screen name="module-details" />
+                    <Stack.Screen name="lesson" />
+                    <Stack.Screen name="threat-assessment-details" />
+                    <Stack.Screen name="threat-assessment-intro" />
+                    <Stack.Screen name="threat-assessment-checklist" />
+                    <Stack.Screen name="risk-report" />
+                    {/* Assessment */}
+                    <Stack.Screen name="assessment" />
+                  </Stack>
+                </AuthGate>
+              </AuthProvider>
+            </StripeProvider>
+          </QueryClientProvider>
+        </SafeAreaProvider>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
   );
 }

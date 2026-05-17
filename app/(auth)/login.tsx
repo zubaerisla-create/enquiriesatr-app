@@ -158,7 +158,7 @@ export default function Login() {
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
       <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="px-6 pt-12 pb-10 flex-1">
+        <View className="px-6 pb-10 flex-1">
           {/* Back Button */}
           <TouchableOpacity onPress={() => router.back()} className="mb-8">
             <ArrowLeft size={rs(24)} color="#1a1a1a" />

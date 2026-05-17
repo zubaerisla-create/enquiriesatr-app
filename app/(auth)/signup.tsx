@@ -183,7 +183,7 @@ export default function Signup() {
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
       <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="px-6 pt-12 pb-10 flex-1">
+        <View className="px-6 pb-10 flex-1">
           {/* Header Actions */}
           <View className="flex-row items-center justify-between mb-8">
             <TouchableOpacity onPress={() => router.back()}>

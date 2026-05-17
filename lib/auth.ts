@@ -83,6 +83,10 @@ export async function fetchMe(): Promise<UserMe> {
   return response.data;
 }
 
+export async function deleteAccount(): Promise<void> {
+  await api.delete("/users/me/delete/", { requireAuth: true });
+}
+
 export async function storeTokens(tokens: AuthTokens): Promise<void> {
   await setTokens({ accessToken: tokens.access, refreshToken: tokens.refresh });
 }

@@ -160,7 +160,7 @@ export default function ForgotPassword() {
                 className="flex-1"
             >
                 <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
-                    <View className="px-6 pt-12 pb-10 flex-1">
+                    <View className="px-6 pb-10 flex-1">
                         <TouchableOpacity onPress={() => router.back()} className="mb-8">
                             <ArrowLeft size={24} color="#1a1a1a" />
                         </TouchableOpacity>

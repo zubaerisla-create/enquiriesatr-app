@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import { useIsFocused } from "@react-navigation/native";
 import { 
   Sparkles, 
   History, 
@@ -43,7 +44,7 @@ const QUICK_TOPICS = [
 // ─── Header ───────────────────────────────────────────────────────────────────
 
 const Header = () => (
-  <View className="flex-row items-center justify-between px-4 py-3 pt-16 border-b border-[#1E2D45]">
+  <View className="flex-row items-center justify-between px-4 py-3 border-b border-[#1E2D45]">
     <View className="flex-row items-center gap-3">
       <View className="w-9 h-9 rounded-full bg-[#7C1A1A] items-center justify-center">
         <Sparkles size={18} color="white" />
@@ -174,6 +175,7 @@ const INITIAL_MESSAGES: Message[] = [
 ];
 
 export default function Gradian() {
+  const isFocused = useIsFocused();
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const scrollViewRef = useRef<ScrollView>(null);
@@ -206,8 +208,8 @@ export default function Gradian() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0F1824]">
-      <StatusBar style="light" />
+    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0F1824]">
+      {isFocused && <StatusBar style="light" />}
 
       <Header />
 

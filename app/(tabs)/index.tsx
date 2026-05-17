@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import { useIsFocused } from "@react-navigation/native";
 import Svg, { Circle } from "react-native-svg";
 import { router, useRouter } from "expo-router";
 import { 
@@ -26,6 +27,7 @@ interface CircularProgressProps {
 }
 
 export default function Home() {
+  const isFocused = useIsFocused();
   const CircularProgress = ({ progress, total, title, subtitle, color = "#D82C15" }: CircularProgressProps) => {
     const size = rs(72);
     const strokeWidth = rs(5);
@@ -101,11 +103,11 @@ export default function Home() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <StatusBar style="dark" />
+    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-white">
+      {isFocused && <StatusBar style="dark" />}
       
       {/* Header */}
-      <View className="px-6 pt-12 py-4 flex-row justify-between items-center z-10 bg-white">
+      <View className="px-6 py-4 flex-row justify-between items-center z-10 bg-white">
         <View className="flex-row items-center">
           <Text 
             style={{ fontSize: rf(32) }}

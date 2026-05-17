@@ -8,6 +8,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
+import { useIsFocused } from "@react-navigation/native";
 
 import { 
   LucideIcon, 
@@ -208,13 +209,14 @@ const SavedDocRow = ({ doc }: { doc: SavedDoc }) => (
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function Tools() {
+  const isFocused = useIsFocused();
   return (
-    <SafeAreaView className="flex-1 bg-[#0D1520]">
-      <StatusBar style="light" />
+    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0D1520]">
+      {isFocused && <StatusBar style="light" />}
 
       {/* Sticky Page Header */}
       <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D]">
-        <View className="px-4 pt-12 pb-6">
+        <View className="px-4 pb-6">
           <Text className="text-white text-2xl font-extrabold tracking-wider uppercase">
             Operational Tools
           </Text>

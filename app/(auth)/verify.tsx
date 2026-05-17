@@ -117,7 +117,7 @@ export default function Verify() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
-        <View className="px-6 pt-12 pb-10 flex-1">
+        <View className="px-6 pb-10 flex-1">
           {/* Header Actions */}
           <View className="flex-row items-center justify-between mb-12">
             <TouchableOpacity onPress={() => router.back()}>
