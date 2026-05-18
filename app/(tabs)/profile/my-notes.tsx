@@ -9,7 +9,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { router } from "expo-router";
-import { useNotesStore, deleteNote, Note, NoteType } from "./notesStore";
+import { useIsFocused } from "@react-navigation/native";
+import { useNotesStore, deleteNote, Note, NoteType, loadNotes } from "./notesStore";
 
 type FilterTab = "ALL" | "LESSONS" | "AI" | "PERSONAL";
 
@@ -83,8 +84,15 @@ const NoteCard = ({ note }: { note: Note }) => {
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function MyNotes() {
+  const isFocused = useIsFocused();
   const [activeTab, setActiveTab] = useState<FilterTab>("ALL");
   const notes = useNotesStore();
+
+  React.useEffect(() => {
+    if (isFocused) {
+      loadNotes();
+    }
+  }, [isFocused]);
 
   const filtered = notes.filter((n) => filterMatch(n, activeTab));
 
@@ -104,8 +112,8 @@ export default function MyNotes() {
               key={tab}
               onPress={() => setActiveTab(tab)}
               className={`px-4 py-2 rounded-full ${isActive
-                  ? "bg-[#E05252]"
-                  : "bg-transparent border border-[#2D3748]"
+                ? "bg-[#E05252]"
+                : "bg-transparent border border-[#2D3748]"
                 }`}
             >
               <Text
@@ -124,9 +132,15 @@ export default function MyNotes() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        {filtered.map((note) => (
-          <NoteCard key={note.id} note={note} />
-        ))}
+        {filtered.length === 0 ? (
+          <View className="flex-1 items-center justify-center py-20 px-8">
+            <Text className="text-gray-500 text-sm text-center">No notes available</Text>
+          </View>
+        ) : (
+          filtered.map((note) => (
+            <NoteCard key={note.id} note={note} />
+          ))
+        )}
       </ScrollView>
 
       {/* FAB */}

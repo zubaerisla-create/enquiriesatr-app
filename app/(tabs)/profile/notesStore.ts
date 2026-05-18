@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getNotes, createNote, updateNoteBackend, deleteNoteBackend, type NoteBackend, type NoteCategory } from "../../../lib/notes";
 
 export type NoteType = "LESSON" | "AI ASSISTANT" | "PERSONAL";
 
@@ -11,65 +12,96 @@ export interface Note {
   date: string;
 }
 
-const initialNotes: Note[] = [
-  {
-    id: "1",
-    type: "LESSON",
-    title: "Threat Matrix Notes",
-    body: "Intent + Capability + Opportunity = Threat exists. Always evaluate all three axes before escalating",
-    source: "Lesson: Threat & Risk Assessment",
-    date: "22 Mar 2026",
-  },
-  {
-    id: "2",
-    type: "AI ASSISTANT",
-    title: "House Search Procedure",
-    body: "Key points saved from AI: 1. Establish perimeter first 2. Two-person search method 3. Clear entry point",
-    source: "AI Assistant",
-    date: "26 Mar 2026",
-  },
-  {
-    id: "3",
-    type: "LESSON",
-    title: "SDR Planning Reminders",
-    body: "SDR must have multiple decision points. Vary the route each time. Use natural cover changes (shops,",
-    source: "Lesson: Surveillance Detection Routes",
-    date: "18 Mar 2026",
-  },
-];
-
-let notes: Note[] = [...initialNotes];
+let notes: Note[] = [];
 const listeners = new Set<() => void>();
 
 export const notifyListeners = () => listeners.forEach(l => l());
 
+export const mapBackendToFrontend = (n: NoteBackend): Note => {
+  let mappedType: NoteType = "PERSONAL";
+  if (n.category === "lessons") {
+    mappedType = "LESSON";
+  } else if (n.category === "ai_assistant") {
+    mappedType = "AI ASSISTANT";
+  }
+
+  const dateStr = new Date(n.created_at).toLocaleDateString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
+
+  return {
+    id: String(n.id),
+    type: mappedType,
+    title: n.title,
+    body: n.content,
+    source: n.referance || (mappedType === "AI ASSISTANT" ? "AI Assistant" : ""),
+    date: dateStr
+  };
+};
+
 export const useNotesStore = () => {
   const [state, setState] = useState(notes);
-  
+
   useEffect(() => {
     const listener = () => setState([...notes]);
     listeners.add(listener);
+
+    if (notes.length === 0) {
+      loadNotes();
+    }
+
     return () => {
       listeners.delete(listener);
     };
   }, []);
-  
+
   return state;
 };
 
-export const addNote = (note: Note) => {
-  notes = [note, ...notes];
-  notifyListeners();
+export const loadNotes = async () => {
+  try {
+    const backendNotes = await getNotes();
+    notes = backendNotes.map(mapBackendToFrontend);
+    notifyListeners();
+  } catch (err) {
+    console.error(err);
+  }
 };
 
-export const updateNote = (updatedNote: Note) => {
-  notes = notes.map(n => n.id === updatedNote.id ? updatedNote : n);
-  notifyListeners();
+export const addNote = async (content: string, title?: string, category?: NoteCategory, referance?: string) => {
+  try {
+    const newBackend = await createNote({ content, title, category, referance });
+    notes = [mapBackendToFrontend(newBackend), ...notes];
+    notifyListeners();
+  } catch (err) {
+    console.error(err);
+  }
 };
 
-export const deleteNote = (id: string) => {
-  notes = notes.filter(n => n.id !== id);
-  notifyListeners();
+export const updateNote = async (id: string, updates: { title?: string; body?: string; category?: NoteCategory; referance?: string }) => {
+  try {
+    const backendUpdates = {
+      title: updates.title,
+      content: updates.body,
+      category: updates.category,
+      referance: updates.referance
+    };
+    const updatedBackend = await updateNoteBackend(Number(id), backendUpdates);
+    notes = notes.map(n => n.id === id ? mapBackendToFrontend(updatedBackend) : n);
+    notifyListeners();
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export const deleteNote = async (id: string) => {
+  try {
+    await deleteNoteBackend(Number(id));
+    notes = notes.filter(n => n.id !== id);
+    notifyListeners();
+  } catch (err) {
+    console.error(err);
+  }
 };
 
 export const getNote = (id: string) => {

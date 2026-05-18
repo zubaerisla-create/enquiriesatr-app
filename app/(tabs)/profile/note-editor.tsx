@@ -24,30 +24,16 @@ export default function NoteEditor() {
 
   const canSave = title.trim().length > 0 && body.trim().length > 0;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!canSave) return;
 
-    const dateStr = new Date().toLocaleDateString('en-GB', {
-      day: '2-digit', month: 'short', year: 'numeric'
-    });
-
     if (isEditing && existingNote) {
-      updateNote({
-        ...existingNote,
+      await updateNote(existingNote.id, {
         title: title.trim(),
-        body: body.trim(),
-        date: dateStr // Update modified date
+        body: body.trim()
       });
     } else {
-      const newNote: Note = {
-        id: Date.now().toString(),
-        type: 'PERSONAL',
-        title: title.trim(),
-        body: body.trim(),
-        source: 'Personal Note',
-        date: dateStr
-      };
-      addNote(newNote);
+      await addNote(body.trim(), title.trim(), "personal", "");
     }
     router.back();
   };
