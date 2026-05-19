@@ -142,7 +142,7 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
   return (
     <TouchableOpacity
       activeOpacity={0.8}
-      onPress={() => router.navigate("/tool-details")}
+      onPress={() => router.navigate("/search-operations" as any)}
       className="mx-4 mb-4 bg-[#141E2B] rounded-2xl p-4 flex-row items-center gap-4"
     >
       {/* Icon box */}
@@ -178,7 +178,7 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
 
       {/* Start button */}
       <TouchableOpacity
-        onPress={() => router.navigate("/tool-details")}
+        onPress={() => router.navigate("/search-operations" as any)}
         className="bg-[#C0392B] rounded-xl px-4 py-2.5 ml-1"
       >
         <Text className="text-white font-semibold text-sm">Start</Text>

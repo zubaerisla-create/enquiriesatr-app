@@ -69,6 +69,7 @@ export default function RootLayout() {
                     {/* Tools */}
                     <Stack.Screen name="tool-details" />
                     <Stack.Screen name="tool-complete" />
+                    <Stack.Screen name="search-operations" />
                     {/* Learn */}
                     <Stack.Screen name="module-details" />
                     <Stack.Screen name="lesson" />
