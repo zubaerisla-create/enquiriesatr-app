@@ -5,15 +5,14 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
-import { 
-  ArrowLeft, 
-  Shield, 
-  Lock, 
-  AlertTriangle, 
-  FileText 
+import {
+  ArrowLeft,
+  Shield,
+  Lock,
+  AlertTriangle,
+  FileText
 } from "lucide-react-native";
 import { router } from "expo-router";
 
@@ -68,7 +67,7 @@ const TermRow = ({
   body: string;
 }) => {
   const bgMap: Record<TermBadgeColor, string> = {
-    red:  "bg-[#E05252]",
+    red: "bg-[#E05252]",
     blue: "bg-[#5B8DEF]",
     gray: "bg-[#374151]",
   };
@@ -89,29 +88,13 @@ const TermRow = ({
 
 export default function TermsAndConditions() {
   return (
-    <SafeAreaView className="flex-1 bg-[#0D1520]">
+    <View className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
-
-      {/* Header */}
-      <View className="px-5 pt-12 pb-4 flex-row items-center border-b border-[#1E2D3D]">
-        <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
-          <ArrowLeft size={24} color="#9ca3af" />
-        </TouchableOpacity>
-        <View className="ml-2">
-            <Text className="text-white font-bold text-lg">Terms of Service</Text>
-            <Text className="text-gray-500 text-[10px] uppercase tracking-widest font-bold">LEG_PROTOCOLS // v2.4</Text>
-        </View>
-      </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
       >
-        <View className="py-6">
-            <Text className="text-gray-400 text-xs leading-5">
-              These terms and conditions govern the use of the CPTAN tactical interface. By accessing this system, you confirm adherence to active-duty protocols and professional security standards.
-            </Text>
-        </View>
 
         {/* ── 01. OPERATIONAL USAGE ── */}
         <SectionHeading number="01" title="Operational Usage" Icon={FileText} />
@@ -164,6 +147,6 @@ export default function TermsAndConditions() {
           body="Cancellation requires a 24-hour notice before the next billing cycle."
         />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

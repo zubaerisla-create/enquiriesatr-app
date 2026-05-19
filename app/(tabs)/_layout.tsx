@@ -29,7 +29,7 @@ export default function TabLayout() {
           backgroundColor: "#15202B",
           borderTopColor: "#1a2634",
           borderTopWidth: 1,
-          height: rs(70),
+          height: rs(75),
           paddingBottom: rs(10),
           paddingTop: rs(10),
         },
@@ -39,7 +39,7 @@ export default function TabLayout() {
           fontSize: rf(10),
           fontWeight: "bold",
         },
-
+        // tabBarHideOnKeyboard: true,
       }}
     >
       <Tabs.Screen

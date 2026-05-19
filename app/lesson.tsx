@@ -16,16 +16,16 @@ import { rs, rf } from "../utils/responsive";
 
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
-import { 
-  ArrowLeft, 
-  Bookmark, 
-  ChevronRight, 
-  ChevronLeft, 
-  Edit2, 
-  CheckCircle, 
-  Check, 
-  X, 
-  Save 
+import {
+  ArrowLeft,
+  Bookmark,
+  ChevronRight,
+  ChevronLeft,
+  Edit2,
+  CheckCircle,
+  Check,
+  X,
+  Save
 } from "lucide-react-native";
 
 export default function LessonReadingView() {
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: rs(20),
-    paddingTop: rs(40),
+    // paddingTop: rs(40),
     paddingBottom: rs(16),
     flexDirection: "row",
     alignItems: "center",
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: "absolute",
-    bottom: 0,
+    bottom: 10,
     width: "100%",
     backgroundColor: "#ffffff",
     paddingHorizontal: rs(20),

@@ -21,6 +21,7 @@ export default function ProfileLayout() {
       <Stack.Screen name="subscription-billing" options={{ title: 'Subscription & Billing' }} />
       <Stack.Screen name="settings" options={{ title: 'Settings' }} />
       <Stack.Screen name="help-support" options={{ title: 'Help & Support' }} />
+      <Stack.Screen name="live-chat" options={{ headerShown: false }} />
       <Stack.Screen name="terms-condition" options={{ title: 'Terms & Conditions' }} />
       <Stack.Screen name="note-editor" options={{ headerShown: false, presentation: 'modal' }} />
     </Stack>

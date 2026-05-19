@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { 
   LucideIcon, 
@@ -176,7 +175,7 @@ export default function MyDocuments() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0D1520]">
+    <View className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
 
       <ScrollView
@@ -209,6 +208,6 @@ export default function MyDocuments() {
           <DocRow key={doc.id} doc={doc} />
         ))}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

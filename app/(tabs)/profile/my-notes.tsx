@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
 import { router } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 import { useNotesStore, deleteNote, Note, NoteType, loadNotes } from "./notesStore";
@@ -97,12 +95,8 @@ export default function MyNotes() {
   const filtered = notes.filter((n) => filterMatch(n, activeTab));
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0D1520]">
+    <View className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
-
-
-
-
       {/* Filter tabs */}
       <View className="flex-row gap-2 px-4 mb-4 mt-4">
         {FILTER_TABS.map((tab) => {
@@ -157,6 +151,6 @@ export default function MyNotes() {
       >
         <Text className="text-white text-2xl font-light leading-none">+</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 }

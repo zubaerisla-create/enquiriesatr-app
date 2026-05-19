@@ -1,22 +1,23 @@
 import React, { useState } from "react";
-import { 
+import {
 
-  Text, 
-  TouchableOpacity, 
-  ScrollView, 
-  StyleSheet, 
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
   FlatList,
   Dimensions
 } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useIsFocused } from "@react-navigation/native";
-import { 
-  Search, 
-  Lock, 
-  CheckCircle2, 
-  BookOpen, 
-  Clock, 
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  Search,
+  Lock,
+  CheckCircle2,
+  BookOpen,
+  Clock,
   Zap,
   CircleDot,
   Circle
@@ -311,9 +312,16 @@ export default function ModulesLibrary() {
       : MODULES.filter((m) => m.category === activeTab);
 
   return (
-    <View style={styles.screen}>
+    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0D1520]">
       {isFocused && <StatusBar style="light" />}
-      <Text style={styles.screenTitle}>MODULES LIBRARY</Text>
+      {/* <Text style={styles.screenTitle}>MODULES LIBRARY</Text> */}
+      <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D]">
+        <View className="px-4 py-4">
+          <Text className="text-white text-2xl font-extrabold tracking-wider uppercase">
+            MODULES LIBRARY
+          </Text>
+        </View>
+      </View>
       <SearchBar />
       <FilterTabs active={activeTab} onChange={setActiveTab} />
       <FlatList
@@ -323,7 +331,7 @@ export default function ModulesLibrary() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -351,9 +359,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#1E2535",
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 6,
     marginHorizontal: 16,
-    marginBottom: 16,
+    marginVertical: 16,
   },
   searchIcon: {
     fontSize: 16,

@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useIsFocused } from "@react-navigation/native";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import * as Clipboard from "expo-clipboard";
 import {
   Sparkles,
@@ -293,6 +294,7 @@ const mapBackendMessage = (msg: any): Message => {
 
 export default function Gradian() {
   const isFocused = useIsFocused();
+  const tabBarHeight = useBottomTabBarHeight();
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -473,7 +475,7 @@ export default function Gradian() {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={"padding"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

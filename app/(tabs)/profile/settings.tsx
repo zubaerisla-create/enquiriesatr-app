@@ -9,7 +9,6 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../../hooks/useAuth";
@@ -192,15 +191,15 @@ export default function Settings() {
 
   if (loadingPreferences) {
     return (
-      <SafeAreaView className="flex-1 bg-[#0D1520] items-center justify-center">
+      <View className="flex-1 bg-[#0D1520] items-center justify-center">
         <StatusBar style="light" />
         <ActivityIndicator size="large" color="#C0392B" />
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0D1520]">
+    <View className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
 
       <ScrollView
@@ -285,6 +284,6 @@ export default function Settings() {
         variant="danger"
         loading={isDeleting}
       />
-    </SafeAreaView>
+    </View>
   );
 }

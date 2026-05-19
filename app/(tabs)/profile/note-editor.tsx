@@ -44,7 +44,7 @@ export default function NoteEditor() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-4 pt-16 py-4 border-b-2 border-red-200">
+      <View className="flex-row items-center justify-between px-4 py-4 border-b-2 border-red-200">
         <TouchableOpacity onPress={() => router.back()} className="p-2">
           <Feather name="x" size={24} color="#666" />
         </TouchableOpacity>
