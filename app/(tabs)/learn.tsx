@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import {
-
   Text,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
   FlatList,
-  Dimensions
+  Dimensions,
+  ActivityIndicator
 } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -18,15 +18,12 @@ import {
   CheckCircle2,
   BookOpen,
   Clock,
-  Zap,
   CircleDot,
   Circle
 } from "lucide-react-native";
 import { TextInput, View } from "react-native";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type Category = "ALL" | "FOUNDATION" | "TACTICAL" | "OPERATIONS" | "LEGAL";
+import { useQuery } from "@tanstack/react-query";
+import { fetchModules, fetchModuleProgress, Category } from "../../lib/modules";
 
 interface Module {
   id: string;
@@ -41,88 +38,12 @@ interface Module {
   status: "in_progress" | "completed" | "not_started" | "locked";
 }
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-const MODULES: Module[] = [
-  {
-    id: "1",
-    category: "FOUNDATION",
-    categoryColor: "#3B82F6",
-    title: "CP Fundamentals",
-    description:
-      "Core principles, roles, and responsibilities of close protection professionals operating in the modern security landscape.",
-    lessons: 5,
-    hours: 2,
-    minutes: 30,
-    progress: 44,
-    status: "in_progress",
-  },
-  {
-    id: "2",
-    category: "TACTICAL",
-    categoryColor: "#F97316",
-    title: "Threat Assessment",
-    description:
-      "Systematic evaluation of threats, vulnerabilities and risk matrices to protect the principal at all times.",
-    lessons: 4,
-    hours: 1,
-    minutes: 55,
-    progress: 100,
-    status: "completed",
-  },
-  {
-    id: "3",
-    category: "OPERATIONS",
-    categoryColor: "#22C55E",
-    title: "Venue Security",
-    description:
-      "Planning, advancing, and securing venues — from private residences to public events and international locations.",
-    lessons: 5,
-    hours: 2,
-    minutes: 45,
-    progress: 38,
-    status: "in_progress",
-  },
-  {
-    id: "4",
-    category: "OPERATIONS",
-    categoryColor: "#22C55E",
-    title: "Advance Work",
-    description:
-      "Comprehensive advance planning methodologies for CP operatives, residential stays, and high-risk operations.",
-    lessons: 4,
-    hours: 2,
-    minutes: 10,
-    progress: 8,
-    status: "not_started",
-  },
-  {
-    id: "5",
-    category: "LEGAL",
-    categoryColor: "#A855F7",
-    title: "Legal Framework",
-    description:
-      "UK and international legal considerations for CP operatives, including use of force, licensing, and liability.",
-    lessons: 4,
-    hours: 1,
-    minutes: 30,
-    progress: -1,
-    status: "locked",
-  },
-  {
-    id: "6",
-    category: "OPERATIONS",
-    categoryColor: "#22C55E",
-    title: "Specialist Operations",
-    description:
-      "Advanced techniques for hostile environment operations, maritime security, and VIP escort procedures.",
-    lessons: 5,
-    hours: 2,
-    minutes: 10,
-    progress: -1,
-    status: "locked",
-  },
-];
+const CATEGORY_COLORS: Record<string, string> = {
+  FOUNDATION: "#3B82F6",
+  TACTICAL: "#F97316",
+  OPERATIONS: "#22C55E",
+  LEGAL: "#A855F7",
+};
 
 const TABS: { label: string; value: Category }[] = [
   { label: "ALL", value: "ALL" },
@@ -131,19 +52,6 @@ const TABS: { label: string; value: Category }[] = [
   { label: "OPERATIONS", value: "OPERATIONS" },
   { label: "LEGAL", value: "LEGAL" },
 ];
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-const SearchBar = () => (
-  <View style={styles.searchBar}>
-    <Search size={18} color="#6B7280" style={{ marginRight: 8 }} />
-    <TextInput
-      style={styles.searchInput}
-      placeholder="Search modules..."
-      placeholderTextColor="#6B7280"
-    />
-  </View>
-);
 
 const FilterTabs = ({
   active,
@@ -218,30 +126,20 @@ const StatusBadge = ({ status }: { status: Module["status"] }) => {
 };
 
 const ModuleCard = ({ module }: { module: Module }) => {
-  const isLocked = module.status === "locked";
-
   return (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={() => {
-        if (!isLocked) {
-          if (module.id === "2") {
-            router.push("/threat-assessment-details");
-          } else {
-            router.push(`/module-details?id=${module.id}`);
-          }
-        }
+        router.push(`/lesson?moduleId=${module.id}`);
       }}
-      style={[styles.card, isLocked ? styles.cardLocked : styles.cardActive]}
+      style={[styles.card, styles.cardActive]}
     >
-      {/* Category badge + status icon row */}
       <View style={styles.cardTopRow}>
         <View style={[styles.categoryBadge, { backgroundColor: module.categoryColor + "22" }]}>
           <Text style={[styles.categoryText, { color: module.categoryColor }]}>
             {module.category}
           </Text>
         </View>
-        {isLocked && <Lock size={18} color="#6b7280" />}
         {module.status === "completed" && (
           <View style={styles.completedBadge}>
             <CheckCircle2 size={14} color="white" />
@@ -249,72 +147,79 @@ const ModuleCard = ({ module }: { module: Module }) => {
         )}
       </View>
 
-      {/* Title */}
-      <Text style={[styles.cardTitle, isLocked && styles.cardTitleLocked]}>
+      <Text style={styles.cardTitle}>
         {module.title}
       </Text>
 
-      {/* Description */}
-      <Text style={[styles.cardDesc, isLocked && styles.cardDescLocked]}>
+      <Text style={styles.cardDesc}>
         {module.description}
       </Text>
 
-      {/* Meta row */}
       <View style={styles.metaRow}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <BookOpen size={14} color={isLocked ? "#4B5563" : "#9ca3af"} style={{ marginRight: 4 }} />
-          <Text style={[styles.metaText, isLocked && styles.metaTextLocked]}>
-            {module.lessons} lessons
-          </Text>
-        </View>
-        <Text style={styles.metaDivider}>·</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Clock size={14} color={isLocked ? "#4B5563" : "#9ca3af"} style={{ marginRight: 4 }} />
-          <Text style={[styles.metaText, isLocked && styles.metaTextLocked]}>
+          <Clock size={14} color="#9ca3af" style={{ marginRight: 4 }} />
+          <Text style={styles.metaText}>
             {module.hours}h {module.minutes}m
           </Text>
         </View>
       </View>
 
-      {/* Progress / Lock CTA */}
-      {isLocked ? (
-        <TouchableOpacity style={styles.upgradeBtn}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Lock size={12} color="#D1D5DB" style={{ marginRight: 6 }} />
-            <Text style={styles.upgradeBtnText}>Upgrade to unlock</Text>
-          </View>
-        </TouchableOpacity>
-      ) : (
-        <View>
-          <ProgressBar
-            progress={module.progress}
-            color={module.status === "completed" ? "#22C55E" : module.categoryColor}
-          />
-          <View style={styles.progressFooter}>
-            <StatusBadge status={module.status} />
-            <Text style={styles.progressPercent}>{module.progress}%</Text>
-          </View>
+      <View>
+        <ProgressBar
+          progress={module.progress}
+          color={module.status === "completed" ? "#22C55E" : module.categoryColor}
+        />
+        <View style={styles.progressFooter}>
+          <StatusBadge status={module.status} />
+          <Text style={styles.progressPercent}>{module.progress}%</Text>
         </View>
-      )}
+      </View>
     </TouchableOpacity>
   );
 };
 
-// ─── Main Screen ─────────────────────────────────────────────────────────────
-
 export default function ModulesLibrary() {
   const isFocused = useIsFocused();
   const [activeTab, setActiveTab] = useState<Category>("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredModules =
-    activeTab === "ALL"
-      ? MODULES
-      : MODULES.filter((m) => m.category === activeTab);
+  const { data: modulesList, isLoading: modulesLoading } = useQuery({
+    queryKey: ["modules"],
+    queryFn: fetchModules,
+  });
+
+  const { data: progressData } = useQuery({
+    queryKey: ["modules-progress"],
+    queryFn: fetchModuleProgress,
+  });
+
+  const mappedModules: Module[] = (modulesList || []).map((m) => {
+    const prog = (progressData || []).find((p) => p.module === m.module_id);
+    return {
+      id: String(m.module_id),
+      category: m.category,
+      categoryColor: CATEGORY_COLORS[m.category] || "#3B82F6",
+      title: m.name,
+      description: m.description,
+      lessons: m.lessons,
+      hours: m.hours,
+      minutes: m.minutes,
+      progress: prog ? prog.progress_percent : 0,
+      status: prog ? prog.status : "not_started",
+    };
+  });
+
+  const filteredModules = mappedModules.filter((m) => {
+    const matchesCategory = activeTab === "ALL" || m.category === activeTab;
+    const matchesSearch =
+      m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0D1520]">
       {isFocused && <StatusBar style="light" />}
-      {/* <Text style={styles.screenTitle}>MODULES LIBRARY</Text> */}
       <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D]">
         <View className="px-4 py-4">
           <Text className="text-white text-2xl font-extrabold tracking-wider uppercase">
@@ -322,15 +227,33 @@ export default function ModulesLibrary() {
           </Text>
         </View>
       </View>
-      <SearchBar />
+
+      <View style={styles.searchBar}>
+        <Search size={18} color="#6B7280" style={{ marginRight: 8 }} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search modules..."
+          placeholderTextColor="#6B7280"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
+
       <FilterTabs active={activeTab} onChange={setActiveTab} />
-      <FlatList
-        data={filteredModules}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ModuleCard module={item} />}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      />
+
+      {modulesLoading ? (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color="#3B82F6" />
+        </View>
+      ) : (
+        <FlatList
+          data={filteredModules}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <ModuleCard module={item} />}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        />
+      )}
     </SafeAreaView>
   );
 }

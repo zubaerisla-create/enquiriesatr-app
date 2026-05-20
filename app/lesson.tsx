@@ -1,297 +1,309 @@
-import React, { useState } from "react";
+import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
+import React, { useState, useEffect } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
+  ActivityIndicator,
+  Modal,
   ScrollView,
   StyleSheet,
-  Modal,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
+  Text,
+  TouchableOpacity,
+  View,
+  Keyboard,
+  Platform
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { rs, rf } from "../utils/responsive";
+import { AppBottomSheet } from "../components/ui";
+import { useBottomSheet } from "../hooks/useBottomSheet";
+import { rf, rs } from "../utils/responsive";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { router } from "expo-router";
 import {
   ArrowLeft,
   Bookmark,
-  ChevronRight,
-  ChevronLeft,
-  Edit2,
-  CheckCircle,
   Check,
-  X,
+  CheckCircle,
+  ChevronRight,
+  Edit2,
   Save
 } from "lucide-react-native";
+import Toast from "react-native-toast-message";
+import { fetchModuleDetail, fetchModuleProgress, markModuleComplete } from "../lib/modules";
+import { createNote } from "../lib/notes";
+
 
 export default function LessonReadingView() {
-  const [currentLesson, setCurrentLesson] = useState(1);
-  const totalLessons = 5;
+  const { moduleId: moduleIdParam } = useLocalSearchParams();
+  const moduleId = Number(moduleIdParam);
 
-  // Completed state per lesson
-  const [completedLessons, setCompletedLessons] = useState<Set<number>>(new Set());
-
-  // Save Note modal state
-  const [noteModalVisible, setNoteModalVisible] = useState(false);
+  const [completeModalVisible, setCompleteModalVisible] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [savedNotes, setSavedNotes] = useState<{ lesson: number; text: string }[]>([]);
 
-  const isFirst = currentLesson === 1;
-  const isLast = currentLesson === totalLessons;
-  const isCurrentCompleted = completedLessons.has(currentLesson);
+  const {
+    ref: noteSheetRef,
+    present: presentNoteSheet,
+    dismiss: dismissNoteSheet,
+  } = useBottomSheet();
 
-  const handleNext = () => {
-    if (!isLast) setCurrentLesson(prev => prev + 1);
-  };
+  useEffect(() => {
+    const eventName = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const subscription = Keyboard.addListener(eventName, () => {
+      noteSheetRef.current?.snapToIndex(0);
+    });
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
-  const handlePrev = () => {
-    if (!isFirst) setCurrentLesson(prev => prev - 1);
-  };
+  const queryClient = useQueryClient();
 
-  // Mark lesson as completed → advance to next or go back on last
-  const handleComplete = () => {
-    setCompletedLessons(prev => new Set(prev).add(currentLesson));
-    if (isLast) {
-      Alert.alert(
-        "Module Complete! 🎉",
-        "You've completed all lessons in this module. Ready for the assessment?",
-        [
-          { text: "Back to Module", onPress: () => router.back(), style: "cancel" },
-          { text: "Take Assessment", onPress: () => router.push("/assessment/intro") },
-        ]
-      );
-    } else {
-      setCurrentLesson(prev => prev + 1);
+  const { data: moduleDetail, isLoading: moduleLoading } = useQuery({
+    queryKey: ["module-detail", moduleId],
+    queryFn: () => fetchModuleDetail(moduleId),
+    enabled: !!moduleId,
+  });
+
+  const { data: progressData } = useQuery({
+    queryKey: ["modules-progress"],
+    queryFn: fetchModuleProgress,
+  });
+
+  const completeMutation = useMutation({
+    mutationFn: () => markModuleComplete(moduleId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["modules-progress"] });
     }
+  });
+
+  const saveNoteMutation = useMutation({
+    mutationFn: (content: string) => createNote({
+      content,
+      category: "lessons",
+      referance: moduleDetail?.name,
+      title: `Note for ${moduleDetail?.name}`
+    }),
+    onSuccess: () => {
+      setNoteText("");
+      dismissNoteSheet();
+      Toast.show({
+        type: "success",
+        text1: "Note Saved ✓",
+        text2: "Your note has been saved successfully.",
+        position: "top",
+        topOffset: 60,
+      });
+    }
+  });
+
+  if (moduleLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center", backgroundColor: "#FAF8F5" }]}>
+        <ActivityIndicator size="large" color="#D82C15" />
+      </View>
+    );
+  }
+
+  const subsections = moduleDetail?.subsections || [];
+
+  if (subsections.length === 0) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center", padding: 24 }]}>
+        <Text style={{ fontSize: 16, color: "#4B5563", textAlign: "center" }}>No content available for this module.</Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 16 }}>
+          <Text style={{ color: "#D82C15", fontWeight: "700" }}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const moduleProgress = (progressData || []).find(p => p.module === moduleId);
+  const isCompleted = moduleProgress?.status === "completed";
+
+  const handleMarkComplete = () => {
+    completeMutation.mutate(undefined, {
+      onSuccess: () => {
+        setCompleteModalVisible(true);
+      }
+    });
   };
 
-  // Save note handler
   const handleSaveNote = () => {
     if (!noteText.trim()) {
-      Alert.alert("Empty Note", "Please write something before saving.");
+      Toast.show({
+        type: "error",
+        text1: "Empty Note",
+        text2: "Please write something before saving.",
+      });
       return;
     }
-    setSavedNotes(prev => [...prev, { lesson: currentLesson, text: noteText.trim() }]);
-    setNoteText("");
-    setNoteModalVisible(false);
-    Alert.alert("Note Saved ✓", `Your note for Lesson ${currentLesson} has been saved.`);
+    saveNoteMutation.mutate(noteText.trim());
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
 
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
           <ArrowLeft size={22} color="#1f2937" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Threat &amp; Risk Assessment</Text>
+        <Text style={styles.headerTitle}>{moduleDetail?.name}</Text>
         <TouchableOpacity style={styles.headerBtn}>
           <Bookmark size={20} color="#6b7280" />
         </TouchableOpacity>
       </View>
 
-      {/* Progress Bar */}
-      <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, { width: `${(currentLesson / totalLessons) * 100}%` }]} />
-      </View>
-
       <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
 
-          {/* Breadcrumbs */}
           <View style={styles.breadcrumb}>
-            <Text style={styles.breadcrumbBase}>CP Fundamentals</Text>
+            <Text style={styles.breadcrumbBase}>{moduleDetail?.category}</Text>
             <ChevronRight size={10} color="#9ca3af" />
-            <Text style={styles.breadcrumbActive}>Lesson {currentLesson}/{totalLessons}</Text>
+            <Text style={styles.breadcrumbActive}>{moduleDetail?.name}</Text>
           </View>
 
-          {/* Title — mt-8 */}
-          <Text style={styles.pageTitle}>THREAT &amp; RISK ASSESSMENT</Text>
-
-          {/* Overview */}
-          <Text style={styles.sectionHeading}>Overview</Text>
-          <Text style={styles.bodyText}>
-            Threat and risk assessment is a fundamental skill for any close protection operative. The ability to accurately identify, evaluate, and mitigate threats directly determines the safety of your principal.
-          </Text>
-
-          {/* The Threat Matrix */}
-          <Text style={styles.sectionHeading}>The Threat Matrix</Text>
-          <Text style={[styles.bodyText, { marginBottom: 20 }]}>
-            A threat matrix categorises potential threats across two axes: likelihood and impact. By plotting threats on this matrix, operatives can prioritise protective measures and allocate resources effectively.
-          </Text>
-
-          {/* Bullet Points */}
-          <View style={{ marginBottom: 32 }}>
-            {[
-              { title: "Intent", desc: "Does the threat actor want to cause harm?" },
-              { title: "Capability", desc: "Do they have the means to act?" },
-              { title: "Opportunity", desc: "Are the conditions present for an attack?" },
-            ].map((item, i) => (
-              <View key={i} style={styles.bulletRow}>
-                <View style={styles.bulletDotWrap}>
-                  <View style={styles.bulletDot} />
-                </View>
-                <Text style={styles.bulletBodyText}>
-                  <Text style={styles.bulletTitle}>{item.title} — </Text>
-                  {item.desc}
+          {subsections.map((sub, index) => {
+            const paragraphs = sub.content.split(/\n\s*\n/);
+            return (
+              <View key={sub.id}>
+                <Text style={styles.sectionHeading}>
+                  {index + 1}. {sub.name}
                 </Text>
+                {paragraphs.map((p, i) => (
+                  <Text key={i} style={styles.bodyText}>
+                    {p.trim()}
+                  </Text>
+                ))}
+                {index < subsections.length - 1 && <View style={styles.sectionDivider} />}
               </View>
-            ))}
-          </View>
-
-          {/* Conducting a Risk Assessment */}
-          <Text style={styles.sectionHeading}>Conducting a Risk Assessment</Text>
-          <Text style={[styles.bodyText, { marginBottom: 20 }]}>
-            Every operation begins with a formal risk assessment. This structured evaluation identifies all foreseeable hazards and records appropriate control measures.
-          </Text>
-
-          {/* Numbered Steps */}
-          <View style={{ marginBottom: 32 }}>
-            {[
-              "Identify the hazard or threat",
-              "Determine who may be affected",
-              "Evaluate the risk level (likelihood × severity)",
-              "Implement control measures",
-              "Review and update regularly",
-            ].map((step, i) => (
-              <View key={i} style={styles.stepRow}>
-                <View style={styles.stepNumber}>
-                  <Text style={styles.stepNumberText}>{i + 1}</Text>
-                </View>
-                <Text style={styles.stepText}>{step}</Text>
-              </View>
-            ))}
-          </View>
-
-          {/* Key Principle */}
-          <Text style={styles.sectionHeading}>Key Principle</Text>
-          <View style={styles.alertBox}>
-            <Text style={styles.alertText}>
-              Complacency is the enemy of security. Threat levels change — your assessment must be a living document, reviewed at every stage of an operation.
-            </Text>
-          </View>
-
-          {/* Prev / Next Nav */}
-          <View style={styles.navRow}>
-            <TouchableOpacity
-              activeOpacity={isFirst ? 1 : 0.8}
-              onPress={handlePrev}
-              style={[styles.navBtn, isFirst && styles.navBtnDisabled]}
-            >
-              <ChevronLeft size={16} color={isFirst ? "#9CA3AF" : "#1f2937"} />
-              <Text style={[styles.navBtnText, isFirst && styles.navBtnTextDisabled]}>Previous</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              activeOpacity={isLast ? 1 : 0.8}
-              onPress={handleNext}
-              style={[styles.navBtn, isLast && styles.navBtnDisabled]}
-            >
-              <Text style={[styles.navBtnText, isLast && styles.navBtnTextDisabled]}>Next</Text>
-              <ChevronRight size={16} color={isLast ? "#9CA3AF" : "#1f2937"} />
-            </TouchableOpacity>
-          </View>
+            );
+          })}
 
         </View>
       </ScrollView>
 
-      {/* Fixed Sticky Footer */}
       <View style={styles.footer}>
-        {/* Save Note */}
-        <TouchableOpacity style={styles.footerSaveBtn} onPress={() => setNoteModalVisible(true)}>
+        <TouchableOpacity style={styles.footerSaveBtn} onPress={presentNoteSheet}>
           <Edit2 size={16} color="#D82C15" style={{ marginRight: 8 }} />
           <Text style={styles.footerSaveBtnText}>Save Note</Text>
         </TouchableOpacity>
 
-        {/* Completed / Mark Complete */}
         <TouchableOpacity
           style={[
             styles.footerActionBtn,
-            { backgroundColor: isCurrentCompleted ? "#6B7280" : isLast ? "#D82C15" : "#2E8B57" },
+            { backgroundColor: isCompleted ? "#6B7280" : "#D82C15" },
           ]}
-          onPress={isCurrentCompleted ? undefined : handleComplete}
-          activeOpacity={isCurrentCompleted ? 1 : 0.8}
+          onPress={isCompleted ? undefined : handleMarkComplete}
+          activeOpacity={isCompleted ? 1 : 0.8}
+          disabled={completeMutation.isPending || isCompleted}
         >
-          {!isLast && !isCurrentCompleted && (
-            <CheckCircle size={16} color="white" style={{ marginRight: 8 }} />
-          )}
-          {isCurrentCompleted && (
+          {isCompleted && (
             <Check size={16} color="white" style={{ marginRight: 8 }} />
           )}
-          <Text style={styles.footerActionBtnText}>
-            {isCurrentCompleted ? "Completed ✓" : isLast ? "MARK COMPLETE" : "Mark Complete"}
-          </Text>
+          {!isCompleted && !completeMutation.isPending && (
+            <CheckCircle size={16} color="white" style={{ marginRight: 8 }} />
+          )}
+          {completeMutation.isPending ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text style={styles.footerActionBtnText}>
+              {isCompleted ? "Completed ✓" : "MARK COMPLETE"}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 
-      {/* ── Save Note Modal ── */}
-      <Modal
-        visible={noteModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setNoteModalVisible(false)}
+      <AppBottomSheet
+        ref={noteSheetRef}
+        title="Save Note"
+        subtitle={moduleDetail?.name}
+        variant="light"
+        enableDynamicSizing={false}
+        snapPoints={["35%", "70%"]}
+        keyboardBehavior="extend"
+        onDismiss={() => setNoteText("")}
       >
-        <KeyboardAvoidingView
-          style={styles.modalOverlay}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-        >
+        <BottomSheetTextInput
+          style={styles.noteInput}
+          placeholder="Write your note here..."
+          placeholderTextColor="#9ca3af"
+          multiline
+          value={noteText}
+          onChangeText={setNoteText}
+          textAlignVertical="top"
+          // autoFocus
+        />
+
+        {savedNotes.filter(n => n.lesson === moduleId).length > 0 && (
+          <Text style={styles.savedNotesHint}>
+            {savedNotes.filter(n => n.lesson === moduleId).length} note(s) already saved
+          </Text>
+        )}
+
+        <View style={styles.modalActions}>
+          <TouchableOpacity
+            style={styles.modalCancelBtn}
+            onPress={() => {
+              setNoteText("");
+              dismissNoteSheet();
+            }}
+          >
+            <Text style={styles.modalCancelText}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.modalSaveBtn, saveNoteMutation.isPending && { opacity: 0.7 }]}
+            onPress={handleSaveNote}
+            disabled={saveNoteMutation.isPending}
+          >
+            {saveNoteMutation.isPending ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <>
+                <Save size={15} color="white" style={{ marginRight: 6 }} />
+                <Text style={styles.modalSaveText}>Save Note</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+      </AppBottomSheet>
+
+      <Modal
+        visible={completeModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCompleteModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
           <TouchableOpacity
             style={styles.modalBackdrop}
             activeOpacity={1}
-            onPress={() => setNoteModalVisible(false)}
+            onPress={() => setCompleteModalVisible(false)}
           />
-          <View style={styles.modalSheet}>
-            {/* Handle */}
-            <View style={styles.modalHandle} />
-
-            {/* Modal Header */}
-            <View style={styles.modalHeader}>
-              <View>
-                <Text style={styles.modalTitle}>Save Note</Text>
-                <Text style={styles.modalSubtitle}>Lesson {currentLesson} — Threat &amp; Risk Assessment</Text>
+          <View style={styles.completeModalContent}>
+            <View style={styles.successIconOuter}>
+              <View style={styles.successIconInner}>
+                <Check size={32} color="#4CAF50" strokeWidth={3} />
               </View>
-              <TouchableOpacity onPress={() => setNoteModalVisible(false)} style={styles.modalCloseBtn}>
-                <X size={18} color="#6b7280" />
-              </TouchableOpacity>
             </View>
 
-            {/* Text Input */}
-            <TextInput
-              style={styles.noteInput}
-              placeholder="Write your note here..."
-              placeholderTextColor="#9ca3af"
-              multiline
-              value={noteText}
-              onChangeText={setNoteText}
-              textAlignVertical="top"
-              autoFocus
-            />
+            <Text style={styles.completeTitle}>Module Complete!</Text>
+            <Text style={styles.completeSubtitle}>
+              You've successfully finished "{moduleDetail?.name}".
+            </Text>
 
-            {/* Saved Notes Count */}
-            {savedNotes.filter(n => n.lesson === currentLesson).length > 0 && (
-              <Text style={styles.savedNotesHint}>
-                {savedNotes.filter(n => n.lesson === currentLesson).length} note(s) already saved for this lesson
-              </Text>
-            )}
-
-            {/* Actions */}
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.modalCancelBtn} onPress={() => { setNoteText(""); setNoteModalVisible(false); }}>
-                <Text style={styles.modalCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalSaveBtn} onPress={handleSaveNote}>
-                <Save size={15} color="white" style={{ marginRight: 6 }} />
-                <Text style={styles.modalSaveText}>Save Note</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={styles.completeDoneBtn}
+              onPress={() => {
+                setCompleteModalVisible(false);
+                router.back();
+              }}
+            >
+              <Text style={styles.completeDoneBtnText}>Back to Modules</Text>
+            </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
 
     </SafeAreaView>
@@ -367,7 +379,13 @@ const styles = StyleSheet.create({
     color: "#131C2E",
     fontWeight: "900",
     fontSize: rf(16),
+    marginTop: rs(8),
     marginBottom: rs(12),
+  },
+  sectionDivider: {
+    height: 1,
+    backgroundColor: "#E5E7EB",
+    marginVertical: rs(16),
   },
   bodyText: {
     color: "#4B5563",
@@ -531,28 +549,13 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.45)",
   },
-  modalSheet: {
-    backgroundColor: "#ffffff",
-    borderTopLeftRadius: rs(24),
-    borderTopRightRadius: rs(24),
-    paddingHorizontal: rs(20),
-    paddingBottom: rs(36),
-    paddingTop: rs(12),
-  },
-  modalHandle: {
-    width: rs(40),
-    height: rs(4),
-    backgroundColor: "#E5E7EB",
-    borderRadius: rs(2),
-    alignSelf: "center",
-    marginBottom: rs(20),
-  },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
     marginBottom: rs(16),
   },
+
   modalTitle: {
     fontSize: rf(18),
     fontWeight: "700",
@@ -613,6 +616,79 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "700",
     fontSize: rf(14),
+  },
+  completeModalContent: {
+    backgroundColor: "#ffffff",
+    borderRadius: rs(24),
+    paddingHorizontal: rs(24),
+    paddingVertical: rs(40),
+    alignItems: "center",
+    width: "85%",
+    alignSelf: "center",
+    marginBottom: "auto",
+    marginTop: "auto",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  successIconOuter: {
+    width: rs(80),
+    height: rs(80),
+    borderRadius: rs(40),
+    backgroundColor: "#E8F5E9",
+    borderWidth: 2,
+    borderColor: "#4CAF50",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: rs(24),
+  },
+  successIconInner: {
+    width: rs(44),
+    height: rs(44),
+    borderRadius: rs(22),
+    borderWidth: 3,
+    borderColor: "#4CAF50",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  completeTitle: {
+    fontSize: rf(22),
+    fontWeight: "900",
+    color: "#131C2E",
+    marginBottom: rs(8),
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  completeSubtitle: {
+    fontSize: rf(14),
+    color: "#6b7280",
+    textAlign: "center",
+    marginBottom: rs(32),
+    lineHeight: rf(20),
+  },
+  completeDoneBtn: {
+    width: "100%",
+    backgroundColor: "#D82C15",
+    paddingVertical: rs(16),
+    borderRadius: rs(12),
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  completeDoneBtnText: {
+    color: "white",
+    fontWeight: "700",
+    fontSize: rf(15),
+  },
+  noteModalContent: {
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: rs(24),
+    borderTopRightRadius: rs(24),
+    paddingHorizontal: rs(20),
+    paddingTop: rs(12),
+    paddingBottom: rs(36),
+    width: "100%",
   },
 });
 

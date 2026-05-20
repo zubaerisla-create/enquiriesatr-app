@@ -7,6 +7,7 @@ import { StripeProvider } from "@stripe/stripe-react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import Toast from "react-native-toast-message";
 import "../global.css";
 
 const queryClient = new QueryClient({
@@ -66,22 +67,19 @@ export default function RootLayout() {
                     <Stack.Screen name="(auth)/verify" />
                     <Stack.Screen name="(tabs)" />
                     <Stack.Screen name="(auth)/forgot-password" />
-                    {/* Tools */}
                     <Stack.Screen name="tool-details" />
                     <Stack.Screen name="tool-complete" />
                     <Stack.Screen name="search-operations" />
-                    {/* Learn */}
                     <Stack.Screen name="module-details" />
                     <Stack.Screen name="lesson" />
-                    <Stack.Screen name="threat-assessment-details" />
                     <Stack.Screen name="threat-assessment-intro" />
                     <Stack.Screen name="threat-assessment-checklist" />
                     <Stack.Screen name="risk-report" />
-                    {/* Assessment */}
                     <Stack.Screen name="assessment" />
                   </Stack>
                 </AuthGate>
               </AuthProvider>
+              <Toast />
             </StripeProvider>
           </QueryClientProvider>
         </SafeAreaProvider>

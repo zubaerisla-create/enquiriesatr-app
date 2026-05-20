@@ -1,9 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import { rs, rf, wp } from "../utils/responsive";
 
 import { StatusBar } from "expo-status-bar";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { 
   ArrowLeft, 
   Clock, 
@@ -13,21 +13,70 @@ import {
   Target, 
   ChevronRight 
 } from "lucide-react-native";
+import { useQuery } from "@tanstack/react-query";
+import { fetchModuleDetail, fetchModuleProgress } from "../lib/modules";
 
-const LESSONS = [
-  { id: "01", title: "Introduction to Close Protection", time: "25 min", status: "complete" },
-  { id: "02", title: "The CP Team Structure", time: "30 min", status: "complete" },
-  { id: "03", title: "Threat & Risk Assessment", time: "35 min", status: "in_progress" },
-  { id: "04", title: "The Intelligence Cycle", time: "28 min", status: "locked" },
-  { id: "05", title: "Principal Profiling", time: "22 min", status: "locked" },
-];
+const CATEGORY_COLORS: Record<string, string> = {
+  FOUNDATION: "#3B82F6",
+  TACTICAL: "#F97316",
+  OPERATIONS: "#22C55E",
+  LEGAL: "#A855F7",
+};
 
 export default function ModuleDetails() {
+  const { id } = useLocalSearchParams();
+  const moduleId = Number(id);
+
+  const { data: moduleDetail, isLoading: moduleLoading } = useQuery({
+    queryKey: ["module-detail", moduleId],
+    queryFn: () => fetchModuleDetail(moduleId),
+    enabled: !!moduleId,
+  });
+
+  const { data: progressData } = useQuery({
+    queryKey: ["modules-progress"],
+    queryFn: fetchModuleProgress,
+  });
+
+  if (moduleLoading) {
+    return (
+      <View style={[styles.screen, { justifyContent: "center", alignItems: "center", backgroundColor: "#111824" }]}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+      </View>
+    );
+  }
+
+  const mappedSubsections = (moduleDetail?.subsections || []).map((sub, index) => {
+    const subProg = progressData?.subsections.find((p) => p.subsection === sub.id);
+    const isComplete = subProg?.is_completed || false;
+    const totalWords = sub.content.split(/\s+/).length;
+    const minutes = Math.max(1, Math.round(totalWords / 200));
+    let status: "complete" | "in_progress" = isComplete ? "complete" : "in_progress";
+    return {
+      id: String(index + 1).padStart(2, '0'),
+      subsectionId: sub.id,
+      title: sub.name,
+      time: `${minutes} min`,
+      status: status,
+    };
+  });
+
+  const moduleProgress = progressData?.modules.find(p => p.module === moduleId);
+  const progressPercent = moduleProgress?.progress_percent || 0;
+  const completedCount = mappedSubsections.filter(s => s.status === "complete").length;
+  const totalCount = mappedSubsections.length;
+  const categoryColor = CATEGORY_COLORS[moduleDetail?.category || "FOUNDATION"] || "#3B82F6";
+
+  const handleContinue = () => {
+    const firstIncompleteIndex = mappedSubsections.findIndex(s => s.status !== "complete");
+    const startIndex = firstIncompleteIndex !== -1 ? firstIncompleteIndex : 0;
+    router.push(`/lesson?moduleId=${moduleId}&startIndex=${startIndex}`);
+  };
+
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
 
-      {/* Dark Header */}
       <View style={styles.darkHeader}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <ArrowLeft size={20} color="#9ca3af" />
@@ -36,62 +85,57 @@ export default function ModuleDetails() {
 
         <View style={styles.headerContent}>
           <View style={styles.headerLeft}>
-            <View style={styles.foundationBadge}>
-              <Text style={styles.foundationBadgeText}>FOUNDATION</Text>
+            <View style={[styles.foundationBadge, { borderColor: `${categoryColor}50`, backgroundColor: `${categoryColor}15` }]}>
+              <Text style={[styles.foundationBadgeText, { color: categoryColor }]}>{moduleDetail?.category}</Text>
             </View>
-            <Text style={styles.moduleTitle}>CP Fundamentals</Text>
+            <Text style={styles.moduleTitle}>{moduleDetail?.name}</Text>
             <Text style={styles.moduleDesc}>
-              Core principles, roles, and responsibilities of close protection professionals operating in the modern security landscape.
+              {moduleDetail?.description}
             </Text>
             <View style={styles.metaRow}>
               <View style={styles.metaItem}>
                 <Clock size={14} color="#9ca3af" />
-                <Text style={styles.metaText}>2h 30m</Text>
+                <Text style={styles.metaText}>{moduleDetail?.hours}h {moduleDetail?.minutes}m</Text>
               </View>
               <View style={styles.metaItem}>
                 <CheckCircle size={14} color="#9ca3af" />
-                <Text style={styles.metaText}>2/5 lessons</Text>
+                <Text style={styles.metaText}>{completedCount}/{totalCount} sections</Text>
               </View>
             </View>
           </View>
 
-          {/* Progress Ring */}
-          <View style={styles.progressRing}>
-            <View style={styles.progressRingArc} />
-            <Text style={styles.progressRingText}>60%</Text>
+          <View style={[styles.progressRing, { borderColor: `${categoryColor}50` }]}>
+            <View style={[styles.progressRingArc, { borderColor: categoryColor }]} />
+            <Text style={styles.progressRingText}>{progressPercent}%</Text>
           </View>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          <Text style={styles.sectionLabel}>LESSONS</Text>
+          <Text style={styles.sectionLabel}>SECTIONS</Text>
 
-          {LESSONS.map(lesson => {
+          {mappedSubsections.map((lesson, index) => {
             const isComplete = lesson.status === "complete";
             const isProgress = lesson.status === "in_progress";
-            const isLocked = lesson.status === "locked";
-
-            const CardEl = isProgress ? TouchableOpacity : View;
 
             return (
-              <CardEl
+              <TouchableOpacity
                 key={lesson.id}
                 activeOpacity={0.8}
-                onPress={isProgress ? () => router.push("/lesson") : undefined}
+                onPress={() => router.push(`/lesson?moduleId=${moduleId}&startIndex=${index}`)}
                 style={[
                   styles.lessonCard,
                   isComplete && styles.lessonCardComplete,
                   isProgress && styles.lessonCardProgress,
-                  isLocked && styles.lessonCardLocked,
                 ]}
               >
                 <View style={styles.lessonLeft}>
                   <Text style={[styles.lessonId, isProgress && styles.lessonIdActive]}>
                     {lesson.id}
                   </Text>
-                  <View>
-                    <Text style={[styles.lessonTitle, isLocked && styles.lessonTitleLocked, isProgress && styles.lessonTitleProgress]}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.lessonTitle, isProgress && styles.lessonTitleProgress]} numberOfLines={1} ellipsizeMode="tail">
                       {lesson.title}
                     </Text>
                     <View style={styles.lessonMeta}>
@@ -104,7 +148,7 @@ export default function ModuleDetails() {
                       {isProgress && (
                         <View style={styles.inProgressTag}>
                           <View style={styles.inProgressDot} />
-                          <Text style={styles.inProgressText}>In progress</Text>
+                          <Text style={styles.inProgressText}>Read now</Text>
                         </View>
                       )}
                     </View>
@@ -112,38 +156,15 @@ export default function ModuleDetails() {
                 </View>
                 {isComplete && <CheckCircle size={18} color="#059669" />}
                 {isProgress && <PlayCircle size={18} color="#D82C15" />}
-                {isLocked && <Lock size={16} color="#e5e7eb" />}
-              </CardEl>
+              </TouchableOpacity>
             );
           })}
-
-          <Text style={styles.sectionLabel2}>MODULE ASSESSMENT</Text>
-
-          <View style={styles.assessmentCard}>
-            <View style={styles.assessmentLeft}>
-              <View style={styles.assessmentIcon}>
-                <Target size={24} color="#D82C15" />
-              </View>
-              <View>
-                <Text style={styles.assessmentTitle}>CP Fundamentals</Text>
-                <Text style={styles.assessmentTitle}>Assessment</Text>
-                <Text style={styles.assessmentMeta}>5 questions · Pass mark: 70%</Text>
-              </View>
-            </View>
-            <TouchableOpacity
-              onPress={() => router.push("/assessment/intro")}
-              style={styles.startBtn}
-            >
-              <Text style={styles.startBtnText}>Start</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </ScrollView>
 
-      {/* Footer */}
       <View style={styles.footer}>
         <TouchableOpacity
-          onPress={() => router.push("/lesson")}
+          onPress={handleContinue}
           style={styles.continueBtn}
         >
           <Text style={styles.continueBtnText}>CONTINUE MODULE</Text>

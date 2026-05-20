@@ -6,7 +6,11 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Modal,
 } from "react-native";
+import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import { AppBottomSheet } from "../../../components/ui";
+import { useBottomSheet } from "../../../hooks/useBottomSheet";
 import { StatusBar } from "expo-status-bar";
 import * as WebBrowser from "expo-web-browser";
 import { router } from "expo-router";
@@ -22,10 +26,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
 import { useStripePayment } from "../../../hooks/useStripePayment";
 import { useAuth } from "../../../hooks/useAuth";
-import {
-  BottomSheetModal,
-  BottomSheetBackdrop,
-} from "@gorhom/bottom-sheet";
+
 
 interface Plan {
   plan_name: string;
@@ -150,28 +151,21 @@ const PlanCard = ({
   );
 };
 
-const CustomBackdrop = (props: any) => (
-  <BottomSheetBackdrop
-    {...props}
-    disappearsOnIndex={-1}
-    appearsOnIndex={0}
-    opacity={0.6}
-    pressBehavior="close"
-  />
-);
-
 export default function UpgradeAccess() {
   const queryClient = useQueryClient();
   const { subscribe, loading: paymentLoading } = useStripePayment();
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
-  const [showChangePlanModal, setShowChangePlanModal] = useState(false);
+  const {
+    ref: changePlanRef,
+    present: presentChangePlan,
+    dismiss: dismissChangePlan,
+  } = useBottomSheet();
   const [modalSelectedSlug, setModalSelectedSlug] = useState<string | null>(null);
 
-  const successModalRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ["65%"], []);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
 
   const handleSuccessClose = useCallback(() => {
-    successModalRef.current?.dismiss();
+    setSuccessModalVisible(false);
     router.replace("/(tabs)/profile");
   }, []);
 
@@ -230,7 +224,7 @@ export default function UpgradeAccess() {
     await subscribe(selectedPlan.plan_slug, async () => {
       await queryClient.invalidateQueries({ queryKey: ["my-subscription"] });
       await refreshUser();
-      successModalRef.current?.present();
+      setSuccessModalVisible(true);
     });
   };
 
@@ -250,7 +244,7 @@ export default function UpgradeAccess() {
 
   const handleConfirmChange = async () => {
     if (!modalSelectedSlug) return;
-    setShowChangePlanModal(false);
+    dismissChangePlan();
     await handleManage();
   };
 
@@ -309,106 +303,89 @@ export default function UpgradeAccess() {
     <View className="flex-1 bg-[#030712]">
       <StatusBar style="light" />
 
-      <BottomSheetModal
-        ref={successModalRef}
-        index={0}
-        snapPoints={snapPoints}
-        backdropComponent={CustomBackdrop}
-        backgroundStyle={{ backgroundColor: "#030712" }}
-        handleIndicatorStyle={{ backgroundColor: "#374151", width: 48, height: 6 }}
-        onDismiss={() => {
-          router.replace("/(tabs)/profile");
-        }}
+      <Modal
+        visible={successModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={handleSuccessClose}
       >
-        <View className="px-6 pt-6 pb-12 items-center">
-          <View className="items-center mb-8">
-            <View className="w-20 h-20 bg-[#22C55E] rounded-full items-center justify-center mb-5 shadow-2xl">
-              <Trophy size={40} color="white" />
-            </View>
-            <Text className="text-white font-black text-3xl text-center tracking-tighter">
-              You're All Set!
-            </Text>
-            <Text className="text-gray-400 text-base text-center mt-2 font-medium">
-              Welcome to the Premium experience.
-            </Text>
-          </View>
-
-          <View className="w-full mb-8">
-            <View className="flex-row items-center gap-4 bg-[#111827] p-5 rounded-2xl mb-4">
-              <Zap size={22} color="#E05252" fill="#E05252" />
-              <Text className="text-gray-200 font-bold text-base">Unlimited AI Features Unlocked</Text>
-            </View>
-            <View className="flex-row items-center gap-4 bg-[#111827] p-5 rounded-2xl">
-              <Rocket size={22} color="#E05252" />
-              <Text className="text-gray-200 font-bold text-base">Full Lesson Library Access</Text>
-            </View>
-          </View>
-
+        <View className="flex-1 justify-end">
           <TouchableOpacity
-            onPress={handleSuccessClose}
-            className="bg-white w-full py-5 rounded-2xl items-center shadow-lg"
-          >
-            <Text className="text-black font-black text-lg tracking-tight">Start Exploring</Text>
-          </TouchableOpacity>
-        </View>
-      </BottomSheetModal>
-
-      {showChangePlanModal && (
-        <View className="absolute top-0 bottom-0 left-0 right-0 bg-black/60 z-50 justify-end">
-          <TouchableOpacity
+            className="absolute inset-0 bg-black/60"
             activeOpacity={1}
-            className="absolute top-0 bottom-0 left-0 right-0"
-            onPress={() => setShowChangePlanModal(false)}
+            onPress={handleSuccessClose}
           />
-          <View className="bg-[#030712] rounded-t-[40px] px-6 pt-8 pb-10 border-t border-gray-900 shadow-2xl z-50">
-            <View className="flex-row justify-between items-center mb-6 px-2">
-              <View>
-                <Text className="text-white font-black text-2xl tracking-tight">
-                  Change Your Plan
-                </Text>
-                <Text className="text-gray-400 text-xs mt-1 font-medium">
-                  Select a new subscription tier below.
-                </Text>
+          <View className="bg-[#030712] rounded-t-[40px] px-6 pt-8 pb-12 border-t border-gray-900 shadow-2xl items-center w-full z-50">
+            <View className="items-center mb-8">
+              <View className="w-20 h-20 bg-[#22C55E] rounded-full items-center justify-center mb-5 shadow-2xl">
+                <Trophy size={40} color="white" />
               </View>
-              <TouchableOpacity
-                onPress={() => setShowChangePlanModal(false)}
-                className="w-8 h-8 rounded-full bg-gray-900 border border-gray-800 items-center justify-center"
-              >
-                <Text className="text-gray-400 font-bold text-sm">✕</Text>
-              </TouchableOpacity>
+              <Text className="text-white font-black text-3xl text-center tracking-tighter">
+                You're All Set!
+              </Text>
+              <Text className="text-gray-400 text-base text-center mt-2 font-medium">
+                Welcome to the Premium experience.
+              </Text>
             </View>
 
-            <ScrollView
-              className="max-h-[350px] mb-6"
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingTop: 12, paddingBottom: 12 }}
-            >
-              {filteredPlans.map((plan) => {
-                const isSelected = modalSelectedSlug === plan.plan_slug;
-                return (
-                  <PlanCard
-                    key={plan.plan_slug}
-                    plan={plan}
-                    selected={isSelected}
-                    onPress={() => setModalSelectedSlug(plan.plan_slug)}
-                  />
-                );
-              })}
-            </ScrollView>
+            <View className="w-full mb-8">
+              <View className="flex-row items-center gap-4 bg-[#111827] p-5 rounded-2xl mb-4">
+                <Zap size={22} color="#E05252" fill="#E05252" />
+                <Text className="text-gray-200 font-bold text-base">Unlimited AI Features Unlocked</Text>
+              </View>
+              <View className="flex-row items-center gap-4 bg-[#111827] p-5 rounded-2xl">
+                <Rocket size={22} color="#E05252" />
+                <Text className="text-gray-200 font-bold text-base">Full Lesson Library Access</Text>
+              </View>
+            </View>
 
             <TouchableOpacity
-              onPress={handleConfirmChange}
-              disabled={!modalSelectedSlug}
-              className={`rounded-2xl py-5 items-center justify-center shadow-lg ${!modalSelectedSlug ? "bg-gray-800" : "bg-[#E05252]"
-                }`}
+              onPress={handleSuccessClose}
+              className="bg-white w-full py-5 rounded-2xl items-center shadow-lg"
             >
-              <Text className="text-white font-black text-base tracking-tight">
-                Continue to Checkout
-              </Text>
+              <Text className="text-black font-black text-lg tracking-tight">Start Exploring</Text>
             </TouchableOpacity>
           </View>
         </View>
-      )}
+      </Modal>
+
+      <AppBottomSheet
+        ref={changePlanRef}
+        title="Change Your Plan"
+        subtitle="Select a new subscription tier below."
+        variant="dark"
+        enableDynamicSizing={false}
+        snapPoints={["45%"]}
+      >
+        <BottomSheetScrollView
+          className="flex-1 mb-6"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingTop: 12, paddingBottom: 12 }}
+        >
+          {filteredPlans.map((plan) => {
+            const isSelected = modalSelectedSlug === plan.plan_slug;
+            return (
+              <PlanCard
+                key={plan.plan_slug}
+                plan={plan}
+                selected={isSelected}
+                onPress={() => setModalSelectedSlug(plan.plan_slug)}
+              />
+            );
+          })}
+        </BottomSheetScrollView>
+
+        <TouchableOpacity
+          onPress={handleConfirmChange}
+          disabled={!modalSelectedSlug}
+          className={`rounded-2xl py-5 items-center justify-center shadow-lg ${!modalSelectedSlug ? "bg-gray-800" : "bg-[#E05252]"
+            }`}
+        >
+          <Text className="text-white font-black text-base tracking-tight">
+            Continue to Checkout
+          </Text>
+        </TouchableOpacity>
+      </AppBottomSheet>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -559,7 +536,7 @@ export default function UpgradeAccess() {
             <TouchableOpacity
               onPress={() => {
                 setModalSelectedSlug(null);
-                setShowChangePlanModal(true);
+                presentChangePlan();
               }}
               activeOpacity={0.8}
               className="rounded-2xl py-5 flex-row items-center justify-center bg-[#E05252] shadow-2xl"
