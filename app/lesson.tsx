@@ -164,6 +164,28 @@ export default function LessonReadingView() {
             <Text style={styles.breadcrumbActive}>{moduleDetail?.name}</Text>
           </View>
 
+          {moduleDetail?.use && (
+            <Text style={styles.useText}>
+              {moduleDetail.use}
+            </Text>
+          )}
+
+          {moduleDetail?.topic && moduleDetail.topic.length > 0 && (
+            <View style={{ marginBottom: rs(24) }}>
+              <Text style={styles.sectionHeading}>Topics Covered</Text>
+              {moduleDetail.topic.map((t, idx) => (
+                <View key={idx} style={styles.bulletRow}>
+                  <View style={styles.bulletDotWrap}>
+                    <View style={styles.bulletDot} />
+                  </View>
+                  <Text style={styles.bulletBodyText}>
+                    <Text style={styles.bulletTitle}>{t}</Text>
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
           {subsections.map((sub, index) => {
             const paragraphs = sub.content.split(/\n\s*\n/);
             return (
@@ -190,29 +212,31 @@ export default function LessonReadingView() {
           <Text style={styles.footerSaveBtnText}>Save Note</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[
-            styles.footerActionBtn,
-            { backgroundColor: isCompleted ? "#6B7280" : "#D82C15" },
-          ]}
-          onPress={isCompleted ? undefined : handleMarkComplete}
-          activeOpacity={isCompleted ? 1 : 0.8}
-          disabled={completeMutation.isPending || isCompleted}
-        >
-          {isCompleted && (
-            <Check size={16} color="white" style={{ marginRight: 8 }} />
-          )}
-          {!isCompleted && !completeMutation.isPending && (
-            <CheckCircle size={16} color="white" style={{ marginRight: 8 }} />
-          )}
-          {completeMutation.isPending ? (
-            <ActivityIndicator size="small" color="white" />
-          ) : (
-            <Text style={styles.footerActionBtnText}>
-              {isCompleted ? "Completed ✓" : "MARK COMPLETE"}
-            </Text>
-          )}
-        </TouchableOpacity>
+        {isCompleted ? (
+          <TouchableOpacity
+            style={[styles.footerActionBtn, { backgroundColor: "#D82C15" }]}
+            onPress={() => router.push(`/assessment/intro?moduleId=${moduleId}`)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.footerActionBtnText}>TAKE ASSESSMENT</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[styles.footerActionBtn, { backgroundColor: "#D82C15" }]}
+            onPress={handleMarkComplete}
+            activeOpacity={0.8}
+            disabled={completeMutation.isPending}
+          >
+            {completeMutation.isPending ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <>
+                <CheckCircle size={16} color="white" style={{ marginRight: 8 }} />
+                <Text style={styles.footerActionBtnText}>MARK COMPLETE</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
       </View>
 
       <AppBottomSheet
@@ -233,7 +257,7 @@ export default function LessonReadingView() {
           value={noteText}
           onChangeText={setNoteText}
           textAlignVertical="top"
-          // autoFocus
+        // autoFocus
         />
 
         {savedNotes.filter(n => n.lesson === moduleId).length > 0 && (
@@ -292,6 +316,16 @@ export default function LessonReadingView() {
             <Text style={styles.completeSubtitle}>
               You've successfully finished "{moduleDetail?.name}".
             </Text>
+
+            <TouchableOpacity
+              style={styles.completeAssessmentBtn}
+              onPress={() => {
+                setCompleteModalVisible(false);
+                router.replace(`/assessment/intro?moduleId=${moduleId}`);
+              }}
+            >
+              <Text style={styles.completeAssessmentBtnText}>Take Assessment</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.completeDoneBtn}
@@ -365,6 +399,13 @@ const styles = StyleSheet.create({
     fontSize: rf(10),
     textTransform: "uppercase",
     fontWeight: "700",
+  },
+  useText: {
+    color: "#131C2E",
+    fontWeight: "900",
+    fontSize: rf(20),
+    marginTop: rs(10),
+    marginBottom: rs(12),
   },
   pageTitle: {
     color: "#131C2E",
@@ -668,13 +709,27 @@ const styles = StyleSheet.create({
     marginBottom: rs(32),
     lineHeight: rf(20),
   },
-  completeDoneBtn: {
+  completeAssessmentBtn: {
     width: "100%",
     backgroundColor: "#D82C15",
     paddingVertical: rs(16),
     borderRadius: rs(12),
     alignItems: "center",
     justifyContent: "center",
+  },
+  completeAssessmentBtnText: {
+    color: "white",
+    fontWeight: "700",
+    fontSize: rf(15),
+  },
+  completeDoneBtn: {
+    width: "100%",
+    backgroundColor: "#131C2E",
+    paddingVertical: rs(16),
+    borderRadius: rs(12),
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: rs(12),
   },
   completeDoneBtnText: {
     color: "white",

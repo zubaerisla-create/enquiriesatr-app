@@ -1,83 +1,77 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { router } from "expo-router";
-import { 
-  X, 
-  Check, 
-  ChevronRight 
+import { router, useLocalSearchParams } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
+import { generateAssessment } from "../../lib/assessments";
+import {
+  X,
+  Check,
+  ChevronRight
 } from "lucide-react-native";
 
-export const QUESTIONS = [
-  {
-    id: 1,
-    text: "What is the correct sequence for the advance process?",
-    options: [
-      { id: "A", text: "Travel to location → Assess → Report → Brief" },
-      { id: "B", text: "Plan → Recce → Assess → Report → Brief team → Execute" },
-      { id: "C", text: "Brief team → Travel → Assess → Report" },
-      { id: "D", text: "Recce → Plan → Execute → Brief" },
-    ],
-    correctId: "B",
-    explanation: "The advance process follows a logical sequence: Plan, conduct Recce, Assess findings, produce a Report, Brief the team, then Execute.",
-  },
-  {
-    id: 2,
-    text: "What must always be included in a medical advance regardless of location?",
-    options: [
-      { id: "A", text: "A local doctor's contact number only" },
-      { id: "B", text: "The nearest A&E hospital with timed route and contact details" },
-      { id: "C", text: "A list of local pharmacies" },
-      { id: "D", text: "A fully equipped trauma surgeon on standby" },
-    ],
-    correctId: "B",
-    explanation: "Every advance must include the nearest Emergency Department with a timed route. Medical emergencies can happen on any assignment.",
-  },
-  {
-    id: 3,
-    text: "When conducting a route recce, what is the purpose of timing each route?",
-    options: [
-      { id: "A", text: "To race other drivers" },
-      { id: "B", text: "To establish accurate ETAs and identify the fastest emergency extraction route" },
-      { id: "C", text: "To practice driving skills" },
-      { id: "D", text: "To ensure the principal gets to listen to a specific radio show" },
-    ],
-    correctId: "B",
-    explanation: "Accurate route timing enables precise ETAs for the principal and identifies the fastest route in an emergency — critical information for the team.",
-  },
-  {
-    id: 4,
-    text: "For international operations, what document should the advance team produce before the principal travels?",
-    options: [
-      { id: "A", text: "A tourist guide" },
-      { id: "B", text: "A packing list" },
-      { id: "C", text: "A comprehensive advance report covering venues, routes, hospitals, local threats, and emergency contacts" },
-      { id: "D", text: "A dinner menu" },
-    ],
-    correctId: "C",
-    explanation: "A comprehensive advance report is essential for international operations — it becomes the team's operational bible for the visit.",
-  },
-  {
-    id: 5,
-    text: "What is a 'hard stop' in route planning?",
-    options: [
-      { id: "A", text: "A pre-identified emergency stopping point with a specific action plan" },
-      { id: "B", text: "A traffic light" },
-      { id: "C", text: "A stop sign" },
-      { id: "D", text: "When the car runs out of gas" },
-    ],
-    correctId: "A",
-    explanation: "A hard stop is a pre-planned emergency stopping point where specific tactical actions are pre-assigned — used if the route is compromised.",
-  },
-];
-
 export default function AssessmentQuiz() {
+  const { moduleId } = useLocalSearchParams<{ moduleId: string }>();
+  const idNum = parseInt(String(moduleId || ""), 10);
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["assessment-questions", idNum],
+    queryFn: () => generateAssessment(idNum),
+    enabled: !isNaN(idNum),
+  });
+
   const [currIdx, setCurrIdx] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});
 
-  const question = QUESTIONS[currIdx];
+  const questions = React.useMemo(() => {
+    if (!data?.assessment) return [];
+    return data.assessment.map((item, idx) => {
+      const questionKey = Object.keys(item).find(key => key.toUpperCase().startsWith("QUESTION")) || "";
+      const text = questionKey ? String(item[questionKey]) : "";
+      const options = (item.options || []).map((opt: string, optIdx: number) => {
+        const match = opt.match(/^([0-9a-zA-Z]+)\.\s*(.*)$/);
+        if (match) {
+          return { id: match[1], text: match[2] };
+        }
+        return { id: String(optIdx + 1), text: opt };
+      });
+      return {
+        id: idx + 1,
+        text,
+        options,
+        correctId: String(item.correct_option),
+        explanation: item.justification,
+      };
+    });
+  }, [data]);
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#D82C15" />
+      </SafeAreaView>
+    );
+  }
+
+  if (error || !questions || questions.length === 0) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: "center", alignItems: "center", padding: 20 }]}>
+        <Text style={{ color: "#131C2E", fontSize: 16, fontWeight: "600", marginBottom: 16, textAlign: "center" }}>
+          Failed to load assessment. Please try again.
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{ backgroundColor: "#D82C15", paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8 }}
+        >
+          <Text style={{ color: "white", fontWeight: "700" }}>Go Back</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
+  const question = questions[currIdx];
   const isAnswered = selectedOption !== null;
 
   const handleSelect = (optionId: string) => {
@@ -87,13 +81,17 @@ export default function AssessmentQuiz() {
   };
 
   const handleNext = () => {
-    if (currIdx < QUESTIONS.length - 1) {
+    if (currIdx < questions.length - 1) {
       setCurrIdx(currIdx + 1);
       setSelectedOption(null);
     } else {
       router.replace({
         pathname: "/assessment/results",
-        params: { userAnswers: JSON.stringify(answers) },
+        params: {
+          moduleId: String(moduleId),
+          questions: JSON.stringify(questions),
+          userAnswers: JSON.stringify(answers),
+        },
       });
     }
   };
@@ -121,7 +119,7 @@ export default function AssessmentQuiz() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       {/* Dark Header Strip */}
       <View style={styles.headerStrip}>
@@ -130,13 +128,13 @@ export default function AssessmentQuiz() {
             <X size={24} color="#9ca3af" />
           </TouchableOpacity>
           <Text style={styles.questionCounter}>
-            {currIdx + 1} / {QUESTIONS.length}
+            {currIdx + 1} / {questions.length}
           </Text>
           <View style={{ width: 24 }} />
         </View>
         {/* Progress bar */}
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${(currIdx / QUESTIONS.length) * 100}%` }]} />
+          <View style={[styles.progressFill, { width: `${(currIdx / questions.length) * 100}%` }]} />
         </View>
       </View>
 
@@ -196,7 +194,7 @@ export default function AssessmentQuiz() {
         <View style={styles.footer}>
           <TouchableOpacity onPress={handleNext} style={styles.nextBtn}>
             <Text style={styles.nextBtnText}>
-              {currIdx < QUESTIONS.length - 1 ? "NEXT QUESTION" : "SEE RESULTS"}
+              {currIdx < questions.length - 1 ? "NEXT QUESTION" : "SEE RESULTS"}
             </Text>
             <ChevronRight size={18} color="white" />
           </TouchableOpacity>
@@ -219,8 +217,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: 48,
-    paddingBottom: 16,
+    paddingVertical: 16
   },
   closeBtn: {
     padding: 4,

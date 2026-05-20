@@ -19,6 +19,8 @@ export interface Module {
 
 export interface ModuleDetail extends Module {
   subsections: Subsection[];
+  topic?: string[];
+  use?: string;
 }
 
 export interface UserModuleProgress {

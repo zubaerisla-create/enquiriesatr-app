@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,13 +10,10 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   ActivityIndicator,
-  Modal,
-  FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useIsFocused } from "@react-navigation/native";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import * as Clipboard from "expo-clipboard";
 import {
   Sparkles,
@@ -33,6 +30,9 @@ import {
 
 import { llmChat, getConversations, getConversationMessages, type Conversation } from "../../lib/llm";
 import { createNote } from "../../lib/notes";
+import { AppBottomSheet } from "../../components/ui";
+import { useBottomSheet } from "../../hooks/useBottomSheet";
+import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -74,7 +74,7 @@ const Header = ({
         <Sparkles size={18} color="white" />
       </View>
       <View>
-        <Text className="text-white font-bold text-base leading-tight">Gradian</Text>
+        <Text className="text-white font-bold text-base leading-tight">Guardian</Text>
         <View className="flex-row items-center gap-1">
           <View className="w-2 h-2 rounded-full bg-green-400" />
           <Text className="text-gray-400 text-xs">Online</Text>
@@ -268,13 +268,41 @@ const InputBar = ({
   </View>
 );
 
+// ─── History Item ─────────────────────────────────────────────────────────────
+
+const HistoryItem = React.memo(({
+  item,
+  onPress
+}: {
+  item: Conversation;
+  onPress: (id: number) => void;
+}) => {
+  const date = useMemo(() => new Date(item.updated_at).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }), [item.updated_at]);
+
+  return (
+    <TouchableOpacity
+      onPress={() => onPress(item.id)}
+      className="mb-3 bg-[#1B2A3C] p-4 rounded-xl border border-[#2D3D52]"
+    >
+      <Text className="text-white font-medium text-sm mb-1" numberOfLines={1}>
+        {item.title}
+      </Text>
+      <Text className="text-gray-400 text-xs">{date}</Text>
+    </TouchableOpacity>
+  );
+});
+
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 const INITIAL_MESSAGES: Message[] = [
   {
     id: "1",
     role: "ai",
-    text: "Hello. I'm the CPTAN AI — trained on close protection doctrine, procedures, and operational best practices. Ask me anything about CP, or choose a quick topic below.",
+    text: "Hello. I'm Guardian Ai — trained on close protection doctrine, procedures, and operational best practices. Ask me anything about CP, or choose a quick topic below.",
     timestamp: "09:08",
   },
 ];
@@ -292,9 +320,8 @@ const mapBackendMessage = (msg: any): Message => {
   };
 };
 
-export default function Gradian() {
+export default function Guardian() {
   const isFocused = useIsFocused();
-  const tabBarHeight = useBottomTabBarHeight();
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -306,8 +333,14 @@ export default function Gradian() {
   const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  const {
+    ref: historySheetRef,
+    isOpen: historySheetOpen,
+    present: presentHistorySheet,
+    dismiss: dismissHistorySheet,
+  } = useBottomSheet();
+
   const [conversationId, setConversationId] = useState<number | null>(null);
-  const [historyModalVisible, setHistoryModalVisible] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
@@ -333,21 +366,43 @@ export default function Gradian() {
     setConversationId(null);
   };
 
-  const handleOpenHistory = async () => {
-    setHistoryModalVisible(true);
-    setLoadingHistory(true);
-    try {
-      const list = await getConversations();
-      setConversations(list);
-    } catch (err) {
-      console.error(err);
-    } finally {
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchHistory = async () => {
+      try {
+        const list = await getConversations();
+        if (isMounted) {
+          setConversations(list);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (isMounted) {
+          setLoadingHistory(false);
+        }
+      }
+    };
+
+    if (historySheetOpen) {
+      setLoadingHistory(true);
+      fetchHistory();
+    } else {
+      setConversations([]);
       setLoadingHistory(false);
     }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [historySheetOpen]);
+
+  const handleOpenHistory = () => {
+    presentHistorySheet();
   };
 
   const handleSelectConversation = async (convId: number) => {
-    setHistoryModalVisible(false);
+    dismissHistorySheet();
     setSending(true);
     try {
       const historyMessages = await getConversationMessages(convId);
@@ -360,6 +415,10 @@ export default function Gradian() {
       setSending(false);
     }
   };
+
+  const renderHistoryItem = useCallback(({ item }: { item: Conversation }) => (
+    <HistoryItem item={item} onPress={handleSelectConversation} />
+  ), [handleSelectConversation]);
 
   const handleCopy = async (message: Message) => {
     await Clipboard.setStringAsync(message.text);
@@ -518,56 +577,36 @@ export default function Gradian() {
         />
       </KeyboardAvoidingView>
 
-      <Modal
-        visible={historyModalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setHistoryModalVisible(false)}
+      <AppBottomSheet
+        ref={historySheetRef}
+        title="Chat History"
+        snapPoints={["60%", "90%"]}
+        enableDynamicSizing={false}
       >
-        <SafeAreaView className="flex-1 bg-[#0F1824]">
-          <View className="flex-row items-center justify-between px-4 py-4 border-b border-[#1E2D45]">
-            <Text className="text-white font-bold text-lg">Chat History</Text>
-            <TouchableOpacity onPress={() => setHistoryModalVisible(false)}>
-              <X size={24} color="#9CA3AF" />
-            </TouchableOpacity>
+        {loadingHistory ? (
+          <View className="py-20 items-center justify-center">
+            <ActivityIndicator size="large" color="#60A5FA" />
           </View>
-
-          {loadingHistory ? (
-            <View className="flex-1 items-center justify-center">
-              <ActivityIndicator size="large" color="#60A5FA" />
-            </View>
-          ) : (
-            <FlatList
-              data={conversations}
-              keyExtractor={(item) => String(item.id)}
-              contentContainerStyle={{ padding: 16 }}
-              ListEmptyComponent={
+        ) : (
+          <BottomSheetFlatList
+            data={conversations}
+            keyExtractor={(item) => String(item.id)}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+            removeClippedSubviews={Platform.OS === "android"}
+            ListEmptyComponent={
+              historySheetOpen && !loadingHistory && conversations.length === 0 ? (
                 <View className="py-12 items-center justify-center">
                   <Text className="text-gray-400 text-sm">No past conversations found</Text>
                 </View>
-              }
-              renderItem={({ item }) => {
-                const date = new Date(item.updated_at).toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                });
-                return (
-                  <TouchableOpacity
-                    onPress={() => void handleSelectConversation(item.id)}
-                    className="mb-3 bg-[#1B2A3C] p-4 rounded-xl border border-[#2D3D52]"
-                  >
-                    <Text className="text-white font-medium text-sm mb-1" numberOfLines={1}>
-                      {item.title}
-                    </Text>
-                    <Text className="text-gray-400 text-xs">{date}</Text>
-                  </TouchableOpacity>
-                );
-              }}
-            />
-          )}
-        </SafeAreaView>
-      </Modal>
+              ) : null
+            }
+            renderItem={renderHistoryItem}
+          />
+        )}
+      </AppBottomSheet>
     </SafeAreaView>
   );
 }

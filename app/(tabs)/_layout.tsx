@@ -62,9 +62,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="gradian"
+        name="guardian"
         options={{
-          title: "Gradian",
+          title: "Guardian",
           tabBarIcon: ({ color, size }) => (
             <Cpu size={rs(20)} color={color} />
           ),

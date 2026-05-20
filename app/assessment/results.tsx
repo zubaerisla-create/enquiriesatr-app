@@ -3,17 +3,31 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { router, useLocalSearchParams } from "expo-router";
-import { 
-  Award, 
-  AlertCircle, 
-  CheckCircle, 
-  XCircle, 
-  RefreshCcw 
+import { useQuery } from "@tanstack/react-query";
+import { fetchModuleDetail } from "../../lib/modules";
+import {
+  Award,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  RefreshCcw,
+  Check,
+  X
 } from "lucide-react-native";
-import { QUESTIONS } from "./quiz";
 
 export default function AssessmentResults() {
-  const { userAnswers } = useLocalSearchParams<{ userAnswers?: string }>();
+  const { userAnswers, questions: questionsParam, moduleId } = useLocalSearchParams<{
+    userAnswers?: string;
+    questions?: string;
+    moduleId?: string;
+  }>();
+
+  const idNum = parseInt(String(moduleId || ""), 10);
+  const { data: moduleDetail } = useQuery({
+    queryKey: ["module-detail", idNum],
+    queryFn: () => fetchModuleDetail(idNum),
+    enabled: !isNaN(idNum),
+  });
 
   let answers: Record<number, string> = {};
   if (userAnswers) {
@@ -24,36 +38,46 @@ export default function AssessmentResults() {
     }
   }
 
-  // Calculate Score
+  let questions: any[] = [];
+  if (questionsParam) {
+    try {
+      questions = JSON.parse(questionsParam);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   let score = 0;
-  QUESTIONS.forEach(q => {
+  questions.forEach(q => {
     if (answers[q.id] === q.correctId) score++;
   });
 
-  const percent = Math.round((score / QUESTIONS.length) * 100);
+  const percent = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
   const passed = percent >= 70;
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
-      {/* Top Banner */}
       <View style={styles.banner}>
-        <Text style={styles.percentText}>{percent}%</Text>
+        <View style={[styles.scoreCircle, passed ? styles.scoreCirclePassed : styles.scoreCircleFailed]}>
+          <Text style={styles.percentText}>{percent}%</Text>
+        </View>
 
-        {/* Pass/Fail Badge */}
         <View style={[styles.badge, passed ? styles.badgePassed : styles.badgeFailed]}>
           {passed ? (
-             <Award size={14} color="#34D399" />
+            <Award size={14} color="#10B981" />
           ) : (
-             <AlertCircle size={14} color="#FCA5A5" />
+            <AlertCircle size={14} color="#EF4444" />
           )}
           <Text style={[styles.badgeText, passed ? styles.badgeTextPassed : styles.badgeTextFailed]}>
             {passed ? "PASSED" : "FAILED"}
           </Text>
         </View>
 
-        <Text style={styles.assessmentTitle}>Advance Work Assessment</Text>
+        <Text style={styles.assessmentTitle}>
+          {moduleDetail?.name ? `${moduleDetail.name} Assessment` : "Module Assessment"}
+        </Text>
         <Text style={styles.scoreSubtitle}>Pass mark: 70% · You scored {percent}%</Text>
       </View>
 
@@ -61,47 +85,53 @@ export default function AssessmentResults() {
         <View style={styles.content}>
           <Text style={styles.sectionLabel}>QUESTION BREAKDOWN</Text>
 
-          {QUESTIONS.map(q => {
+          {questions.map(q => {
             const userAnswerId = answers[q.id];
             const isCorrect = userAnswerId === q.correctId;
-            const userAnswerText = q.options.find(o => o.id === userAnswerId)?.text || "No Answer";
-            const correctAnswerText = q.options.find(o => o.id === q.correctId)?.text;
+            const userAnswerText = q.options.find((o: any) => o.id === userAnswerId)?.text || "No Answer";
+            const correctAnswerText = q.options.find((o: any) => o.id === q.correctId)?.text;
 
             return (
               <View key={q.id} style={styles.breakdownCard}>
-                {/* Header row */}
                 <View style={styles.breakdownHeader}>
-                  <View style={styles.breakdownLeft}>
-                    <View style={styles.questionNumCircle}>
-                      <Text style={styles.questionNumText}>{q.id}</Text>
-                    </View>
-                    <Text style={styles.questionText}>{q.text}</Text>
+                  <View style={styles.questionNumCircle}>
+                    <Text style={styles.questionNumText}>{q.id}</Text>
                   </View>
-                  <View style={{ marginTop: 4 }}>
+                  <Text style={styles.questionText}>{q.text}</Text>
+                  <View style={styles.statusIconWrap}>
                     {isCorrect ? (
-                      <CheckCircle size={16} color="#34D399" />
+                      <View style={[styles.statusBadge, styles.statusBadgeCorrect]}>
+                        <Check size={12} color="#10B981" strokeWidth={3} />
+                      </View>
                     ) : (
-                      <XCircle size={16} color="#EF4444" />
+                      <View style={[styles.statusBadge, styles.statusBadgeWrong]}>
+                        <X size={12} color="#EF4444" strokeWidth={3} />
+                      </View>
                     )}
                   </View>
                 </View>
 
-                {/* Answer rows */}
+                <View style={styles.cardDivider} />
+
                 <View style={styles.answerSection}>
                   {!isCorrect && (
-                    <View style={styles.answerRow}>
-                      <Text style={styles.yourAnswerLabel}>YOUR ANSWER:</Text>
+                    <View style={styles.answerBlock}>
+                      <Text style={styles.yourAnswerLabel}>YOUR ANSWER</Text>
                       <Text style={styles.yourAnswerText}>{userAnswerText}</Text>
                     </View>
                   )}
-                  <View style={styles.answerRow}>
-                    <Text style={styles.correctLabel}>CORRECT:</Text>
+                  <View style={styles.answerBlock}>
+                    <Text style={styles.correctLabel}>CORRECT ANSWER</Text>
                     <Text style={styles.correctText}>{correctAnswerText}</Text>
                   </View>
                 </View>
 
-                {/* Explanation */}
-                <Text style={styles.explanationText}>{q.explanation}</Text>
+                {q.explanation ? (
+                  <View style={styles.explanationSection}>
+                    <Text style={styles.explanationLabel}>EXPLANATION</Text>
+                    <Text style={styles.explanationText}>{q.explanation}</Text>
+                  </View>
+                ) : null}
               </View>
             );
           })}
@@ -111,7 +141,7 @@ export default function AssessmentResults() {
       {/* Fixed bottom actions */}
       <View style={styles.footer}>
         <TouchableOpacity
-          onPress={() => router.replace("/assessment/quiz")}
+          onPress={() => router.replace(`/assessment/quiz?moduleId=${moduleId}`)}
           style={styles.retakeBtn}
         >
           <RefreshCcw size={16} color="white" />
@@ -137,57 +167,83 @@ const styles = StyleSheet.create({
   banner: {
     backgroundColor: "#131C2E",
     alignItems: "center",
-    paddingTop: 80,
-    paddingBottom: 40,
+    paddingTop: 36,
+    paddingBottom: 28,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  scoreCircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 3,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  scoreCirclePassed: {
+    borderColor: "#10B981",
+    backgroundColor: "#14201A",
+  },
+  scoreCircleFailed: {
+    borderColor: "#EF4444",
+    backgroundColor: "#22191C",
   },
   percentText: {
     color: "#ffffff",
-    fontSize: 80,
+    fontSize: 28,
     fontWeight: "900",
-    letterSpacing: -2,
-    lineHeight: 80,
-    marginBottom: 16,
+    letterSpacing: -0.5,
   },
   badge: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 6,
     borderWidth: 1,
-    marginBottom: 24,
-    gap: 8,
+    marginBottom: 20,
+    gap: 6,
   },
   badgePassed: {
-    backgroundColor: "#065F46",
-    borderColor: "#047857",
+    backgroundColor: "#14201A",
+    borderColor: "#065F46",
   },
   badgeFailed: {
-    backgroundColor: "#7F1D1D",
-    borderColor: "#991B1B",
+    backgroundColor: "#22191C",
+    borderColor: "#7F1D1D",
   },
   badgeText: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 2,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1.5,
   },
   badgeTextPassed: {
-    color: "#34D399",
+    color: "#10B981",
   },
   badgeTextFailed: {
-    color: "#FCA5A5",
+    color: "#EF4444",
   },
   assessmentTitle: {
     color: "#ffffff",
-    fontSize: 20,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 1.5,
-    marginBottom: 8,
+    fontSize: 16,
+    fontWeight: "800",
+    textAlign: "center",
+    letterSpacing: 0.5,
+    lineHeight: 22,
+    marginBottom: 6,
   },
   scoreSubtitle: {
     color: "#9ca3af",
     fontSize: 12,
+    fontWeight: "500",
+    letterSpacing: 0.2,
   },
   content: {
     paddingHorizontal: 20,
@@ -213,11 +269,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 16,
   },
-  breakdownLeft: {
-    flexDirection: "row",
-    flex: 1,
-    marginRight: 16,
-  },
   questionNumCircle: {
     width: 24,
     height: 24,
@@ -225,7 +276,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1E293B",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
+    marginRight: 10,
     marginTop: 2,
   },
   questionNumText: {
@@ -235,55 +286,81 @@ const styles = StyleSheet.create({
   },
   questionText: {
     color: "#ffffff",
-    fontWeight: "500",
-    fontSize: 14,
-    lineHeight: 20,
+    fontWeight: "600",
+    fontSize: 15,
+    lineHeight: 22,
     flex: 1,
+    marginRight: 12,
+  },
+  statusIconWrap: {
+    marginTop: 2,
+  },
+  statusBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
+  statusBadgeCorrect: {
+    backgroundColor: "#14201A",
+    borderColor: "#065F46",
+  },
+  statusBadgeWrong: {
+    backgroundColor: "#22191C",
+    borderColor: "#7F1D1D",
+  },
+  cardDivider: {
+    height: 1,
+    backgroundColor: "#1E2D45",
+    marginVertical: 16,
   },
   answerSection: {
-    marginLeft: 36,
-    marginBottom: 16,
-    gap: 12,
+    gap: 14,
   },
-  answerRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
+  answerBlock: {
+    gap: 4,
   },
   yourAnswerLabel: {
     color: "#EF4444",
     fontSize: 10,
-    width: 64,
-    fontWeight: "700",
-    letterSpacing: 1,
-    marginTop: 2,
+    fontWeight: "800",
+    letterSpacing: 1.5,
   },
   yourAnswerText: {
     color: "#D1D5DB",
-    fontSize: 12,
-    flex: 1,
-    marginLeft: 8,
+    fontSize: 13,
     lineHeight: 20,
   },
   correctLabel: {
-    color: "#34D399",
+    color: "#10B981",
     fontSize: 10,
-    width: 64,
-    fontWeight: "700",
-    letterSpacing: 1,
-    marginTop: 2,
+    fontWeight: "800",
+    letterSpacing: 1.5,
   },
   correctText: {
-    color: "#34D399",
-    fontSize: 12,
-    flex: 1,
-    marginLeft: 8,
+    color: "#10B981",
+    fontSize: 13,
     lineHeight: 20,
   },
+  explanationSection: {
+    backgroundColor: "#1C2538",
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 16,
+    gap: 4,
+  },
+  explanationLabel: {
+    color: "#9CA3AF",
+    fontSize: 9,
+    fontWeight: "800",
+    letterSpacing: 1.5,
+  },
   explanationText: {
-    color: "#9ca3af",
+    color: "#9CA3AF",
     fontSize: 12,
-    fontStyle: "italic",
-    lineHeight: 20,
+    lineHeight: 18,
   },
   footer: {
     position: "absolute",

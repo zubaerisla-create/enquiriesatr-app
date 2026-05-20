@@ -1,17 +1,19 @@
+// ## this file is deprecated and kept for backward compatability and will be removed before final relese
+
 import React from "react";
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import { rs, rf, wp } from "../utils/responsive";
 
 import { StatusBar } from "expo-status-bar";
 import { router, useLocalSearchParams } from "expo-router";
-import { 
-  ArrowLeft, 
-  Clock, 
-  CheckCircle, 
-  PlayCircle, 
-  Lock, 
-  Target, 
-  ChevronRight 
+import {
+  ArrowLeft,
+  Clock,
+  CheckCircle,
+  PlayCircle,
+  Lock,
+  Target,
+  ChevronRight
 } from "lucide-react-native";
 import { useQuery } from "@tanstack/react-query";
 import { fetchModuleDetail, fetchModuleProgress } from "../lib/modules";

@@ -174,6 +174,18 @@ const ModuleCard = ({ module }: { module: Module }) => {
           <Text style={styles.progressPercent}>{module.progress}%</Text>
         </View>
       </View>
+
+      {module.status === "completed" && (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => {
+            router.push(`/assessment/intro?moduleId=${module.id}`);
+          }}
+          style={styles.assessmentCardBtn}
+        >
+          <Text style={styles.assessmentCardBtnText}>Take Assessment</Text>
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 };
@@ -461,5 +473,19 @@ const styles = StyleSheet.create({
   progressPercent: {
     color: "#6b7280",
     fontSize: 12,
+  },
+  assessmentCardBtn: {
+    backgroundColor: "#D82C15",
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: "center",
+    marginTop: 12,
+  },
+  assessmentCardBtnText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
   },
 });

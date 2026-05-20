@@ -2,7 +2,9 @@ import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
+import { fetchModuleDetail } from "../../lib/modules";
 import { 
   ArrowLeft, 
   Target, 
@@ -10,41 +12,48 @@ import {
 } from "lucide-react-native";
 
 export default function AssessmentIntro() {
+  const { moduleId } = useLocalSearchParams<{ moduleId: string }>();
+  const idNum = parseInt(String(moduleId || ""), 10);
+
+  const { data: moduleDetail } = useQuery({
+    queryKey: ["module-detail", idNum],
+    queryFn: () => fetchModuleDetail(idNum),
+    enabled: !isNaN(idNum),
+  });
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
       
-      {/* Header */}
-      <View className="px-5 pt-12 pb-2 flex-row items-center">
+      <View className="px-5 pb-2 flex-row items-center">
         <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
           <ArrowLeft size={24} color="#1f2937" />
         </TouchableOpacity>
-        <Text className="text-[#1f2937] font-medium ml-2 text-base">Advance Work</Text>
+        <Text className="text-[#1f2937] font-medium ml-2 text-base">
+          {moduleDetail?.name || "Module"}
+        </Text>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
         <View className="px-5 pt-6 items-center">
-          {/* Target Icon Box */}
           <View className="w-24 h-24 rounded-2xl bg-[#FFE4E1] items-center justify-center mb-6 border border-[#FCA5A5]/30">
             <Target size={40} color="#D82C15" />
           </View>
 
-          {/* Title Section */}
           <View className="border border-[#FCA5A5] bg-[#FFF0F0] px-4 py-1.5 rounded-full mb-4">
             <Text className="text-[#D82C15] text-[10px] font-extrabold tracking-widest uppercase">
-              OPERATIONS ASSESSMENT
+              {moduleDetail?.category ? `${moduleDetail.category} ASSESSMENT` : "ASSESSMENT"}
             </Text>
           </View>
           
           <Text className="text-[#131C2E] text-2xl font-black uppercase text-center mb-4">
-            Advance Work Assessment
+            {moduleDetail?.name ? `${moduleDetail.name} Assessment` : "Module Assessment"}
           </Text>
 
           <Text className="text-gray-400 text-center text-sm leading-6 mb-8 px-4">
-            Evaluate your understanding of advance planning, route recce, medical advances, and international operations.
+            Evaluate your understanding of the concepts covered in this module.
           </Text>
 
-          {/* Stat Cards */}
           <View className="flex-row gap-3 mb-8 w-full">
             <View className="flex-1 bg-[#131C2E] rounded-xl p-4 items-center">
               <Text className="text-[#D82C15] font-bold text-lg mb-1">5</Text>
@@ -60,7 +69,6 @@ export default function AssessmentIntro() {
             </View>
           </View>
 
-          {/* Instruction Box */}
           <View className="bg-[#131C2E] rounded-xl p-5 w-full">
             <Text className="text-gray-300 text-sm leading-6">
               <Text className="text-white font-bold">Before you begin: </Text>
@@ -70,10 +78,9 @@ export default function AssessmentIntro() {
         </View>
       </ScrollView>
 
-      {/* Footer Action */}
       <View className="absolute bottom-0 w-full bg-white px-5 py-6">
         <TouchableOpacity 
-          onPress={() => router.push("/assessment/quiz")}
+          onPress={() => router.push(`/assessment/quiz?moduleId=${moduleId}`)}
           className="w-full bg-[#D82C15] py-4 rounded-xl flex-row items-center justify-center gap-2"
         >
           <Text className="text-white font-bold tracking-wide uppercase text-sm">START ASSESSMENT</Text>

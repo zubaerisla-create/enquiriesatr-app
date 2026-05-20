@@ -3,9 +3,11 @@ import {
   BottomSheetBackdropProps,
   BottomSheetModal,
   BottomSheetView,
+  useBottomSheetModal,
+  useBottomSheetSpringConfigs,
 } from "@gorhom/bottom-sheet";
 import { X } from "lucide-react-native";
-import React, { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import React, { forwardRef, useCallback, useImperativeHandle, useRef, useMemo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { rf, rs } from "../../utils/responsive";
 
@@ -21,6 +23,7 @@ export interface AppBottomSheetProps {
   variant?: "dark" | "light";
   keyboardBehavior?: "interactive" | "extend" | "fillParent";
   keyboardBlurBehavior?: "none" | "restore";
+  animationConfigs?: any;
 }
 
 export interface AppBottomSheetRef {
@@ -43,10 +46,22 @@ const AppBottomSheet = forwardRef<AppBottomSheetRef, AppBottomSheetProps>(
       variant = "dark",
       keyboardBehavior = "interactive",
       keyboardBlurBehavior = "restore",
+      animationConfigs,
     },
     ref
   ) => {
     const sheetRef = useRef<BottomSheetModal>(null);
+    const { dismiss: dismissAll } = useBottomSheetModal();
+
+    const defaultAnimationConfigs = useBottomSheetSpringConfigs({
+      damping: 100,
+      overshootClamping: true,
+      stiffness: 1000,
+    });
+
+    const combinedAnimationConfigs = useMemo(() => {
+      return animationConfigs || defaultAnimationConfigs;
+    }, [animationConfigs, defaultAnimationConfigs]);
 
     useImperativeHandle(ref, () => ({
       present: () => {
@@ -86,7 +101,7 @@ const AppBottomSheet = forwardRef<AppBottomSheetRef, AppBottomSheetProps>(
     };
 
     const handleDismiss = () => {
-      sheetRef.current?.dismiss();
+      dismissAll();
       if (onDismiss) {
         onDismiss();
       }
@@ -101,10 +116,11 @@ const AppBottomSheet = forwardRef<AppBottomSheetRef, AppBottomSheetProps>(
         backdropComponent={renderBackdrop}
         backgroundStyle={backgroundStyle}
         handleIndicatorStyle={handleStyle}
-        onDismiss={onDismiss}
+        onDismiss={handleDismiss}
         keyboardBehavior={keyboardBehavior}
         keyboardBlurBehavior={keyboardBlurBehavior}
         android_keyboardInputMode="adjustResize"
+        animationConfigs={combinedAnimationConfigs}
       >
         <BottomSheetView style={styles.container}>
           {(title || subtitle || showCloseButton) && (
