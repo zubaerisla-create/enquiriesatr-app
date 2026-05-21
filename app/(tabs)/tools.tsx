@@ -34,6 +34,7 @@ interface Tool {
   tag: string;
   tagColor: TagColor;
   description: string;
+  route: string;
 }
 
 interface SavedDoc {
@@ -55,6 +56,7 @@ const TOOLS: Tool[] = [
     tagColor: "operations",
     description:
       "Systematic search procedures for venues, vehicles, persons, and items.",
+    route: "/search-operations",
   },
   {
     id: "2",
@@ -64,6 +66,7 @@ const TOOLS: Tool[] = [
     tag: "OPERATIONS",
     tagColor: "operations",
     description: "Advance work and security protocols for any venue type.",
+    route: "/search-operations",
   },
   {
     id: "3",
@@ -74,6 +77,7 @@ const TOOLS: Tool[] = [
     tagColor: "planning",
     description:
       "Route planning, hospital advances, and location recce templates.",
+    route: "/search-operations",
   },
   {
     id: "4",
@@ -84,6 +88,7 @@ const TOOLS: Tool[] = [
     tagColor: "operations",
     description:
       "Home and close protection procedures for residential assignments.",
+    route: "/search-operations",
   },
   {
     id: "5",
@@ -93,6 +98,7 @@ const TOOLS: Tool[] = [
     tag: "PLANNING",
     tagColor: "planning",
     description: "International travel security planning and documentation.",
+    route: "/search-operations",
   },
   {
     id: "6",
@@ -103,6 +109,17 @@ const TOOLS: Tool[] = [
     tagColor: "tactical",
     description:
       "Foot and vehicle escort drills, formations, and protocols.",
+    route: "/search-operations",
+  },
+  {
+    id: "7",
+    icon: ShieldCheck,
+    iconBg: "#141A1E",
+    title: "Threat\nAssessment",
+    tag: "PLANNING",
+    tagColor: "planning",
+    description: "AI-powered threat assessment and risk reporting tool.",
+    route: "/threat-assessment-checklist",
   },
 ];
 
@@ -142,7 +159,7 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
   return (
     <TouchableOpacity
       activeOpacity={0.8}
-      onPress={() => router.navigate("/search-operations" as any)}
+      onPress={() => router.navigate(tool.route as any)}
       className="mx-4 mb-4 bg-[#141E2B] rounded-2xl p-4 flex-row items-center gap-4"
     >
       {/* Icon box */}
@@ -178,7 +195,7 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
 
       {/* Start button */}
       <TouchableOpacity
-        onPress={() => router.navigate("/search-operations" as any)}
+        onPress={() => router.navigate(tool.route as any)}
         className="bg-[#C0392B] rounded-xl px-4 py-2.5 ml-1"
       >
         <Text className="text-white font-semibold text-sm">Start</Text>
