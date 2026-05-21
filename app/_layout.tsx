@@ -76,6 +76,8 @@ export default function RootLayout() {
                     <Stack.Screen name="threat-assessment-checklist" />
                     <Stack.Screen name="risk-report" />
                     <Stack.Screen name="assessment" />
+                    <Stack.Screen name="document-details" />
+                    <Stack.Screen name="venue-security-rag" />
                   </Stack>
                 </AuthGate>
               </AuthProvider>

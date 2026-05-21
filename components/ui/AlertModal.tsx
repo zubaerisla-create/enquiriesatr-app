@@ -23,6 +23,27 @@ interface AlertModalProps {
   loading?: boolean;
 }
 
+const VARIANT_CONFIGS = {
+  danger: {
+    icon: AlertTriangle,
+    iconBg: "#2D1010",
+    iconColor: "#E05252",
+    btnBg: "#E05252",
+  },
+  success: {
+    icon: CheckCircle2,
+    iconBg: "#0D2318",
+    iconColor: "#4CAF82",
+    btnBg: "#4CAF82",
+  },
+  info: {
+    icon: Info,
+    iconBg: "#0D1828",
+    iconColor: "#5B8DEF",
+    btnBg: "#5B8DEF",
+  },
+};
+
 const AlertModal: React.FC<AlertModalProps> = ({
   visible,
   title,
@@ -34,83 +55,36 @@ const AlertModal: React.FC<AlertModalProps> = ({
   variant = "info",
   loading = false,
 }) => {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
 
   useEffect(() => {
     if (visible) {
-      fadeAnim.setValue(0);
-      scaleAnim.setValue(0.95);
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          friction: 8,
-          tension: 100,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 220,
+        friction: 14,
+        useNativeDriver: true,
+      }).start();
     } else {
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 0.95,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      scaleAnim.setValue(0.95);
     }
   }, [visible]);
 
-  const getVariantStyles = () => {
-    switch (variant) {
-      case "danger":
-        return {
-          icon: AlertTriangle,
-          iconBg: "#2D1010",
-          iconColor: "#E05252",
-          btnBg: "#E05252",
-        };
-      case "success":
-        return {
-          icon: CheckCircle2,
-          iconBg: "#0D2318",
-          iconColor: "#4CAF82",
-          btnBg: "#4CAF82",
-        };
-      default:
-        return {
-          icon: Info,
-          iconBg: "#0D1828",
-          iconColor: "#5B8DEF",
-          btnBg: "#5B8DEF",
-        };
-    }
-  };
-
-  const config = getVariantStyles();
+  const config = VARIANT_CONFIGS[variant] || VARIANT_CONFIGS.info;
   const IconComponent = config.icon;
 
   return (
-    <Modal transparent visible={visible} animationType="none" onRequestClose={onCancel}>
-      <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
+    <Modal transparent visible={visible} animationType="fade" onRequestClose={onCancel}>
+      <View style={styles.overlay}>
         <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }] }]}>
           <View style={{ backgroundColor: config.iconBg }} className="w-12 h-12 rounded-2xl items-center justify-center mb-4 self-center">
             <IconComponent size={24} color={config.iconColor} />
           </View>
-          
+
           <Text style={{ fontSize: rf(18) }} className="text-white font-bold text-center mb-2">
             {title}
           </Text>
-          
+
           <Text style={{ fontSize: rf(13) }} className="text-gray-400 text-center mb-6 leading-5">
             {description}
           </Text>
@@ -120,7 +94,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
               onPress={onCancel}
               disabled={loading}
               style={{ height: rs(48) }}
-              className="flex-1 rounded-xl bg-[#141E2B] border border-[#1E2D3D] items-center justify-center"
+              className={`flex-1 rounded-xl bg-[#141E2B] border border-[#1E2D3D] items-center justify-center ${loading ? "opacity-50" : ""}`}
             >
               <Text style={{ fontSize: rf(14) }} className="text-gray-300 font-semibold">
                 {cancelText}
@@ -131,7 +105,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
               onPress={onConfirm}
               disabled={loading}
               style={{ height: rs(48), backgroundColor: config.btnBg }}
-              className="flex-1 rounded-xl items-center justify-center"
+              className={`flex-1 rounded-xl items-center justify-center ${loading ? "opacity-50" : ""}`}
             >
               {loading ? (
                 <ActivityIndicator color="white" />
@@ -143,7 +117,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
             </TouchableOpacity>
           </View>
         </Animated.View>
-      </Animated.View>
+      </View>
     </Modal>
   );
 };
@@ -151,7 +125,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(9, 15, 23, 0.82)",
+    backgroundColor: "transparent",
     alignItems: "center",
     justifyContent: "center",
     padding: 24,

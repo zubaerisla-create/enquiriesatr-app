@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -21,8 +22,7 @@ import {
   FileText,
   ChevronRight
 } from "lucide-react-native";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { api } from "../../lib/api";
 
 type TagColor = "operations" | "planning" | "tactical";
 
@@ -39,12 +39,20 @@ interface Tool {
 
 interface SavedDoc {
   id: string;
+  apiId: number;
+  apiType: string;
   title: string;
   type: string;
   date: string;
 }
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+interface ApiDoc {
+  id: number;
+  type: string;
+  title: string;
+  risk_level: string;
+  created_at: string;
+}
 
 const TOOLS: Tool[] = [
   {
@@ -66,10 +74,20 @@ const TOOLS: Tool[] = [
     tag: "OPERATIONS",
     tagColor: "operations",
     description: "Advance work and security protocols for any venue type.",
-    route: "/search-operations",
+    route: "/venue-security-rag",
   },
   {
     id: "3",
+    icon: ShieldCheck,
+    iconBg: "#141A1E",
+    title: "Threat\nAssessment",
+    tag: "PLANNING",
+    tagColor: "planning",
+    description: "AI-powered threat assessment and risk reporting tool.",
+    route: "/threat-assessment-checklist",
+  },
+  {
+    id: "4",
     icon: MapPin,
     iconBg: "#181C14",
     title: "Advance Work",
@@ -80,7 +98,7 @@ const TOOLS: Tool[] = [
     route: "/search-operations",
   },
   {
-    id: "4",
+    id: "5",
     icon: Home,
     iconBg: "#1E1214",
     title: "Residential\nSecurity",
@@ -91,7 +109,7 @@ const TOOLS: Tool[] = [
     route: "/search-operations",
   },
   {
-    id: "5",
+    id: "6",
     icon: Plane,
     iconBg: "#181C14",
     title: "Travel\nSecurity",
@@ -101,7 +119,7 @@ const TOOLS: Tool[] = [
     route: "/search-operations",
   },
   {
-    id: "6",
+    id: "7",
     icon: ShieldCheck,
     iconBg: "#141A1E",
     title: "Escort\nProcedures",
@@ -111,34 +129,7 @@ const TOOLS: Tool[] = [
       "Foot and vehicle escort drills, formations, and protocols.",
     route: "/search-operations",
   },
-  {
-    id: "7",
-    icon: ShieldCheck,
-    iconBg: "#141A1E",
-    title: "Threat\nAssessment",
-    tag: "PLANNING",
-    tagColor: "planning",
-    description: "AI-powered threat assessment and risk reporting tool.",
-    route: "/threat-assessment-checklist",
-  },
 ];
-
-const SAVED_DOCS: SavedDoc[] = [
-  {
-    id: "1",
-    title: "Premises Search — Knightsbridge",
-    type: "Checklist",
-    date: "22 Mar 2026",
-  },
-  {
-    id: "2",
-    title: "Risk Assessment — Venue Advance",
-    type: "Document",
-    date: "28 Mar 2026",
-  },
-];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const tagStyle = (color: TagColor) => {
   switch (color) {
@@ -151,8 +142,6 @@ const tagStyle = (color: TagColor) => {
   }
 };
 
-// ─── Tool Card ────────────────────────────────────────────────────────────────
-
 const ToolCard = ({ tool }: { tool: Tool }) => {
   const tag = tagStyle(tool.tagColor);
 
@@ -162,7 +151,6 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
       onPress={() => router.navigate(tool.route as any)}
       className="mx-4 mb-4 bg-[#141E2B] rounded-2xl p-4 flex-row items-center gap-4"
     >
-      {/* Icon box */}
       <View
         style={{ backgroundColor: tool.iconBg }}
         className="w-12 h-12 rounded-xl items-center justify-center border border-[#2A2A3A]"
@@ -170,7 +158,6 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
         <tool.icon size={20} color={tag.text} />
       </View>
 
-      {/* Content */}
       <View className="flex-1">
         <View className="flex-row items-center gap-2 mb-0.5 flex-wrap">
           <Text className="text-white font-bold text-base leading-tight">
@@ -193,7 +180,6 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
         </Text>
       </View>
 
-      {/* Start button */}
       <TouchableOpacity
         onPress={() => router.navigate(tool.route as any)}
         className="bg-[#C0392B] rounded-xl px-4 py-2.5 ml-1"
@@ -204,16 +190,20 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
   );
 };
 
-// ─── Saved Document Row ───────────────────────────────────────────────────────
-
 const SavedDocRow = ({ doc }: { doc: SavedDoc }) => (
-  <TouchableOpacity className="mx-4 mb-3 bg-[#141E2B] rounded-2xl px-4 py-4 flex-row items-center gap-3">
+  <TouchableOpacity
+    onPress={() => router.push({
+      pathname: "/document-details",
+      params: { id: doc.apiId, type: doc.apiType, title: doc.title }
+    })}
+    className="mx-4 mb-3 bg-[#141E2B] rounded-2xl px-4 py-4 flex-row items-center gap-3"
+  >
     <View className="w-9 h-9 rounded-lg bg-[#1E2D45] items-center justify-center">
       <FileText size={18} color="#9ca3af" />
     </View>
 
     <View className="flex-1">
-      <Text className="text-white text-sm font-semibold">{doc.title}</Text>
+      <Text className="text-white text-sm font-semibold" numberOfLines={1}>{doc.title}</Text>
       <Text className="text-gray-500 text-xs mt-0.5">
         {doc.type} · {doc.date}
       </Text>
@@ -223,15 +213,56 @@ const SavedDocRow = ({ doc }: { doc: SavedDoc }) => (
   </TouchableOpacity>
 );
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
+const formatDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return dateString;
+  }
+};
 
 export default function Tools() {
   const isFocused = useIsFocused();
+  const [savedDocs, setSavedDocs] = useState<SavedDoc[]>([]);
+  const [docsLoading, setDocsLoading] = useState(true);
+
+  const fetchDocs = useCallback(async () => {
+    try {
+      const response = await api.get<ApiDoc[]>("/users/document/list/", { requireAuth: true });
+      const mapped = response.data
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 3)
+        .map((d) => ({
+          id: `${d.type}-${d.id}`,
+          apiId: d.id,
+          apiType: d.type,
+          title: d.title,
+          type: d.type === "THREAT_ASSESSMENT" ? "Threat Assessment" : d.type === "VENUE_REPORT" ? "Venue Assessment" : d.type === "SEARCH_REPORT" ? "Search Operations" : d.type,
+          date: formatDate(d.created_at)
+        }));
+      setSavedDocs(mapped);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setDocsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchDocs();
+    }
+  }, [isFocused, fetchDocs]);
+
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0D1520]">
       {isFocused && <StatusBar style="light" />}
 
-      {/* Sticky Page Header */}
       <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D]">
         <View className="px-4 py-4">
           <Text className="text-white text-2xl font-extrabold tracking-wider uppercase">
@@ -243,26 +274,38 @@ export default function Tools() {
         </View>
       </View>
 
-      {/* Scrollable Content - Cards are now lower */}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 20, paddingBottom: 40 }}
       >
-        {/* Tool cards - increased top spacing */}
         {TOOLS.map((tool) => (
           <ToolCard key={tool.id} tool={tool} />
         ))}
 
-        {/* Saved documents section */}
-        <View className="px-4 mt-8 mb-3">
+        <View className="px-4 mt-8 mb-3 flex-row items-center justify-between">
           <Text className="text-gray-400 text-xs font-bold tracking-widest uppercase">
             My Saved Documents
           </Text>
+          <TouchableOpacity onPress={() => router.push("/profile/my-documents")}>
+            <Text className="text-[#C0392B] text-xs font-bold uppercase tracking-wider">
+              View All
+            </Text>
+          </TouchableOpacity>
         </View>
 
-        {SAVED_DOCS.map((doc) => (
-          <SavedDocRow key={doc.id} doc={doc} />
-        ))}
+        {docsLoading ? (
+          <View className="py-8">
+            <ActivityIndicator size="small" color="#C0392B" />
+          </View>
+        ) : savedDocs.length > 0 ? (
+          savedDocs.map((doc) => (
+            <SavedDocRow key={doc.id} doc={doc} />
+          ))
+        ) : (
+          <View className="mx-4 bg-[#141E2B] rounded-2xl px-4 py-6 items-center justify-center">
+            <Text className="text-gray-500 text-xs">No recent documents</Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

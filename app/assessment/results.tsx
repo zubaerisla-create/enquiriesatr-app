@@ -5,6 +5,8 @@ import { StatusBar } from "expo-status-bar";
 import { router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { fetchModuleDetail } from "../../lib/modules";
+import { fetchAssessmentDetail } from "../../lib/assessments";
+import { ActivityIndicator } from "react-native";
 import {
   Award,
   AlertCircle,
@@ -16,10 +18,11 @@ import {
 } from "lucide-react-native";
 
 export default function AssessmentResults() {
-  const { userAnswers, questions: questionsParam, moduleId } = useLocalSearchParams<{
+  const { userAnswers, questions: questionsParam, moduleId, attemptId } = useLocalSearchParams<{
     userAnswers?: string;
     questions?: string;
     moduleId?: string;
+    attemptId?: string;
   }>();
 
   const idNum = parseInt(String(moduleId || ""), 10);
@@ -29,35 +32,66 @@ export default function AssessmentResults() {
     enabled: !isNaN(idNum),
   });
 
-  let answers: Record<number, string> = {};
-  if (userAnswers) {
-    try {
-      answers = JSON.parse(userAnswers);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  let questions: any[] = [];
-  if (questionsParam) {
-    try {
-      questions = JSON.parse(questionsParam);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  let score = 0;
-  questions.forEach(q => {
-    if (answers[q.id] === q.correctId) score++;
+  const attemptIdNum = parseInt(String(attemptId || ""), 10);
+  const { data: attemptDetail, isLoading: isLoadingAttempt } = useQuery({
+    queryKey: ["assessment-attempt-detail", attemptIdNum],
+    queryFn: () => fetchAssessmentDetail(attemptIdNum),
+    enabled: !isNaN(attemptIdNum),
   });
 
-  const percent = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
-  const passed = percent >= 70;
+  let answers: Record<number, string> = {};
+  let questions: any[] = [];
+  let score = 0;
+  let percent = 0;
+  let passed = false;
+  let moduleName = "";
+
+  if (!isNaN(attemptIdNum) && attemptDetail) {
+    percent = attemptDetail.percent;
+    score = attemptDetail.score;
+    passed = attemptDetail.passed;
+    moduleName = attemptDetail.module_name;
+    questions = attemptDetail.answers || [];
+    answers = (attemptDetail.answers || []).reduce((acc: any, q: any) => {
+      acc[q.id] = q.selectedOption;
+      return acc;
+    }, {});
+  } else {
+    if (userAnswers) {
+      try {
+        answers = JSON.parse(userAnswers);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    if (questionsParam) {
+      try {
+        questions = JSON.parse(questionsParam);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    questions.forEach(q => {
+      if (answers[q.id] === q.correctId) score++;
+    });
+    percent = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
+    passed = percent >= 70;
+    moduleName = moduleDetail?.name || "Module Assessment";
+  }
+
+  const currentModuleId = !isNaN(attemptIdNum) && attemptDetail ? attemptDetail.module_id : moduleId;
+
+  if (!isNaN(attemptIdNum) && isLoadingAttempt) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#D82C15" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
 
       <View style={styles.banner}>
         <View style={[styles.scoreCircle, passed ? styles.scoreCirclePassed : styles.scoreCircleFailed]}>
@@ -76,13 +110,14 @@ export default function AssessmentResults() {
         </View>
 
         <Text style={styles.assessmentTitle}>
-          {moduleDetail?.name ? `${moduleDetail.name} Assessment` : "Module Assessment"}
+          {moduleName ? `${moduleName} Assessment` : "Module Assessment"}
         </Text>
         <Text style={styles.scoreSubtitle}>Pass mark: 70% · You scored {percent}%</Text>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-        <View style={styles.content}>
+      <View style={styles.body}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
           <Text style={styles.sectionLabel}>QUESTION BREAKDOWN</Text>
 
           {questions.map(q => {
@@ -138,10 +173,9 @@ export default function AssessmentResults() {
         </View>
       </ScrollView>
 
-      {/* Fixed bottom actions */}
       <View style={styles.footer}>
         <TouchableOpacity
-          onPress={() => router.replace(`/assessment/quiz?moduleId=${moduleId}`)}
+          onPress={() => router.replace(`/assessment/quiz?moduleId=${currentModuleId}`)}
           style={styles.retakeBtn}
         >
           <RefreshCcw size={16} color="white" />
@@ -155,12 +189,17 @@ export default function AssessmentResults() {
           <Text style={styles.continueBtnText}>Continue Learning</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
+  </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: "#131C2E",
+  },
+  body: {
     flex: 1,
     backgroundColor: "#ffffff",
   },

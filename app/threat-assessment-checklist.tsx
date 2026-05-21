@@ -4,10 +4,9 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  StyleSheet,
   ActivityIndicator,
+  KeyboardAvoidingView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
 import {
@@ -25,12 +24,13 @@ import {
   Check,
   Crosshair,
   Eye,
-  ShieldAlert
+  ShieldAlert,
+  Save,
 } from "lucide-react-native";
 import { api } from "../lib/api";
 import AlertModal from "../components/ui/AlertModal";
+import { GuardianLoader } from "../components/ui";
 
-// Simple debounce implementation to avoid dependency on lodash
 function debounce(func: Function, wait: number) {
   let timeout: any;
   return function executedFunction(...args: any[]) {
@@ -57,8 +57,6 @@ const ICON_MAP = {
   "shield-off": ShieldAlert
 };
 
-// ─── Data ────────────────────────────────────────────────────────────────────
-
 const SEVERITY_OPTS = ["Low", "Medium", "High", "Critical"];
 
 interface Category {
@@ -81,13 +79,11 @@ const CATEGORY_COLORS = [
   { iconColor: "#8B5CF6", iconBg: "#1A1030" },
 ];
 
-// ─── Helper: get severity colours ────────────────────────────────────────────
-
 const getSeverityColors = (sev: string | undefined) => {
   if (sev === "High" || sev === "Critical") return { border: "#D82C15", bg: "#2D1010", text: "#D82C15" };
   if (sev === "Medium") return { border: "#F5A623", bg: "#2A1E08", text: "#F5A623" };
   if (sev === "Low") return { border: "#22C55E", bg: "#0A1F0F", text: "#22C55E" };
-  return { border: "#2D3748", bg: "transparent", text: "#6B7280" };
+  return { border: "#2D3748", bg: "transparent", text: "#9CA3AF" };
 };
 
 const getSeverityOptColor = (opt: string) => {
@@ -95,8 +91,6 @@ const getSeverityOptColor = (opt: string) => {
   if (opt === "Medium") return "#F5A623";
   return "#D82C15";
 };
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ThreatAssessmentChecklist() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -107,7 +101,6 @@ export default function ThreatAssessmentChecklist() {
   const [severity, setSeverity] = useState<Record<string, string>>({});
   const [sevDropdown, setSevDropdown] = useState<string | null>(null);
 
-  // Modal State
   const [modalVisible, setModalVisible] = useState(false);
   const [modalConfig, setModalConfig] = useState<{
     title: string;
@@ -119,7 +112,7 @@ export default function ThreatAssessmentChecklist() {
   }>({
     title: "",
     description: "",
-    onConfirm: () => {},
+    onConfirm: () => { },
   });
 
   const showAppAlert = (
@@ -145,15 +138,12 @@ export default function ThreatAssessmentChecklist() {
   const progressPercent = totalItems > 0 ? Math.round((totalChecked / totalItems) * 100) : 0;
   const canGenerate = progressPercent >= 75;
 
-  // ─── Data Fetching ──────────────────────────────────────────────────────────
-
   const fetchData = async () => {
     try {
       setLoading(true);
       const response = await api.get("/operative-tools/threat-tool/", { requireAuth: true });
       const { definition, state } = response.data;
 
-      // Map definition to categories
       const mappedCats: Category[] = definition.map((sec: any, idx: number) => ({
         id: sec.slug,
         title: sec.title,
@@ -170,7 +160,6 @@ export default function ThreatAssessmentChecklist() {
         setExpanded({ [mappedCats[0].id]: true });
       }
 
-      // Map state to local state
       const initialChecked: Record<string, boolean> = {};
       const initialSeverity: Record<string, string> = {};
 
@@ -191,8 +180,6 @@ export default function ThreatAssessmentChecklist() {
   useEffect(() => {
     fetchData();
   }, []);
-
-  // ─── Auto Save ─────────────────────────────────────────────────────────────
 
   const debouncedSave = useCallback(
     debounce(async (answers: Record<string, any>) => {
@@ -223,8 +210,6 @@ export default function ThreatAssessmentChecklist() {
     debouncedSave(answers);
   }, [checked, severity, categories, loading]);
 
-  // ─── Actions ───────────────────────────────────────────────────────────────
-
   const toggleCheck = (key: string) => {
     if (!severity[key]) {
       showAppAlert("Severity Required", "Please select a severity level before marking this item as checked.", undefined, "info");
@@ -239,7 +224,7 @@ export default function ThreatAssessmentChecklist() {
 
   const setSeverityFor = (key: string, val: string) => {
     setSeverity(prev => ({ ...prev, [key]: val }));
-    setChecked(prev => ({ ...prev, [key]: true })); // Auto-check when level selected
+    setChecked(prev => ({ ...prev, [key]: true }));
     setSevDropdown(null);
   };
 
@@ -269,7 +254,6 @@ export default function ThreatAssessmentChecklist() {
     try {
       setGenerating(true);
 
-      // Collect latest answers to prevent race condition with auto-save
       const latestAnswers: Record<string, any> = {};
       categories.forEach(cat => {
         cat.items.forEach(item => {
@@ -296,166 +280,245 @@ export default function ThreatAssessmentChecklist() {
 
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#4A90D9" />
+      <View className="flex-1 bg-white">
+        <StatusBar style="light" />
+        <View className="bg-[#0D1520] pt-14 pb-5 px-5">
+          <View className="flex-row items-center mb-6">
+            <ArrowLeft size={20} color="#9ca3af" />
+            <Text className="text-gray-400 font-medium ml-2">Operational Tools</Text>
+          </View>
+          <Text className="text-white text-2xl font-black uppercase tracking-wider">Threat Assessment</Text>
+        </View>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#D82C15" />
+        </View>
       </View>
     );
   }
 
+  if (generating) {
+    return (
+      <GuardianLoader
+        title="Guardian is generating your report"
+        steps={[
+          "Analyzing threat matrix...",
+          "Evaluating severity indicators...",
+          "Compiling protective recommendations...",
+          "Almost ready..."
+        ]}
+        iconType="shield"
+      />
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={"padding"}
+      className="flex-1 bg-white"
+    >
       <StatusBar style="light" />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <ArrowLeft size={22} color="#9ca3af" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Threat Assessment</Text>
-        <TouchableOpacity onPress={handleReset} style={{ marginLeft: 'auto' }}>
-          <Text style={{ color: '#E05252', fontSize: 12, fontWeight: '600' }}>Reset</Text>
-        </TouchableOpacity>
+      <View className="bg-[#0D1520] pt-14 pb-0">
+        <View className="px-5 pb-5">
+          <View className="flex-row items-center justify-between mb-6">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="flex-row items-center"
+            >
+              <ArrowLeft size={20} color="#9ca3af" />
+              <Text className="text-gray-400 font-medium ml-2">Operational Tools</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={handleReset}>
+              <Text className="text-[#E05252] text-xs font-semibold uppercase tracking-wider">Reset</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View className="flex-row items-end justify-between mb-2">
+            <Text className="text-white text-2xl font-black uppercase tracking-wider">
+              Threat Assessment
+            </Text>
+            <View className="items-end">
+              <Text className="text-gray-400 text-xs font-medium">
+                {totalChecked}/{totalItems} items
+              </Text>
+              <Text className="text-[#D82C15] text-sm font-bold mt-0.5">
+                {progressPercent}%
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <View className="h-1 bg-[#2D3748] w-full flex-row">
+          <View
+            style={{ width: `${progressPercent}%` }}
+            className="h-full bg-[#D82C15]"
+          />
+        </View>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 200 }} showsVerticalScrollIndicator={false}>
-        <View style={styles.content}>
+      <ScrollView
+        className="flex-1 px-5 pt-4 bg-white"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 140 }}
+      >
+        <Text className="text-gray-400 text-sm mb-6">
+          Complete the checklist to generate an AI-powered risk report (minimum 75% progress required)
+        </Text>
 
-          <Text style={styles.subtitle}>
-            Complete the checklist to generate an AI-powered risk report
-          </Text>
+        {categories.map((cat) => {
+          const isOpen = expanded[cat.id];
+          const done = catChecked(cat);
+          const catPercent = Math.round((done / cat.items.length) * 100);
+          const CatIcon = ICON_MAP[cat.icon as keyof typeof ICON_MAP] || Shield;
 
-          {/* Progress Row */}
-          <View style={styles.progressRow}>
-            <Text style={styles.progressLabel}>Progress</Text>
-            <Text style={styles.progressCount}>{totalChecked}/{totalItems} items</Text>
-          </View>
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
-          </View>
-          <Text style={styles.progressPercent}>{progressPercent}% complete</Text>
-
-          {/* Categories */}
-          {categories.map(cat => {
-            const isOpen = expanded[cat.id];
-            const done = catChecked(cat);
-            const catPercent = Math.round((done / cat.items.length) * 100);
-            const CatIcon = ICON_MAP[cat.icon as keyof typeof ICON_MAP] || Shield;
-
-            return (
-              <View key={cat.id} style={styles.categoryWrap}>
-                {/* Category Header */}
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() => toggleExpand(cat.id)}
-                  style={styles.categoryHeader}
-                >
-                  <View style={styles.categoryHeaderLeft}>
-                    <View style={[styles.categoryIcon, { backgroundColor: cat.iconBg }]}>
-                      <CatIcon size={18} color={cat.iconColor} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.categoryTitle}>{cat.title}</Text>
-                      <Text style={styles.categoryCount}>{done}/{cat.items.length} completed</Text>
-                    </View>
+          return (
+            <View key={cat.id} className="mb-4">
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => toggleExpand(cat.id)}
+                className="flex-row items-center justify-between px-4 py-3.5 bg-white border border-[#E2E8F0] rounded-xl mb-2 shadow-sm"
+              >
+                <View className="flex-row items-center gap-3 flex-1">
+                  <View
+                    style={{ backgroundColor: cat.iconBg }}
+                    className="w-8 h-8 rounded-lg items-center justify-center"
+                  >
+                    <CatIcon size={14} color={cat.iconColor} />
                   </View>
-                  <View style={styles.categoryHeaderRight}>
-                    <Text style={styles.categoryPercent}>{catPercent}%</Text>
-                    {isOpen ? (
-                      <ChevronUp size={16} color="#6B7280" />
-                    ) : (
-                      <ChevronDown size={16} color="#6B7280" />
-                    )}
+                  <View className="flex-1">
+                    <Text className="text-gray-800 font-bold text-sm uppercase tracking-wide">
+                      {cat.title}
+                    </Text>
+                    <Text className="text-gray-400 text-[10px] mt-0.5">
+                      {done}/{cat.items.length} completed
+                    </Text>
                   </View>
-                </TouchableOpacity>
+                </View>
 
-                {/* Expanded Items */}
-                {isOpen && (
-                  <View style={styles.itemsContainer}>
-                    {cat.items.map((item, i) => {
-                      const key = item.key;
-                      const isChecked = !!checked[key];
-                      const sev = severity[key];
-                      const showDrop = sevDropdown === key;
-                      const sevColors = getSeverityColors(sev);
+                <View className="flex-row items-center gap-3">
+                  <Text className="text-gray-500 font-mono text-sm font-semibold">
+                    {catPercent}%
+                  </Text>
+                  {isOpen ? (
+                    <ChevronUp size={16} color="#9ca3af" />
+                  ) : (
+                    <ChevronDown size={16} color="#9ca3af" />
+                  )}
+                </View>
+              </TouchableOpacity>
 
-                      return (
-                        <View key={key} style={styles.itemRow}>
-                          <View style={styles.itemMain}>
-                            {/* Checkbox + Text */}
-                            <TouchableOpacity
-                              onPress={() => toggleCheck(key)}
-                              style={styles.itemCheckRow}
-                            >
-                              <View style={[
-                                styles.checkbox,
-                                isChecked ? styles.checkboxChecked : styles.checkboxUnchecked,
-                              ]}>
-                                {isChecked && <Check size={12} color="white" />}
-                              </View>
-                              <Text style={[styles.itemText, isChecked && styles.itemTextChecked]}>
-                                {item.label}
-                              </Text>
-                            </TouchableOpacity>
+              {isOpen && (
+                <View className="px-1 py-1 mb-2">
+                  {cat.items.map((item) => {
+                    const key = item.key;
+                    const isChecked = !!checked[key];
+                    const sev = severity[key];
+                    const showDrop = sevDropdown === key;
+                    const sevColors = getSeverityColors(sev);
 
-                            {/* Severity Dropdown */}
-                            <View style={[styles.dropdownWrap, showDrop && { zIndex: 100 }]}>
-                              <TouchableOpacity
-                                onPress={() => setSevDropdown(showDrop ? null : key)}
-                                style={[
-                                  styles.severityBtn,
-                                  { borderColor: sevColors.border, backgroundColor: sevColors.bg },
-                                ]}
-                              >
-                                <Text style={[styles.severityBtnText, { color: sevColors.text }]}>
-                                  {sev || "Severity"}
-                                </Text>
-                                <ChevronDown size={10} color="#6B7280" />
-                              </TouchableOpacity>
+                    const rowBg = isChecked ? "bg-[#F4F9F6]" : "bg-[#141A24]";
+                    const rowBorder = isChecked ? "border-[#E0EBE4]" : "border-transparent";
+                    const textClass = isChecked ? "text-gray-600 font-semibold" : "text-white font-medium";
+                    const checkboxBg = isChecked ? "bg-[#2E8B57]" : "bg-transparent";
+                    const checkboxBorder = isChecked ? "border-[#2E8B57]" : "border-[#2D3748]";
 
-                              {showDrop && (
-                                <View style={styles.dropdownMenu}>
-                                  {SEVERITY_OPTS.map(opt => (
-                                    <TouchableOpacity
-                                      key={opt}
-                                      onPress={() => setSeverityFor(key, opt)}
-                                      style={styles.dropdownItem}
-                                    >
-                                      <Text style={[styles.dropdownItemText, { color: getSeverityOptColor(opt) }]}>
-                                        {opt}
-                                      </Text>
-                                    </TouchableOpacity>
-                                  ))}
-                                </View>
-                              )}
-                            </View>
+                    return (
+                      <View
+                        key={key}
+                        className={`flex-row items-center px-4 py-3.5 rounded-xl mb-2 border ${rowBg} ${rowBorder}`}
+                      >
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => toggleCheck(key)}
+                          className="flex-row items-center flex-1 mr-3"
+                        >
+                          <View className={`w-5 h-5 rounded items-center justify-center border ${checkboxBg} ${checkboxBorder}`}>
+                            {isChecked && <Check size={12} color="white" strokeWidth={3} />}
                           </View>
+                          <Text className={`text-sm ml-3 flex-1 ${textClass}`}>
+                            {item.label}
+                          </Text>
+                        </TouchableOpacity>
+
+                        <View style={{ zIndex: showDrop ? 100 : 1 }}>
+                          <TouchableOpacity
+                            onPress={() => setSevDropdown(showDrop ? null : key)}
+                            style={{
+                              borderColor: sevColors.border,
+                              backgroundColor: sevColors.bg,
+                            }}
+                            className="px-4 py-2 rounded-xl border flex-row items-center gap-2"
+                          >
+                            <Text
+                              style={{ color: sevColors.text }}
+                              className="text-xs font-bold uppercase"
+                            >
+                              {sev || "Severity"}
+                            </Text>
+                            <ChevronDown size={12} color="#6B7280" />
+                          </TouchableOpacity>
+
+                          {showDrop && (
+                            <View
+                              style={{
+                                shadowColor: "#000",
+                                shadowOffset: { width: 0, height: 4 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 8,
+                                elevation: 8,
+                              }}
+                              className="absolute right-0 top-11 z-50 bg-[#1A2535] border border-[#2D3748] rounded-xl overflow-hidden w-32"
+                            >
+                              {SEVERITY_OPTS.map((opt) => (
+                                <TouchableOpacity
+                                  key={opt}
+                                  onPress={() => setSeverityFor(key, opt)}
+                                  className="px-4 py-3 border-b border-[#2D3748] active:bg-[#202E42]"
+                                >
+                                  <Text
+                                    style={{ color: getSeverityOptColor(opt) }}
+                                    className="text-sm font-black text-center"
+                                  >
+                                    {opt}
+                                  </Text>
+                                </TouchableOpacity>
+                              ))}
+                            </View>
+                          )}
                         </View>
-                      );
-                    })}
-                  </View>
-                )}
-              </View>
-            );
-          })}
-        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+          );
+        })}
       </ScrollView>
 
-      {/* Bottom Action */}
-      <View style={styles.footer}>
+      <View className="absolute bottom-0 w-full bg-white border-t border-gray-100 flex-row px-5 py-4 pb-8 items-center justify-between gap-4">
         <TouchableOpacity
-          activeOpacity={canGenerate && !generating ? 0.8 : 1}
-          onPress={() => canGenerate && !generating && handleGenerate()}
-          style={[styles.generateBtn, canGenerate ? styles.generateBtnActive : styles.generateBtnDisabled]}
-          disabled={generating}
+          onPress={() => router.back()}
+          className="bg-[#2A3B54] w-[110px] py-3.5 rounded-xl flex-row items-center justify-center gap-2"
+        >
+          <Text className="text-white font-semibold">Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleGenerate}
+          disabled={!canGenerate || generating}
+          className={`flex-1 py-3.5 rounded-xl flex-row items-center justify-center gap-2 ${canGenerate ? "bg-[#D82C15]" : "bg-gray-300"
+            }`}
         >
           {generating ? (
-            <ActivityIndicator color="white" />
+            <ActivityIndicator size={18} color="white" />
           ) : (
-            <Text style={[styles.generateBtnText, !canGenerate && styles.generateBtnTextDisabled]}>
-              {canGenerate
-                ? "Generate AI Risk Report →"
-                : `Complete ${75 - progressPercent}% more to generate report`}
-            </Text>
+            <>
+              <Save size={18} color="white" />
+              <Text className="text-white font-bold tracking-wide">
+                {canGenerate ? "GENERATE REPORT" : `NEED ${75 - progressPercent}% MORE`}
+              </Text>
+            </>
           )}
         </TouchableOpacity>
       </View>
@@ -469,257 +532,6 @@ export default function ThreatAssessmentChecklist() {
         variant={modalConfig.variant}
         confirmText={modalConfig.confirmText}
       />
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0D1520",
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#1E2D3D",
-    backgroundColor: "#0D1520",
-  },
-  backBtn: {
-    padding: 8,
-    marginLeft: -8,
-  },
-  headerTitle: {
-    color: "#ffffff",
-    fontWeight: "700",
-    marginLeft: 8,
-    fontSize: 16,
-  },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-  },
-  subtitle: {
-    color: "#9ca3af",
-    fontSize: 14,
-    marginBottom: 20,
-  },
-  progressRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  progressLabel: {
-    color: "#9ca3af",
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  progressCount: {
-    color: "#9ca3af",
-    fontSize: 12,
-    fontFamily: "monospace",
-  },
-  progressTrack: {
-    height: 8,
-    backgroundColor: "#1E2D3D",
-    borderRadius: 4,
-    overflow: "hidden",
-    marginBottom: 4,
-  },
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#4A90D9",
-    borderRadius: 4,
-  },
-  progressPercent: {
-    color: "#6b7280",
-    fontSize: 12,
-    textAlign: "right",
-    marginBottom: 24,
-  },
-
-  // Category
-  categoryWrap: {
-    marginBottom: 12,
-  },
-  categoryHeader: {
-    backgroundColor: "#131C2E",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  categoryHeaderLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    flex: 1,
-  },
-  categoryIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  categoryTitle: {
-    color: "#ffffff",
-    fontWeight: "600",
-    fontSize: 14,
-  },
-  categoryCount: {
-    color: "#6b7280",
-    fontSize: 10,
-    marginTop: 2,
-  },
-  categoryHeaderRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  categoryPercent: {
-    color: "#9ca3af",
-    fontSize: 14,
-    fontFamily: "monospace",
-  },
-
-  // Items
-  itemsContainer: {
-    backgroundColor: "#0F1824",
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
-    borderWidth: 1,
-    borderTopWidth: 0,
-    borderColor: "#1E2D3D",
-    marginTop: -4,
-  },
-  itemRow: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#1E2D3D",
-  },
-  itemMain: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  itemCheckRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-    gap: 12,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkboxChecked: {
-    backgroundColor: "#4A90D9",
-    borderColor: "#4A90D9",
-  },
-  checkboxUnchecked: {
-    borderColor: "#2D3748",
-    backgroundColor: "transparent",
-  },
-  itemText: {
-    color: "#D1D5DB",
-    fontSize: 14,
-    flex: 1,
-    lineHeight: 20,
-  },
-  itemTextChecked: {
-    color: "#6b7280",
-    textDecorationLine: "line-through",
-  },
-
-  // Severity
-  dropdownWrap: {
-    position: "relative",
-  },
-  severityBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  severityBtnText: {
-    fontSize: 10,
-    fontWeight: "700",
-  },
-  dropdownMenu: {
-    position: "absolute",
-    right: 0,
-    top: 32,
-    zIndex: 50,
-    backgroundColor: "#1A2535",
-    borderWidth: 1,
-    borderColor: "#2D3748",
-    borderRadius: 12,
-    overflow: "hidden",
-    width: 96,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  dropdownItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#2D3748",
-  },
-  dropdownItemText: {
-    fontSize: 12,
-    fontWeight: "700",
-  },
-
-  // Footer
-  footer: {
-    position: "absolute",
-    bottom: 10,
-    width: "100%",
-    backgroundColor: "#0D1520",
-    borderTopWidth: 1,
-    borderTopColor: "#1E2D3D",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-  },
-  generateBtn: {
-    width: "100%",
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  generateBtnActive: {
-    backgroundColor: "#4A90D9",
-  },
-  generateBtnDisabled: {
-    backgroundColor: "#1E2D3D",
-  },
-  generateBtnText: {
-    fontWeight: "700",
-    fontSize: 14,
-    color: "#ffffff",
-  },
-  generateBtnTextDisabled: {
-    color: "#6b7280",
-  },
-});

@@ -4,12 +4,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { generateAssessment } from "../../lib/assessments";
+import { generateAssessment, submitAssessment } from "../../lib/assessments";
 import {
   X,
   Check,
   ChevronRight
 } from "lucide-react-native";
+import { GuardianLoader } from "../../components/ui";
+
+
 
 export default function AssessmentQuiz() {
   const { moduleId } = useLocalSearchParams<{ moduleId: string }>();
@@ -49,9 +52,16 @@ export default function AssessmentQuiz() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <ActivityIndicator size="large" color="#D82C15" />
-      </SafeAreaView>
+      <GuardianLoader
+        title="Guardian is generating your assessment"
+        steps={[
+          "Analyzing module topics...",
+          "Formulating scenario-based questions...",
+          "Structuring options and explanations...",
+          "Almost ready..."
+        ]}
+        iconType="sparkles"
+      />
     );
   }
 
@@ -80,19 +90,54 @@ export default function AssessmentQuiz() {
     setAnswers(prev => ({ ...prev, [question.id]: optionId }));
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currIdx < questions.length - 1) {
       setCurrIdx(currIdx + 1);
       setSelectedOption(null);
     } else {
-      router.replace({
-        pathname: "/assessment/results",
-        params: {
-          moduleId: String(moduleId),
-          questions: JSON.stringify(questions),
-          userAnswers: JSON.stringify(answers),
-        },
-      });
+      try {
+        const score = questions.reduce((acc, q) => acc + (answers[q.id] === q.correctId ? 1 : 0), 0);
+        const percent = Math.round((score / questions.length) * 100);
+        const passed = percent >= 70;
+
+        const formattedAnswers = questions.map(q => ({
+          id: q.id,
+          text: q.text,
+          options: q.options,
+          correctId: q.correctId,
+          explanation: q.explanation,
+          selectedOption: answers[q.id]
+        }));
+
+        const res = await submitAssessment({
+          module_id: idNum,
+          score,
+          total_questions: questions.length,
+          percent,
+          passed,
+          answers: formattedAnswers
+        });
+
+        router.replace({
+          pathname: "/assessment/results",
+          params: {
+            attemptId: String(res.id),
+            moduleId: String(moduleId),
+            questions: JSON.stringify(questions),
+            userAnswers: JSON.stringify(answers),
+          },
+        });
+      } catch (err) {
+        console.error(err);
+        router.replace({
+          pathname: "/assessment/results",
+          params: {
+            moduleId: String(moduleId),
+            questions: JSON.stringify(questions),
+            userAnswers: JSON.stringify(answers),
+          },
+        });
+      }
     }
   };
 
@@ -119,7 +164,7 @@ export default function AssessmentQuiz() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
 
       {/* Dark Header Strip */}
       <View style={styles.headerStrip}>
@@ -138,74 +183,81 @@ export default function AssessmentQuiz() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
-        <View style={styles.content}>
-          <Text style={styles.questionLabel}>QUESTION {question.id}</Text>
-          <Text style={styles.questionText}>{question.text}</Text>
+      <View style={styles.body}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
+            <Text style={styles.questionLabel}>QUESTION {question.id}</Text>
+            <Text style={styles.questionText}>{question.text}</Text>
 
-          {/* Options */}
-          {question.options.map((opt) => (
-            <TouchableOpacity
-              key={opt.id}
-              activeOpacity={0.8}
-              onPress={() => handleSelect(opt.id)}
-              style={[styles.optionCard, getCardStyle(opt.id)]}
-            >
-              <View style={[styles.optionLetter, getLetterStyle(opt.id)]}>
-                <Text style={[styles.optionLetterText, isAnswered && (opt.id === question.correctId || opt.id === selectedOption) ? { color: "#ffffff" } : {}]}>
-                  {opt.id}
+            {/* Options */}
+            {question.options.map((opt) => (
+              <TouchableOpacity
+                key={opt.id}
+                activeOpacity={0.8}
+                onPress={() => handleSelect(opt.id)}
+                style={[styles.optionCard, getCardStyle(opt.id)]}
+              >
+                <View style={[styles.optionLetter, getLetterStyle(opt.id)]}>
+                  <Text style={[styles.optionLetterText, isAnswered && (opt.id === question.correctId || opt.id === selectedOption) ? { color: "#ffffff" } : {}]}>
+                    {opt.id}
+                  </Text>
+                </View>
+                <Text style={[styles.optionText, { color: getOptionTextColor(opt.id) }]}>
+                  {opt.text}
                 </Text>
-              </View>
-              <Text style={[styles.optionText, { color: getOptionTextColor(opt.id) }]}>
-                {opt.text}
-              </Text>
-              {isAnswered && opt.id === question.correctId && (
-                <View style={styles.feedbackIcon}>
-                  <Check size={12} color="white" strokeWidth={3} />
-                </View>
-              )}
-              {isAnswered && opt.id === selectedOption && opt.id !== question.correctId && (
-                <View style={[styles.feedbackIcon, { backgroundColor: "#EF4444" }]}>
-                  <X size={12} color="white" strokeWidth={3} />
-                </View>
-              )}
-            </TouchableOpacity>
-          ))}
+                {isAnswered && opt.id === question.correctId && (
+                  <View style={styles.feedbackIcon}>
+                    <Check size={12} color="white" strokeWidth={3} />
+                  </View>
+                )}
+                {isAnswered && opt.id === selectedOption && opt.id !== question.correctId && (
+                  <View style={[styles.feedbackIcon, { backgroundColor: "#EF4444" }]}>
+                    <X size={12} color="white" strokeWidth={3} />
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
 
-          {/* Feedback Box */}
-          {isAnswered && (
-            <View style={[
-              styles.feedbackBox,
-              selectedOption === question.correctId ? styles.feedbackBoxCorrect : styles.feedbackBoxWrong,
-            ]}>
-              <Text style={[
-                styles.feedbackTitle,
-                selectedOption === question.correctId ? styles.feedbackTitleCorrect : styles.feedbackTitleWrong,
+            {/* Feedback Box */}
+            {isAnswered && (
+              <View style={[
+                styles.feedbackBox,
+                selectedOption === question.correctId ? styles.feedbackBoxCorrect : styles.feedbackBoxWrong,
               ]}>
-                {selectedOption === question.correctId ? "✓ Correct" : "✕ Incorrect"}
-              </Text>
-              <Text style={styles.feedbackBodyText}>{question.explanation}</Text>
-            </View>
-          )}
-        </View>
-      </ScrollView>
+                <Text style={[
+                  styles.feedbackTitle,
+                  selectedOption === question.correctId ? styles.feedbackTitleCorrect : styles.feedbackTitleWrong,
+                ]}>
+                  {selectedOption === question.correctId ? "✓ Correct" : "✕ Incorrect"}
+                </Text>
+                <Text style={styles.feedbackBodyText}>{question.explanation}</Text>
+              </View>
+            )}
+          </View>
 
-      {isAnswered && (
-        <View style={styles.footer}>
-          <TouchableOpacity onPress={handleNext} style={styles.nextBtn}>
-            <Text style={styles.nextBtnText}>
-              {currIdx < questions.length - 1 ? "NEXT QUESTION" : "SEE RESULTS"}
-            </Text>
-            <ChevronRight size={18} color="white" />
-          </TouchableOpacity>
-        </View>
-      )}
-    </SafeAreaView>
+        </ScrollView>
+
+        {isAnswered && (
+          <View style={styles.footer}>
+            <TouchableOpacity onPress={handleNext} style={styles.nextBtn}>
+              <Text style={styles.nextBtnText}>
+                {currIdx < questions.length - 1 ? "NEXT QUESTION" : "SEE RESULTS"}
+              </Text>
+              <ChevronRight size={18} color="white" />
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </SafeAreaView >
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: "#131C2E",
+  },
+  body: {
     flex: 1,
     backgroundColor: "#ffffff",
   },
@@ -371,4 +423,5 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     fontSize: 14,
   },
+
 });

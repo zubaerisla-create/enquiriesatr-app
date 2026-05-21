@@ -6,12 +6,10 @@ import {
   ScrollView,
   TextInput,
   ActivityIndicator,
-  Alert,
   AppState,
   AppStateStatus,
   KeyboardAvoidingView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
 import {
@@ -21,7 +19,6 @@ import {
   Search,
   Check,
   Save,
-  AlertTriangle,
   Building,
   MapPin,
   Navigation,
@@ -29,6 +26,7 @@ import {
   User,
 } from "lucide-react-native";
 import { fetchTemplates, submitOperation, syncPendingOperations, SearchTemplate } from "../lib/searchOperations";
+import AlertModal from "../components/ui/AlertModal";
 
 export default function SearchOperations() {
   const [templates, setTemplates] = useState<SearchTemplate[]>([]);
@@ -37,6 +35,42 @@ export default function SearchOperations() {
   const [opName, setOpName] = useState<string>("");
   const [answers, setAnswers] = useState<Record<string, Record<string, boolean>>>({});
   const [failureNotes, setFailureNotes] = useState<string>("");
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    title: string;
+    description: string;
+    onConfirm: () => void | Promise<void>;
+    onCancel?: () => void;
+    variant?: "danger" | "info" | "success";
+    confirmText?: string;
+    cancelText?: string;
+  }>({
+    title: "",
+    description: "",
+    onConfirm: () => {},
+  });
+
+  const showAppAlert = (
+    title: string,
+    description: string,
+    onConfirm?: () => void | Promise<void>,
+    variant: "danger" | "info" | "success" = "info",
+    confirmText: string = "Confirm",
+    onCancel?: () => void,
+    cancelText: string = "Cancel"
+  ) => {
+    setModalConfig({
+      title,
+      description,
+      onConfirm: onConfirm || (() => setModalVisible(false)),
+      onCancel: onCancel || (() => setModalVisible(false)),
+      variant,
+      confirmText,
+      cancelText,
+    });
+    setModalVisible(true);
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -58,7 +92,7 @@ export default function SearchOperations() {
         setAnswers(initialAnswers);
         setExpanded(initialExpanded);
       } catch (error) {
-        Alert.alert("Error", "Could not load search templates.");
+        showAppAlert("Error", "Could not load search templates.", undefined, "danger");
       } finally {
         setLoading(false);
       }
@@ -109,7 +143,7 @@ export default function SearchOperations() {
     Object.values(templateAnswers).some((value) => value === false)
   );
 
-  const canSubmit = !hasFailures || failureNotes.trim() !== "";
+  const canSubmit = opName.trim() !== "";
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -127,28 +161,55 @@ export default function SearchOperations() {
       minute: "2-digit",
     });
 
+    const reportName = opName.trim();
+
     const payload = {
-      name: opName.trim() || `Search Operation - ${dateStr}`,
+      name: reportName,
       notes: hasFailures ? failureNotes : "",
       logs,
     };
 
     try {
       setLoading(true);
-      const result = await submitOperation(payload);
+      const res = await submitOperation(payload);
       setLoading(false);
-      if (result.queued) {
-        Alert.alert(
+
+      if (res.queued) {
+        showAppAlert(
           "Offline Mode",
           "Your operation checklist has been queued locally and will sync once internet access is restored.",
-          [{ text: "OK", onPress: () => router.navigate("/tools") }]
+          () => {
+            setModalVisible(false);
+            router.back();
+          },
+          "info",
+          "OK",
+          () => {
+            setModalVisible(false);
+            router.back();
+          },
+          "Back"
         );
       } else {
-        router.navigate("/tool-complete");
+        showAppAlert(
+          "Success",
+          "Search operation checklist saved successfully.",
+          () => {
+            setModalVisible(false);
+            router.back();
+          },
+          "success",
+          "OK",
+          () => {
+            setModalVisible(false);
+            router.back();
+          },
+          "Back"
+        );
       }
     } catch (err: any) {
       setLoading(false);
-      Alert.alert("Submission Failed", err.message || "An error occurred.");
+      showAppAlert("Submission Failed", err.message || "An error occurred.", undefined, "danger");
     }
   };
 
@@ -187,11 +248,9 @@ export default function SearchOperations() {
           </TouchableOpacity>
 
           <View className="flex-row items-end justify-between mb-2">
-            {/* <View className="border border-[#D82C15]/30 bg-[#D82C15]/10 px-3 py-1 rounded-full"> */}
             <Text className="text-white text-2xl font-black uppercase tracking-wider">
               Search Operations
             </Text>
-            {/* </View> */}
             <View className="items-end">
               <Text className="text-gray-400 text-xs font-medium">
                 {passedQuestions}/{totalQuestions} steps
@@ -201,8 +260,6 @@ export default function SearchOperations() {
               </Text>
             </View>
           </View>
-
-
         </View>
 
         <View className="h-1 bg-[#2D3748] w-full flex-row">
@@ -218,11 +275,28 @@ export default function SearchOperations() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 140 }}
       >
+        <Text className="text-gray-400 text-sm mb-6">
+          Perform checklist items and register any failures with logs
+        </Text>
+
+        <Text className="text-[#9ca3af] text-[10px] font-black uppercase tracking-widest mb-2">
+          Operation Name *
+        </Text>
+        <TextInput
+          className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-800 text-sm shadow-inner mb-6"
+          placeholder="Enter Operation Name..."
+          placeholderTextColor="#94A3B8"
+          value={opName}
+          onChangeText={setOpName}
+        />
+
+        <Text className="text-[#9ca3af] text-[10px] font-black uppercase tracking-widest mb-4">
+          Checklist
+        </Text>
+
         {templates.map((template) => {
           const isOpen = expanded[template.slug];
           const templateAnswers = answers[template.slug] || {};
-          const totalQuestionsInTemplate = template.questions.length;
-          const passedCount = Object.values(templateAnswers).filter(Boolean).length;
           const IconComponent = getSearchIcon(template.slug);
           const iconStyle = getIconStyles(template.slug);
 
@@ -290,9 +364,8 @@ export default function SearchOperations() {
         {hasFailures && (
           <View className="border-l-2 border-l-[#D82C15] pl-3 mb-4">
             <View className="flex-row items-center gap-1.5 mb-2">
-              {/* <AlertTriangle size={12} color="#D82C15" /> */}
               <Text className="text-[#D82C15] text-[10px] font-black uppercase tracking-widest">
-                Notes *
+                Notes
               </Text>
             </View>
             <TextInput
@@ -326,6 +399,17 @@ export default function SearchOperations() {
           <Text className="text-white font-bold tracking-wide">SUBMIT & SAVE</Text>
         </TouchableOpacity>
       </View>
+
+      <AlertModal
+        visible={modalVisible}
+        title={modalConfig.title}
+        description={modalConfig.description}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={modalConfig.onCancel || (() => setModalVisible(false))}
+        variant={modalConfig.variant}
+      />
     </KeyboardAvoidingView>
   );
 }
