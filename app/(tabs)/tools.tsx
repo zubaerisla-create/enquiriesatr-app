@@ -106,7 +106,7 @@ const TOOLS: Tool[] = [
     tagColor: "operations",
     description:
       "Home and close protection procedures for residential assignments.",
-    route: "/search-operations",
+    route: "/residential-security-checklist",
   },
   {
     id: "6",
@@ -242,7 +242,7 @@ export default function Tools() {
           apiId: d.id,
           apiType: d.type,
           title: d.title,
-          type: d.type === "THREAT_ASSESSMENT" ? "Threat Assessment" : d.type === "VENUE_REPORT" ? "Venue Assessment" : d.type === "SEARCH_REPORT" ? "Search Operations" : d.type,
+          type: d.type === "THREAT_ASSESSMENT" ? "Threat Assessment" : d.type === "VENUE_REPORT" ? "Venue Assessment" : d.type === "SEARCH_REPORT" ? "Search Operations" : d.type === "RESIDENTIAL_REPORT" ? "Residential Handover" : d.type,
           date: formatDate(d.created_at)
         }));
       setSavedDocs(mapped);

@@ -205,7 +205,7 @@ export default function MyDocuments() {
           icon,
           iconColor: color,
           title: d.title,
-          type: d.type === "THREAT_ASSESSMENT" ? "Threat Assessment" : d.type === "VENUE_REPORT" ? "Venue Assessment" : d.type === "SEARCH_REPORT" ? "Search Operations" : d.type,
+          type: d.type === "THREAT_ASSESSMENT" ? "Threat Assessment" : d.type === "VENUE_REPORT" ? "Venue Assessment" : d.type === "SEARCH_REPORT" ? "Search Operations" : d.type === "RESIDENTIAL_REPORT" ? "Residential Handover" : d.type,
           date: formatDate(d.created_at),
           status: "complete", // Backend only returns generated reports currently
         };
