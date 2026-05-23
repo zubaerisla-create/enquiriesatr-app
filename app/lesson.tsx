@@ -208,11 +208,11 @@ export default function LessonReadingView() {
               <Text style={styles.breadcrumbActive}>{moduleDetail?.name}</Text>
             </View>
 
-            {moduleDetail?.use && (
+            {/* {moduleDetail?.use && (
               <Text style={styles.useText}>
                 {moduleDetail.use}
               </Text>
-            )}
+            )} */}
 
             {moduleDetail?.topic && moduleDetail.topic.length > 0 && (
               <View style={{ marginBottom: rs(24) }}>
@@ -583,7 +583,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: "absolute",
-    bottom: 12,
+    bottom: 0,
     width: "100%",
     backgroundColor: "#ffffff",
     paddingHorizontal: rs(20),

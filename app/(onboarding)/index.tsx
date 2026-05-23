@@ -69,26 +69,26 @@ export default function Onboarding() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
-      
+
       {/* Header */}
       <View className="flex-row justify-between items-center px-6 py-4">
         <View className="flex-row items-center">
-          <Image 
-            source={require("../../assets/images/logo.jpeg")} 
+          <Image
+            source={require("../../assets/images/logo.jpeg")}
             style={{ width: rs(32), height: rs(32) }}
-            className="mr-2 mt-4" 
+            className="mr-2 mt-4"
             resizeMode="contain"
           />
-          <Text 
+          <Text
             style={{ fontSize: rf(18) }}
-            className="pt-10 text-[#D82C15] font-black italic uppercase"
+            className="text-[#D82C15] font-black italic uppercase"
           >
             ATR GUARDIAN TRAINING
           </Text>
         </View>
         <TouchableOpacity onPress={skip}>
-          <Text 
-            style={{ fontSize: rf(12) }}
+          <Text
+            style={{ fontSize: rf(14) }}
             className="text-gray-400 font-bold uppercase tracking-tighter"
           >
             SKIP
@@ -102,47 +102,47 @@ export default function Onboarding() {
         renderItem={({ item }) => (
           <View style={{ width }} className="px-6 flex-1">
             <View className="flex-1 justify-center items-center">
-                <View style={{ width: wp(85), height: wp(85) }} className="rounded-3xl overflow-hidden shadow-2xl elevation-10 bg-gray-900 border-4 border-gray-100">
-                    <Image 
-                        source={item.image} 
-                        className="w-full h-full"
-                        resizeMode="cover"
-                    />
-                    {/* Mock Overlay from UI Design */}
-                    <View className="absolute top-4 left-4 right-4 bg-black/60 p-4 rounded-xl border-l-2 border-[#D82C15]">
-                        <Text 
-                          style={{ fontSize: rf(10) }}
-                          className="text-white font-bold opacity-60 uppercase mb-1"
-                        >
-                          {item.module}
-                        </Text>
-                        <Text 
-                          style={{ fontSize: rf(14) }}
-                          className="text-white font-bold uppercase leading-tight"
-                        >
-                          Tactical positioning for high-threat environments.
-                        </Text>
-                    </View>
+              <View style={{ width: wp(85), height: wp(85) }} className="rounded-3xl overflow-hidden shadow-2xl elevation-10 bg-gray-900 border-4 border-gray-100">
+                <Image
+                  source={item.image}
+                  className="w-full h-full"
+                  resizeMode="cover"
+                />
+                {/* Mock Overlay from UI Design */}
+                <View className="absolute top-4 left-4 right-4 bg-black/60 p-4 rounded-xl border-l-2 border-[#D82C15]">
+                  <Text
+                    style={{ fontSize: rf(10) }}
+                    className="text-white font-bold opacity-60 uppercase mb-1"
+                  >
+                    {item.module}
+                  </Text>
+                  <Text
+                    style={{ fontSize: rf(14) }}
+                    className="text-white font-bold uppercase leading-tight"
+                  >
+                    Tactical positioning for high-threat environments.
+                  </Text>
                 </View>
+              </View>
 
             </View>
 
             <View className="py-6">
-              <Text 
+              <Text
                 style={{ fontSize: rf(36) }}
                 className="text-[#1a1a1a] font-black uppercase leading-tight"
               >
                 {item.title}
               </Text>
-              <Text 
+              <Text
                 style={{ fontSize: rf(36) }}
                 className="text-[#D82C15] font-black uppercase leading-tight"
               >
                 {item.highlight}
               </Text>
-              
+
               <View className="border-l-2 border-[#D82C15] pl-4 mt-6">
-                <Text 
+                <Text
                   style={{ fontSize: rf(18) }}
                   className="text-gray-500 leading-relaxed"
                 >
