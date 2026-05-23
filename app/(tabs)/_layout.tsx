@@ -4,7 +4,8 @@ import {
   BookOpen,
   Cpu,
   SquareCheck,
-  User
+  User,
+  ClipboardList
 } from "lucide-react-native";
 import { rs, rf } from "../../utils/responsive";
 import { useAuth } from "../../hooks/useAuth";
@@ -79,6 +80,12 @@ export default function TabLayout() {
             <SquareCheck size={rs(20)} color={color} />
           ),
 
+        }}
+      />
+      <Tabs.Screen
+        name="tools-log"
+        options={{
+          href: null,
         }}
       />
       <Tabs.Screen

@@ -30,7 +30,8 @@ import {
   LifeBuoy,
   ShieldCheck,
   LogOut,
-  Award
+  Award,
+  ClipboardList
 } from "lucide-react-native";
 
 // ─── Stat item ────────────────────────────────────────────────────────────────
@@ -245,6 +246,7 @@ export default function Profile() {
       route: "/profile/my-notes"
     },
     { icon: Folder, label: "My Documents", route: "/profile/my-documents" },
+    { icon: ClipboardList, label: "Tools Log", route: "/profile/tools-log" },
     {
       icon: Target,
       label: "Assessments",

@@ -78,6 +78,7 @@ export default function RootLayout() {
                     <Stack.Screen name="assessment" />
                     <Stack.Screen name="document-details" />
                     <Stack.Screen name="venue-security-rag" />
+                    <Stack.Screen name="travel-security-scrim" />
                   </Stack>
                 </AuthGate>
               </AuthProvider>

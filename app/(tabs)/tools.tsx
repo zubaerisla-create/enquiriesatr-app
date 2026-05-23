@@ -116,7 +116,7 @@ const TOOLS: Tool[] = [
     tag: "PLANNING",
     tagColor: "planning",
     description: "International travel security planning and documentation.",
-    route: "/search-operations",
+    route: "/travel-security-scrim",
   },
   {
     id: "7",
