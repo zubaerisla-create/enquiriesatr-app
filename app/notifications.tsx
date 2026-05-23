@@ -1,113 +1,57 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
-import { 
-  LucideIcon, 
-  BookOpen, 
-  Sparkles, 
-  Flame, 
-  Settings, 
-  Trophy, 
-  BellOff, 
+import {
+  LucideIcon,
+  BookOpen,
+  Sparkles,
+  Flame,
+  Settings,
+  Trophy,
+  BellOff,
   X,
   ArrowLeft
 } from "lucide-react-native";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  fetchNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  dismissNotification,
+  clearAllNotifications,
+  NotifType,
+  Notification
+} from "../lib/notifications";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type NotifType = "lesson" | "ai" | "streak" | "system" | "achievement";
-
-interface Notification {
-  id: string;
-  type: NotifType;
-  title: string;
-  body: string;
+interface NotificationWithTime extends Notification {
   time: string;
-  read: boolean;
 }
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+const formatRelativeTime = (dateString: string) => {
+  const now = new Date();
+  const created = new Date(dateString);
+  const diffMs = now.getTime() - created.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
 
-const NOTIFICATIONS: Notification[] = [
-  {
-    id: "1",
-    type: "streak",
-    title: "Streak at Risk!",
-    body: "You haven't completed a lesson today. Keep your 7-day streak alive.",
-    time: "2 min ago",
-    read: false,
-  },
-  {
-    id: "2",
-    type: "lesson",
-    title: "New Lesson Available",
-    body: "Venue Security — Module 3 is now unlocked and ready to start.",
-    time: "1 hr ago",
-    read: false,
-  },
-  {
-    id: "3",
-    type: "ai",
-    title: "AI Summary Ready",
-    body: "Your House Search Procedure summary has been saved to My Notes.",
-    time: "3 hrs ago",
-    read: false,
-  },
-  {
-    id: "4",
-    type: "achievement",
-    title: "Assessment Passed",
-    body: "You passed the Threat Assessment quiz with 85%. Well done.",
-    time: "Yesterday",
-    read: true,
-  },
-  {
-    id: "5",
-    type: "lesson",
-    title: "Lesson Reminder",
-    body: "Continue where you left off — CP Fundamentals is 44% complete.",
-    time: "Yesterday",
-    read: true,
-  },
-  {
-    id: "6",
-    type: "system",
-    title: "Subscription Renewal",
-    body: "Your Annual Plan renews in 7 days. No action needed.",
-    time: "2 days ago",
-    read: true,
-  },
-  {
-    id: "7",
-    type: "ai",
-    title: "AI Chat Insight",
-    body: "Based on your recent queries, we recommend reviewing SDR Planning.",
-    time: "3 days ago",
-    read: true,
-  },
-  {
-    id: "8",
-    type: "system",
-    title: "App Updated",
-    body: "CPTAN v2.4 is live — improved AI responses and offline sync.",
-    time: "4 days ago",
-    read: true,
-  },
-];
-
-// ─── Icon config ──────────────────────────────────────────────────────────────
-
-const TYPE_CONFIG: Record<NotifType, { icon: LucideIcon; bg: string; color: string }> = {
-  lesson:      { icon: BookOpen, bg: "#0D1E3A", color: "#5B8DEF" },
-  ai:          { icon: Sparkles, bg: "#1A1030", color: "#A78BFA" },
-  streak:      { icon: Flame, bg: "#2D1A08", color: "#F5A623" },
-  system:      { icon: Settings, bg: "#141E2B", color: "#6B7280" },
-  achievement: { icon: Trophy, bg: "#0D2318", color: "#4CAF82" },
+  if (diffSec < 60) return "Just now";
+  if (diffMin < 60) return `${diffMin} min${diffMin > 1 ? "s" : ""} ago`;
+  if (diffHour < 24) return `${diffHour} hr${diffHour > 1 ? "s" : ""} ago`;
+  if (diffDay === 1) return "Yesterday";
+  return `${diffDay} days ago`;
 };
 
-// ─── Notification Row ─────────────────────────────────────────────────────────
+const TYPE_CONFIG: Record<NotifType, { icon: LucideIcon; bg: string; color: string }> = {
+  lesson: { icon: BookOpen, bg: "#0D1E3A", color: "#5B8DEF" },
+  ai: { icon: Sparkles, bg: "#1A1030", color: "#A78BFA" },
+  streak: { icon: Flame, bg: "#2D1A08", color: "#F5A623" },
+  system: { icon: Settings, bg: "#141E2B", color: "#6B7280" },
+  achievement: { icon: Trophy, bg: "#0D2318", color: "#4CAF82" },
+};
 
 const NotifRow = ({
   item,
@@ -115,7 +59,7 @@ const NotifRow = ({
   onDismiss,
   isLast,
 }: {
-  item: Notification;
+  item: NotificationWithTime;
   onPress: () => void;
   onDismiss: () => void;
   isLast: boolean;
@@ -126,9 +70,8 @@ const NotifRow = ({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      className={`flex-row items-start px-4 py-4 ${
-        !isLast ? "border-b border-[#1A2535]" : ""
-      } ${!item.read ? "bg-[#0F1D2E]" : "bg-transparent"}`}
+      className={`flex-row items-start px-4 py-4 ${!isLast ? "border-b border-[#1A2535]" : ""
+        } ${!item.read ? "bg-[#0F1D2E]" : "bg-transparent"}`}
     >
       {/* Left unread bar */}
       {!item.read && (
@@ -156,9 +99,8 @@ const NotifRow = ({
       <View className="flex-1">
         <View className="flex-row items-start justify-between mb-0.5">
           <Text
-            className={`text-sm font-semibold flex-1 pr-2 leading-5 ${
-              item.read ? "text-gray-300" : "text-white"
-            }`}
+            className={`text-sm font-semibold flex-1 pr-2 leading-5 ${item.read ? "text-gray-300" : "text-white"
+              }`}
           >
             {item.title}
           </Text>
@@ -203,33 +145,70 @@ const EmptyState = () => (
   </View>
 );
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
-
 export default function Notifications() {
-  const [items, setItems] = useState<Notification[]>(NOTIFICATIONS);
+  const queryClient = useQueryClient();
 
-  const unread  = items.filter((n) => !n.read);
-  const earlier = items.filter((n) =>  n.read);
+  const { data: rawItems = [], isLoading, refetch, isRefetching } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: fetchNotifications,
+  });
+
+  const markReadMutation = useMutation({
+    mutationFn: markNotificationRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
+    },
+  });
+
+  const dismissMutation = useMutation({
+    mutationFn: dismissNotification,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
+    },
+  });
+
+  const markAllReadMutation = useMutation({
+    mutationFn: markAllNotificationsRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
+    },
+  });
+
+  const clearAllMutation = useMutation({
+    mutationFn: clearAllNotifications,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
+    },
+  });
+
+  const items: NotificationWithTime[] = rawItems.map((item) => ({
+    ...item,
+    time: formatRelativeTime(item.created_at),
+  }));
+
+  const unread = items.filter((n) => !n.read);
+  const earlier = items.filter((n) => n.read);
   const unreadCount = unread.length;
 
-  const markRead   = (id: string) => setItems((p) => p.map((n) => n.id === id ? { ...n, read: true } : n));
-  const dismiss    = (id: string) => setItems((p) => p.filter((n) => n.id !== id));
-  const markAllRead = ()          => setItems((p) => p.map((n) => ({ ...n, read: true })));
-  const clearAll   = ()           => setItems([]);
+  const markRead = (id: string) => markReadMutation.mutate(id);
+  const dismiss = (id: string) => dismissMutation.mutate(id);
+  const markAllRead = () => markAllReadMutation.mutate();
+  const clearAll = () => clearAllMutation.mutate();
 
   return (
     <SafeAreaView className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
 
-      {/* ── Top bar ── */}
-      <View className="flex-row items-center justify-between px-4 pt-4 pb-3 border-b border-[#1A2535]">
-        {/* Back */}
-        <TouchableOpacity onPress={()=>router.back()} className="w-9 mt-12 h-9 items-start justify-center">
+      <View className="flex-row items-center justify-between px-4 py-4 border-b border-[#1A2535]">
+        <TouchableOpacity onPress={() => router.back()} className="w-9 h-9 items-start justify-center">
           <ArrowLeft size={24} color="#9ca3af" />
         </TouchableOpacity>
 
-        {/* Title + badge */}
-        <View className="flex-row mt-12 items-center  gap-2">
+        <View className="flex-row items-center gap-2">
           <Text className="text-white font-bold text-base tracking-wide">
             Notifications
           </Text>
@@ -240,7 +219,6 @@ export default function Notifications() {
           )}
         </View>
 
-        {/* Right action */}
         <View className="w-20 items-end">
           {unreadCount > 0 ? (
             <TouchableOpacity onPress={markAllRead}>
@@ -254,12 +232,24 @@ export default function Notifications() {
         </View>
       </View>
 
-      {/* ── Body ── */}
-      {items.length === 0 ? (
+      {isLoading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="small" color="#5B8DEF" />
+        </View>
+      ) : items.length === 0 ? (
         <EmptyState />
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {/* NEW */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={refetch}
+              tintColor="#5B8DEF"
+              colors={["#5B8DEF"]}
+            />
+          }
+        >
           {unread.length > 0 && (
             <>
               <SectionLabel title="New" />
@@ -277,7 +267,6 @@ export default function Notifications() {
             </>
           )}
 
-          {/* EARLIER */}
           {earlier.length > 0 && (
             <>
               <SectionLabel title="Earlier" />

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useIsFocused } from "@react-navigation/native";
@@ -16,7 +16,9 @@ import {
   Trophy
 } from "lucide-react-native";
 import { rs, rf } from "../../utils/responsive";
-
+import { useQuery } from "@tanstack/react-query";
+import { fetchModules, fetchModuleProgress } from "../../lib/modules";
+import { fetchUnreadCount } from "../../lib/notifications";
 
 interface CircularProgressProps {
   progress: number;
@@ -26,8 +28,74 @@ interface CircularProgressProps {
   color?: string;
 }
 
+const CATEGORY_COLORS: Record<string, string> = {
+  FOUNDATION: "#3B82F6",
+  TACTICAL: "#F97316",
+  OPERATIONS: "#22C55E",
+  LEGAL: "#A855F7",
+};
+
+const getCategoryStyles = (category: string) => {
+  switch (category) {
+    case "TACTICAL":
+      return { borderBg: "border-orange-600/30 bg-orange-600/10", text: "text-orange-500" };
+    case "OPERATIONS":
+      return { borderBg: "border-green-600/30 bg-green-600/10", text: "text-green-500" };
+    case "LEGAL":
+      return { borderBg: "border-purple-600/30 bg-purple-600/10", text: "text-purple-500" };
+    case "FOUNDATION":
+    default:
+      return { borderBg: "border-blue-600/30 bg-blue-600/10", text: "text-blue-500" };
+  }
+};
+
 export default function Home() {
   const isFocused = useIsFocused();
+
+  const { data: modulesList, isLoading: modulesLoading } = useQuery({
+    queryKey: ["modules"],
+    queryFn: fetchModules,
+  });
+
+  const { data: progressData } = useQuery({
+    queryKey: ["modules-progress"],
+    queryFn: fetchModuleProgress,
+  });
+
+  const { data: unreadData } = useQuery({
+    queryKey: ["notifications-unread-count"],
+    queryFn: fetchUnreadCount,
+  });
+
+  const unreadCount = unreadData?.count || 0;
+
+  const mappedModules = (modulesList || []).map((m) => {
+    const prog = (progressData || []).find((p) => p.module === m.module_id);
+    return {
+      id: String(m.module_id),
+      category: m.category,
+      title: m.name,
+      description: m.description,
+      progress: prog ? prog.progress_percent : 0,
+      status: prog ? prog.status : "not_started",
+      order: m.order,
+    };
+  });
+
+  const nextIncompleteModule = mappedModules
+    .filter((m) => m.status !== "completed")
+    .sort((a, b) => a.order - b.order)[0];
+
+  const totalModules = modulesList?.length || 6;
+  const completedModules = (progressData || []).filter((p) => p.status === "completed").length;
+
+  const totalLessons = (modulesList || []).reduce((acc, m) => acc + (m.lessons || 0), 0) || 27;
+  const completedLessons = (modulesList || []).reduce((acc, m) => {
+    const prog = (progressData || []).find((p) => p.module === m.module_id);
+    const percent = prog ? prog.progress_percent : 0;
+    return acc + Math.round(((m.lessons || 0) * percent) / 100);
+  }, 0);
+
   const CircularProgress = ({ progress, total, title, subtitle, color = "#D82C15" }: CircularProgressProps) => {
     const size = rs(72);
     const strokeWidth = rs(5);
@@ -135,9 +203,11 @@ export default function Home() {
         <View className="flex-row items-center gap-4">
           <TouchableOpacity onPress={() => router.push("/notifications")} className="relative">
             <Bell size={rs(24)} color="#1a1a1a" />
-            <View className="absolute -top-1 -right-1 bg-[#D82C15] rounded-full w-4 h-4 items-center justify-center border border-white">
-              <Text style={{ fontSize: rf(8) }} className="text-white font-bold">3</Text>
-            </View>
+            {unreadCount > 0 && (
+              <View className="absolute -top-1 -right-1 bg-[#D82C15] rounded-full w-4 h-4 items-center justify-center border border-white">
+                <Text style={{ fontSize: rf(8) }} className="text-white font-bold">{unreadCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
 
 
@@ -150,44 +220,84 @@ export default function Home() {
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: 10 }}>
 
-        {/* Content */}
         <View className="px-6 pb-10">
 
-          {/* Continue Learning */}
-          <View className="bg-[#1e2a38] rounded-2xl p-5 mb-8 shadow-sm">
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-gray-400 text-xs font-bold tracking-widest uppercase">Continue Learning</Text>
-              <View className="border border-yellow-600/30 bg-yellow-600/10 px-2 py-1 rounded-full">
-                <Text className="text-yellow-500 text-[10px] font-bold uppercase">Foundation</Text>
-              </View>
+          {modulesLoading ? (
+            <View className="bg-[#1e2a38] rounded-2xl p-5 mb-8 h-[240px] items-center justify-center shadow-sm">
+              <ActivityIndicator size="small" color="#D82C15" />
             </View>
-
-            <Text
-              style={{ fontSize: rf(24) }}
-              className="text-white font-black mb-1 tracking-tight"
-            >
-              CP Fundamentals
-            </Text>
-            <Text
-              style={{ fontSize: rf(14) }}
-              className="text-gray-400 mb-6"
-            >
-              Threat & Risk Assessment
-            </Text>
-
-
-            <View className="flex-row items-center mb-5 gap-3">
-              <View className="flex-1 h-1 bg-gray-600 rounded-full overflow-hidden">
-                <View className="h-full bg-[#D82C15] w-[68%]" />
+          ) : nextIncompleteModule ? (
+            <View className="bg-[#1e2a38] rounded-2xl p-5 mb-8 shadow-sm">
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-gray-400 text-xs font-bold tracking-widest uppercase">Continue Learning</Text>
+                <View className={`border ${getCategoryStyles(nextIncompleteModule.category).borderBg} px-2 py-1 rounded-full`}>
+                  <Text className={`${getCategoryStyles(nextIncompleteModule.category).text} text-[10px] font-bold uppercase`}>
+                    {nextIncompleteModule.category}
+                  </Text>
+                </View>
               </View>
-              <Text className="text-gray-400 text-xs font-bold">68%</Text>
-            </View>
 
-            <TouchableOpacity onPress={() => router.push("/threat-assessment-checklist")} className="bg-[#D82C15] w-full py-4 rounded-xl flex-row items-center justify-center shadow-lg shadow-red-500/20 active:opacity-80">
-              <Text className="text-white font-bold uppercase tracking-wider mr-2">Continue</Text>
-              <ChevronRight size={18} color="white" />
-            </TouchableOpacity>
-          </View>
+              <Text
+                style={{ fontSize: rf(20) }}
+                className="text-white font-black mb-1 tracking-tight"
+              >
+                {nextIncompleteModule.title}
+              </Text>
+              {/* <Text
+                style={{ fontSize: rf(14) }}
+                className="text-gray-400 mb-6"
+                numberOfLines={2}
+              >
+                {nextIncompleteModule.description}
+              </Text> */}
+
+              <View className="flex-row items-center mb-5 gap-3">
+                <View className="flex-1 h-1 bg-gray-600 rounded-full overflow-hidden">
+                  <View style={{ width: `${nextIncompleteModule.progress}%` }} className="h-full bg-[#D82C15]" />
+                </View>
+                <Text className="text-gray-400 text-xs font-bold">{nextIncompleteModule.progress}%</Text>
+              </View>
+
+              <TouchableOpacity onPress={() => router.push(`/lesson?moduleId=${nextIncompleteModule.id}`)} className="bg-[#D82C15] w-full py-4 rounded-xl flex-row items-center justify-center shadow-lg shadow-red-500/20 active:opacity-80">
+                <Text className="text-white font-bold uppercase tracking-wider mr-2">Continue</Text>
+                <ChevronRight size={18} color="white" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View className="bg-[#1e2a38] rounded-2xl p-5 mb-8 shadow-sm">
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-gray-400 text-xs font-bold tracking-widest uppercase">Continue Learning</Text>
+                <View className="border border-green-600/30 bg-green-600/10 px-2 py-1 rounded-full">
+                  <Text className="text-green-500 text-[10px] font-bold uppercase">Completed</Text>
+                </View>
+              </View>
+
+              <Text
+                style={{ fontSize: rf(24) }}
+                className="text-white font-black mb-1 tracking-tight"
+              >
+                All Modules Completed!
+              </Text>
+              <Text
+                style={{ fontSize: rf(14) }}
+                className="text-gray-400 mb-6"
+              >
+                You have successfully finished all the modules.
+              </Text>
+
+              <View className="flex-row items-center mb-5 gap-3">
+                <View className="flex-1 h-1 bg-gray-600 rounded-full overflow-hidden">
+                  <View className="h-full bg-green-500 w-full" />
+                </View>
+                <Text className="text-gray-400 text-xs font-bold">100%</Text>
+              </View>
+
+              <TouchableOpacity onPress={() => router.push("/(tabs)/learn")} className="bg-[#D82C15] w-full py-4 rounded-xl flex-row items-center justify-center shadow-lg shadow-red-500/20 active:opacity-80">
+                <Text className="text-white font-bold uppercase tracking-wider mr-2">Review Library</Text>
+                <ChevronRight size={18} color="white" />
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* Quick Access */}
           <View className="mb-8">
@@ -243,12 +353,11 @@ export default function Home() {
             </View>
           </View>
 
-          {/* Your Progress */}
           <View className="mb-8">
             <Text className="text-[#1a1a1a] text-xs font-black tracking-widest uppercase mb-4 opacity-80">Your Progress</Text>
             <View className="bg-[#1e2a38] rounded-2xl p-6 flex-row justify-between items-center shadow-sm">
-              <CircularProgress progress={12} total={27} title="12" subtitle="Lessons" />
-              <CircularProgress progress={1} total={6} title="1" subtitle="Modules" color="#eab308" />
+              <CircularProgress progress={modulesLoading ? 0 : completedLessons} total={modulesLoading ? 27 : totalLessons} title={String(modulesLoading ? 0 : completedLessons)} subtitle="Lessons" />
+              <CircularProgress progress={modulesLoading ? 0 : completedModules} total={modulesLoading ? 6 : totalModules} title={String(modulesLoading ? 0 : completedModules)} subtitle="Modules" color="#eab308" />
               <CircularProgress progress={7} total={100} title="Day Streak" subtitle="Day Streak" />
             </View>
           </View>
