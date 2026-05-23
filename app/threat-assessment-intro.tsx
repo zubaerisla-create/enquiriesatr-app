@@ -3,10 +3,10 @@ import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
-import { 
-  ArrowLeft, 
-  Target, 
-  ChevronRight 
+import {
+  ArrowLeft,
+  Target,
+  ChevronRight
 } from "lucide-react-native";
 
 export default function ThreatAssessmentIntro() {
@@ -71,7 +71,7 @@ export default function ThreatAssessmentIntro() {
       </ScrollView>
 
       {/* Footer */}
-      <View className="absolute bottom-0 w-full bg-white px-5 py-6">
+      <View className="absolute bottom-10 w-full bg-white px-5 py-6">
         <TouchableOpacity
           onPress={() => router.push("/assessment/quiz")}
           className="w-full bg-[#D82C15] py-4 rounded-xl flex-row items-center justify-center gap-2"

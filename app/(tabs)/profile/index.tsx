@@ -12,6 +12,9 @@ import { useRouter } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 import { useAuth } from "../../../hooks/useAuth";
 import AlertModal from "../../../components/ui/AlertModal";
+import { useQuery } from "@tanstack/react-query";
+import { fetchUserStats } from "../../../lib/stats";
+import Svg, { Circle } from "react-native-svg";
 
 import {
   LucideIcon,
@@ -26,7 +29,8 @@ import {
   Settings,
   LifeBuoy,
   ShieldCheck,
-  LogOut
+  LogOut,
+  Award
 } from "lucide-react-native";
 
 // ─── Stat item ────────────────────────────────────────────────────────────────
@@ -80,34 +84,34 @@ const CircularProgress = ({ percent }: { percent: number }) => {
   const stroke = 4;
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
-  const offset = circ * (1 - percent / 100);
+  const strokeDashoffset = circ * (1 - Math.min(Math.max(percent, 0), 100) / 100);
 
   return (
     <View style={{ width: size, height: size }} className="items-center justify-center">
-      <View
-        style={{
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          borderWidth: stroke,
-          borderColor: "#2D3748",
-          position: "absolute",
-        }}
-      />
-      <View
-        style={{
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          borderWidth: stroke,
-          borderColor: "#E05252",
-          borderRightColor: "transparent",
-          borderBottomColor: "transparent",
-          position: "absolute",
-          transform: [{ rotate: "-45deg" }],
-        }}
-      />
-      <Text className="text-white text-xs font-bold">{percent}%</Text>
+      <Svg width={size} height={size} style={{ transform: [{ rotate: "-90deg" }] }}>
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          stroke="#2D3748"
+          strokeWidth={stroke}
+          fill="transparent"
+        />
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          stroke="#E05252"
+          strokeWidth={stroke}
+          fill="transparent"
+          strokeDasharray={circ}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+        />
+      </Svg>
+      <View style={{ position: "absolute" }}>
+        <Text className="text-white text-xs font-bold">{percent}%</Text>
+      </View>
     </View>
   );
 };
@@ -189,11 +193,23 @@ const MenuSection = ({ rows }: { rows: MenuRow[] }) => (
 
 export default function Profile() {
   const isFocused = useIsFocused();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const router = useRouter();
 
   const [isLogoutModalVisible, setIsLogoutModalVisible] = React.useState(false);
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+
+  const { data: statsData, refetch: refetchStats } = useQuery({
+    queryKey: ["user-stats"],
+    queryFn: fetchUserStats,
+  });
+
+  React.useEffect(() => {
+    if (isFocused) {
+      refreshUser().catch(() => { });
+      refetchStats().catch(() => { });
+    }
+  }, [isFocused]);
 
   const handleLogout = async () => {
     setIsLogoutModalVisible(true);
@@ -214,6 +230,32 @@ export default function Profile() {
   const planLabel = user?.subscription?.plan_name
     ? `${user.subscription.plan_name.toUpperCase()} PLAN`
     : "FREE PLAN";
+
+  const displayStats = [
+    { icon: CheckCircle, iconColor: "#F5A623", value: `${statsData?.modules_completed ?? 0}/${statsData?.modules_total ?? 0}`, label: "Modules Complete" },
+    { icon: Award, iconColor: "#5B8DEF", value: `${statsData?.avg_quiz_score ?? 0}%`, label: "Avg Score" },
+    { icon: Flame, iconColor: "#4CAF82", value: String(statsData?.day_streak ?? 0), label: "Day Streak" },
+  ];
+
+  const contentRows = [
+    {
+      icon: FileText,
+      label: "My Notes",
+      badge: statsData?.notes_count ? { text: String(statsData.notes_count), color: "#fff", bg: "#E05252" } : undefined,
+      route: "/profile/my-notes"
+    },
+    { icon: Folder, label: "My Documents", route: "/profile/my-documents" },
+    {
+      icon: Target,
+      label: "Assessments",
+      badge: {
+        text: `${statsData?.assessments_passed ?? 0}/${statsData?.assessments_total ?? 0} passed`,
+        color: "#4CAF82",
+        bg: "#0D2318"
+      },
+      route: "/profile/assessments"
+    },
+  ];
 
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0D1520]">
@@ -252,25 +294,25 @@ export default function Profile() {
       >
         {/* Stats strip */}
         <View className="mx-4 mt-4 mb-4 bg-[#141E2B] rounded-2xl px-3 py-4 flex-row">
-          {STATS.map((s) => (
+          {displayStats.map((s) => (
             <StatCell key={s.label} stat={s} />
           ))}
         </View>
 
         {/* Overall progress card */}
         <View className="mx-4 mb-2 bg-[#141E2B] rounded-2xl p-4 flex-row items-center gap-4">
-          <CircularProgress percent={44} />
+          <CircularProgress percent={statsData?.assessments_total ? Math.round(((statsData.assessments_passed ?? 0) / statsData.assessments_total) * 100) : 0} />
           <View>
             <Text className="text-white font-bold text-base">Overall Progress</Text>
             <Text className="text-gray-400 text-xs mt-0.5">
-              12/27 lessons · 1/6 assessments passed
+              {statsData?.assessments_passed ?? 0}/{statsData?.assessments_total ?? 0} assessments passed
             </Text>
           </View>
         </View>
 
         {/* Content section */}
         <SectionLabel title="Content" />
-        <MenuSection rows={CONTENT_ROWS} />
+        <MenuSection rows={contentRows} />
 
         {/* Account section */}
         <SectionLabel title="Account" />

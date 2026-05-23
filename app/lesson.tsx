@@ -150,9 +150,6 @@ export default function LessonReadingView() {
           <ArrowLeft size={22} color="#1f2937" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{moduleDetail?.name}</Text>
-        <TouchableOpacity style={styles.headerBtn}>
-          <Bookmark size={20} color="#6b7280" />
-        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
@@ -351,11 +348,12 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: rs(20),
-    // paddingTop: rs(40),
+    paddingVertical: rs(4),
     paddingBottom: rs(16),
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    // justifyContent: "space-between",
+    gap: 8,
     borderBottomWidth: 1,
     borderBottomColor: "rgba(229,231,235,0.5)",
     backgroundColor: "#FAF8F5",
@@ -432,7 +430,7 @@ const styles = StyleSheet.create({
     color: "#4B5563",
     fontSize: rf(14),
     lineHeight: rf(24),
-    marginBottom: rs(32),
+    marginBottom: rs(8),
   },
   bulletRow: {
     flexDirection: "row",
@@ -538,7 +536,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: "absolute",
-    bottom: 10,
+    bottom: 12,
     width: "100%",
     backgroundColor: "#ffffff",
     paddingHorizontal: rs(20),

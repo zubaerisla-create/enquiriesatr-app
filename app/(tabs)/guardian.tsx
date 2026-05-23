@@ -27,6 +27,7 @@ import {
 } from "lucide-react-native";
 
 import { llmChat, llmChatStream, getConversations, getConversationMessages, type Conversation } from "../../lib/llm";
+import Markdown from "react-native-markdown-display";
 import { createNote } from "../../lib/notes";
 import { AppBottomSheet } from "../../components/ui";
 import { useBottomSheet } from "../../hooks/useBottomSheet";
@@ -100,6 +101,52 @@ const Header = ({
 
 // ─── AI Message ───────────────────────────────────────────────────────────────
 
+const markdownStyles = {
+  body: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    lineHeight: 24,
+  },
+  heading1: {
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontWeight: "bold" as const,
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  heading2: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "bold" as const,
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  heading3: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold" as const,
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  list_item: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    lineHeight: 22,
+  },
+  bullet_list: {
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  ordered_list: {
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  strong: {
+    fontWeight: "bold" as const,
+    color: "#FFFFFF",
+  },
+};
+
 const AIMessage = ({
   message,
   onCopy,
@@ -124,7 +171,7 @@ const AIMessage = ({
     </View>
 
     <View className="mx-4 bg-[#1B3558] rounded-2xl p-4">
-      <Text className="text-white text-sm leading-6">{message.text}</Text>
+      <Markdown style={markdownStyles}>{message.text}</Markdown>
     </View>
 
     {message.id !== "1" && !isStreaming && (
@@ -509,10 +556,10 @@ export default function Guardian() {
           prev.map((msg) =>
             msg.id === aiMsgId
               ? {
-                  ...msg,
-                  text: "Sorry — I couldn’t reach the server. Please try again.",
-                  timestamp,
-                }
+                ...msg,
+                text: "Sorry — I couldn’t reach the server. Please try again.",
+                timestamp,
+              }
               : msg
           )
         );
