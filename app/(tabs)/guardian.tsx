@@ -20,15 +20,13 @@ import {
   History,
   Copy,
   Bookmark,
-  Paperclip,
-  Mic,
   SendHorizontal,
   Square,
   X,
   Plus,
 } from "lucide-react-native";
 
-import { llmChat, getConversations, getConversationMessages, type Conversation } from "../../lib/llm";
+import { llmChat, llmChatStream, getConversations, getConversationMessages, type Conversation } from "../../lib/llm";
 import { createNote } from "../../lib/notes";
 import { AppBottomSheet } from "../../components/ui";
 import { useBottomSheet } from "../../hooks/useBottomSheet";
@@ -53,10 +51,11 @@ interface Message {
 // ─── Quick Topics ─────────────────────────────────────────────────────────────
 
 const QUICK_TOPICS = [
-  "House search",
-  "Vehicle search",
-  "SDR route",
-  "Threat assessment",
+  "The Threat Triad",
+  "Sterile Search Procedures",
+  "Vehicle SCRIM Method",
+  "Actions on Attack",
+  "Legal Use of Force"
 ];
 
 // ─── Header ───────────────────────────────────────────────────────────────────
@@ -108,6 +107,7 @@ const AIMessage = ({
   copied,
   saved,
   saving,
+  isStreaming,
 }: {
   message: Message;
   onCopy: () => void;
@@ -115,6 +115,7 @@ const AIMessage = ({
   copied: boolean;
   saved: boolean;
   saving: boolean;
+  isStreaming?: boolean;
 }) => (
   <View className="mb-6">
     <View className="flex-row items-center gap-2 mb-2 px-4">
@@ -126,7 +127,7 @@ const AIMessage = ({
       <Text className="text-white text-sm leading-6">{message.text}</Text>
     </View>
 
-    {message.id !== "1" && (
+    {message.id !== "1" && !isStreaming && (
       <View className="flex-row items-center gap-4 px-5 mt-2">
         <TouchableOpacity onPress={onCopy} className="flex-row items-center gap-1.5">
           <Copy size={12} color={copied ? "#60A5FA" : "#6B7280"} />
@@ -180,7 +181,7 @@ const ThinkingBubble = () => {
       </View>
       <Animated.View
         style={[animatedStyle]}
-        className="mx-4 bg-[#1B3558] rounded-2xl p-4 self-start min-w-[120px]"
+        className="self-start min-w-[120px]"
       >
         <Text className="text-gray-300 text-sm px-4 font-medium">Thinking...</Text>
       </Animated.View>
@@ -231,10 +232,6 @@ const InputBar = ({
 }) => (
   <View className="px-4 py-4 border-t border-[#1E2D45] bg-[#111827]">
     <View className="flex-row items-center gap-3">
-      <TouchableOpacity>
-        <Paperclip size={20} color="#6B7280" />
-      </TouchableOpacity>
-
       <TextInput
         className="flex-1 bg-[#1F2A3C] text-gray-300 text-sm px-4 py-3 rounded-2xl"
         placeholder="Ask anything about close protection..."
@@ -247,10 +244,6 @@ const InputBar = ({
         returnKeyType="send"
         onSubmitEditing={onSend}
       />
-
-      <TouchableOpacity>
-        <Mic size={20} color="#6B7280" />
-      </TouchableOpacity>
 
       <TouchableOpacity
         onPress={sending ? onStop : onSend}
@@ -331,7 +324,7 @@ export default function Guardian() {
   const scrollViewRef = useRef<ScrollView>(null);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const streamCleanupRef = useRef<(() => void) | null>(null);
 
   const {
     ref: historySheetRef,
@@ -357,6 +350,9 @@ export default function Guardian() {
       }
       if (savedTimeoutRef.current) {
         clearTimeout(savedTimeoutRef.current);
+      }
+      if (streamCleanupRef.current) {
+        streamCleanupRef.current();
       }
     };
   }, []);
@@ -455,9 +451,11 @@ export default function Guardian() {
   };
 
   const handleStop = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+    if (streamCleanupRef.current) {
+      streamCleanupRef.current();
+      streamCleanupRef.current = null;
     }
+    setSending(false);
   };
 
   const sendMessage = async (text?: string) => {
@@ -476,50 +474,54 @@ export default function Guardian() {
       timestamp,
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    const aiMsgId = `${Date.now()}-ai`;
+    const aiMsgPlaceholder: Message = {
+      id: aiMsgId,
+      role: "ai",
+      text: "",
+      timestamp: "",
+    };
+
+    setMessages((prev) => [...prev, userMsg, aiMsgPlaceholder]);
     setInput("");
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
     setSending(true);
-    try {
-      const result = await llmChat(messageText, conversationId, controller.signal);
-      setConversationId(result.conversation_id);
-      const aiNow = new Date();
-      const aiTimestamp = `${String(aiNow.getHours()).padStart(2, "0")}:${String(
-        aiNow.getMinutes()
-      ).padStart(2, "0")}`;
 
-      const aiMsg: Message = {
-        id: `${Date.now()}-ai`,
-        role: "ai",
-        text: result.response,
-        timestamp: aiTimestamp,
-      };
-      setMessages((prev) => [...prev, aiMsg]);
-    } catch (err: any) {
-      if (err?.message === "canceled" || err?.name === "CanceledError" || err?.code === "ERR_CANCELED") {
-        return;
+    const cleanup = llmChatStream(
+      messageText,
+      conversationId,
+      (chunk, convId) => {
+        setConversationId(convId);
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMsgId
+              ? { ...msg, text: msg.text + chunk, timestamp }
+              : msg
+          )
+        );
+      },
+      (convId) => {
+        setConversationId(convId);
+        setSending(false);
+        streamCleanupRef.current = null;
+      },
+      (err) => {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMsgId
+              ? {
+                  ...msg,
+                  text: "Sorry — I couldn’t reach the server. Please try again.",
+                  timestamp,
+                }
+              : msg
+          )
+        );
+        setSending(false);
+        streamCleanupRef.current = null;
       }
-      const errNow = new Date();
-      const errTimestamp = `${String(errNow.getHours()).padStart(2, "0")}:${String(
-        errNow.getMinutes()
-      ).padStart(2, "0")}`;
+    );
 
-      const errMsg: Message = {
-        id: `${Date.now()}-err`,
-        role: "ai",
-        text: "Sorry — I couldn’t reach the server. Please try again.",
-        timestamp: errTimestamp,
-      };
-      setMessages((prev) => [...prev, errMsg]);
-    } finally {
-      setSending(false);
-      if (abortControllerRef.current === controller) {
-        abortControllerRef.current = null;
-      }
-    }
+    streamCleanupRef.current = cleanup;
   };
 
   const displayedMessages = messages.length > 1
@@ -546,23 +548,25 @@ export default function Guardian() {
             keyboardShouldPersistTaps="handled"
           >
             {messages.length > 1 && <View className="h-6" />}
-            {displayedMessages.map((msg) =>
+            {displayedMessages.map((msg, index) =>
               msg.role === "ai" ? (
-                <AIMessage
-                  key={msg.id}
-                  message={msg}
-                  onCopy={() => void handleCopy(msg)}
-                  onSave={() => void handleSave(msg)}
-                  copied={copiedMessageId === msg.id}
-                  saved={savedMessageId === msg.id}
-                  saving={savingMessageId === msg.id}
-                />
+                msg.text !== "" ? (
+                  <AIMessage
+                    key={msg.id}
+                    message={msg}
+                    onCopy={() => void handleCopy(msg)}
+                    onSave={() => void handleSave(msg)}
+                    copied={copiedMessageId === msg.id}
+                    saved={savedMessageId === msg.id}
+                    saving={savingMessageId === msg.id}
+                    isStreaming={sending && index === displayedMessages.length - 1}
+                  />
+                ) : null
               ) : (
                 <UserMessage key={msg.id} message={msg} />
               )
             )}
-
-            {sending && <ThinkingBubble />}
+            {sending && messages[messages.length - 1]?.role === "ai" && messages[messages.length - 1]?.text === "" && <ThinkingBubble />}
 
             {messages.length === 1 && <QuickTopics onSelect={sendMessage} />}
           </ScrollView>

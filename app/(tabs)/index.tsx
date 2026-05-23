@@ -19,6 +19,7 @@ import { rs, rf } from "../../utils/responsive";
 import { useQuery } from "@tanstack/react-query";
 import { fetchModules, fetchModuleProgress } from "../../lib/modules";
 import { fetchUnreadCount } from "../../lib/notifications";
+import { fetchUserStats } from "../../lib/stats";
 
 interface CircularProgressProps {
   progress: number;
@@ -67,6 +68,11 @@ export default function Home() {
     queryFn: fetchUnreadCount,
   });
 
+  const { data: statsData, isLoading: statsLoading } = useQuery({
+    queryKey: ["user-stats"],
+    queryFn: fetchUserStats,
+  });
+
   const unreadCount = unreadData?.count || 0;
 
   const mappedModules = (modulesList || []).map((m) => {
@@ -85,16 +91,6 @@ export default function Home() {
   const nextIncompleteModule = mappedModules
     .filter((m) => m.status !== "completed")
     .sort((a, b) => a.order - b.order)[0];
-
-  const totalModules = modulesList?.length || 6;
-  const completedModules = (progressData || []).filter((p) => p.status === "completed").length;
-
-  const totalLessons = (modulesList || []).reduce((acc, m) => acc + (m.lessons || 0), 0) || 27;
-  const completedLessons = (modulesList || []).reduce((acc, m) => {
-    const prog = (progressData || []).find((p) => p.module === m.module_id);
-    const percent = prog ? prog.progress_percent : 0;
-    return acc + Math.round(((m.lessons || 0) * percent) / 100);
-  }, 0);
 
   const CircularProgress = ({ progress, total, title, subtitle, color = "#D82C15" }: CircularProgressProps) => {
     const size = rs(72);
@@ -356,26 +352,33 @@ export default function Home() {
           <View className="mb-8">
             <Text className="text-[#1a1a1a] text-xs font-black tracking-widest uppercase mb-4 opacity-80">Your Progress</Text>
             <View className="bg-[#1e2a38] rounded-2xl p-6 flex-row justify-between items-center shadow-sm">
-              <CircularProgress progress={modulesLoading ? 0 : completedLessons} total={modulesLoading ? 27 : totalLessons} title={String(modulesLoading ? 0 : completedLessons)} subtitle="Lessons" />
-              <CircularProgress progress={modulesLoading ? 0 : completedModules} total={modulesLoading ? 6 : totalModules} title={String(modulesLoading ? 0 : completedModules)} subtitle="Modules" color="#eab308" />
-              <CircularProgress progress={7} total={100} title="Day Streak" subtitle="Day Streak" />
+              <CircularProgress progress={statsLoading ? 0 : (statsData?.modules_completed || 0)} total={statsLoading ? 6 : (statsData?.modules_total || 6)} title={String(statsLoading ? 0 : (statsData?.modules_completed || 0))} subtitle="Modules" color="#eab308" />
+              <CircularProgress progress={statsLoading ? 0 : (statsData?.avg_quiz_score || 0)} total={100} title={String(statsLoading ? 0 : (statsData?.avg_quiz_score || 0))} subtitle="Avg. Score" color="#22c55e" />
+              <CircularProgress progress={statsLoading ? 0 : (statsData?.day_streak || 0)} total={100} title="Day Streak" subtitle="Day Streak" />
             </View>
           </View>
 
-          {/* New Module Banner */}
-          <TouchableOpacity onPress={() => router.push("/lesson")} className="bg-[#1c2431] rounded-2xl p-5 flex-row items-center border border-gray-800 shadow-sm active:opacity-80">
-            <View
-              style={{ width: rs(48), height: rs(48) }}
-              className="bg-yellow-600/20 rounded-xl items-center justify-center mr-4 border border-yellow-600/30"
-            >
-              <Trophy size={rs(24)} color="#eab308" />
-            </View>
-            <View className="flex-1 mr-2">
-              <Text style={{ fontSize: rf(14) }} className="text-white font-bold mb-1 leading-tight">New: Specialist Operations Module</Text>
-              <Text style={{ fontSize: rf(12) }} className="text-gray-400">5 lessons • 3h 00m • Now available</Text>
-            </View>
-            <ChevronRight size={rs(20)} color="#9ca3af" />
-          </TouchableOpacity>
+          {(() => {
+            const newestModule = (modulesList || []).length > 0
+              ? [...(modulesList || [])].sort((a, b) => b.order - a.order)[0]
+              : null;
+            if (!newestModule) return null;
+            return (
+              <TouchableOpacity onPress={() => router.push(`/lesson?moduleId=${newestModule.module_id}`)} className="bg-[#1c2431] rounded-2xl p-5 flex-row items-center border border-gray-800 shadow-sm active:opacity-80">
+                <View
+                  style={{ width: rs(48), height: rs(48) }}
+                  className="bg-yellow-600/20 rounded-xl items-center justify-center mr-4 border border-yellow-600/30"
+                >
+                  <Trophy size={rs(24)} color="#eab308" />
+                </View>
+                <View className="flex-1 mr-2">
+                  <Text style={{ fontSize: rf(14) }} className="text-white font-bold mb-1 leading-tight">New: {newestModule.name}</Text>
+                  <Text style={{ fontSize: rf(12) }} className="text-gray-400">{newestModule.category} • Now available</Text>
+                </View>
+                <ChevronRight size={rs(20)} color="#9ca3af" />
+              </TouchableOpacity>
+            );
+          })()}
 
 
         </View>
