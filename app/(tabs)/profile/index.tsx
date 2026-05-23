@@ -262,7 +262,6 @@ export default function Profile() {
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0D1520]">
       {isFocused && <StatusBar style="light" />}
-
       {/* Sticky User Card */}
       <View className="bg-[#0D1520] z-10 py-4 border-b border-[#1E2D3D]">
         <View className="mx-4">

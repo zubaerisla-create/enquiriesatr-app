@@ -35,6 +35,7 @@ export type UserMe = {
   email: string;
   full_name: string;
   created_at: string;
+  has_active_sub?: boolean;
   subscription?: {
     plan_name: string;
     plan_slug: string;

@@ -10,6 +10,7 @@ import {
   Linking,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { AnimatedPage } from "../../../components/ui";
 import Svg, { Path } from "react-native-svg";
 import {
   MessageSquare,
@@ -235,53 +236,54 @@ export default function HelpSupport() {
   return (
     <View className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      >
-        <Text className="text-gray-500 text-[10px] font-bold tracking-widest uppercase px-4 mb-2 mt-4">
-          Contact Support
-        </Text>
-        <View className="mx-4 mb-5 bg-[#141E2B] rounded-2xl overflow-hidden">
-          {contactOptions.map((item, index) => (
-            <ContactRow
-              key={item.id}
-              item={item}
-              isLast={index === contactOptions.length - 1}
-              onPress={() => {
-                if (item.id === "chat") {
-                  router.push("/profile/live-chat");
-                } else if (item.id === "email") {
-                  Linking.openURL(`mailto:${supportEmail}`);
-                } else if (item.id === "phone") {
-                  Linking.openURL(`tel:${supportPhone}`);
-                }
-              }}
-            />
-          ))}
-        </View>
-
-        <Text className="text-gray-500 text-[10px] font-bold tracking-widest uppercase px-4 mb-2">
-          Frequently Asked Questions
-        </Text>
-        <View className="mx-4 mb-5 bg-[#141E2B] rounded-2xl overflow-hidden">
-          {FAQS.map((item, index) => (
-            <FaqRow
-              key={item.id}
-              item={item}
-              isLast={index === FAQS.length - 1}
-            />
-          ))}
-        </View>
-
-        <View className="mx-4 bg-[#1A0E0E] border border-[#3D1A1A] rounded-2xl px-4 py-4 flex-row items-start gap-3">
-          <AlertTriangle size={20} color="#E05252" style={{ marginTop: 2, flexShrink: 0 }} />
-          <Text className="text-gray-400 text-xs leading-5 flex-1">
-            CPTAN is a training and operational reference tool. It does not replace formal SIA-accredited CP training, legal advice, or professional operational judgment. Always act within your training, competence, and the law.
+      <AnimatedPage>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        >
+          <Text className="text-gray-500 text-[10px] font-bold tracking-widest uppercase px-4 mb-2 mt-4">
+            Contact Support
           </Text>
-        </View>
-      </ScrollView>
+          <View className="mx-4 mb-5 bg-[#141E2B] rounded-2xl overflow-hidden">
+            {contactOptions.map((item, index) => (
+              <ContactRow
+                key={item.id}
+                item={item}
+                isLast={index === contactOptions.length - 1}
+                onPress={() => {
+                  if (item.id === "chat") {
+                    router.push("/profile/live-chat");
+                  } else if (item.id === "email") {
+                    Linking.openURL(`mailto:${supportEmail}`);
+                  } else if (item.id === "phone") {
+                    Linking.openURL(`tel:${supportPhone}`);
+                  }
+                }}
+              />
+            ))}
+          </View>
+
+          <Text className="text-gray-500 text-[10px] font-bold tracking-widest uppercase px-4 mb-2">
+            Frequently Asked Questions
+          </Text>
+          <View className="mx-4 mb-5 bg-[#141E2B] rounded-2xl overflow-hidden">
+            {FAQS.map((item, index) => (
+              <FaqRow
+                key={item.id}
+                item={item}
+                isLast={index === FAQS.length - 1}
+              />
+            ))}
+          </View>
+
+          <View className="mx-4 bg-[#1A0E0E] border border-[#3D1A1A] rounded-2xl px-4 py-4 flex-row items-start gap-3">
+            <AlertTriangle size={20} color="#E05252" style={{ marginTop: 2, flexShrink: 0 }} />
+            <Text className="text-gray-400 text-xs leading-5 flex-1">
+              CPTAN is a training and operational reference tool. It does not replace formal SIA-accredited CP training, legal advice, or professional operational judgment. Always act within your training, competence, and the law.
+            </Text>
+          </View>
+        </ScrollView>
+      </AnimatedPage>
     </View>
   );
 }

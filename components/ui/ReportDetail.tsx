@@ -2,10 +2,13 @@ import React from "react";
 import { View, Text, ScrollView } from "react-native";
 
 interface ReportData {
-  llm_overall_risk: string;
-  llm_key_findings: string | string[];
-  llm_overall_summary: string;
-  llm_recommended_actions: string[];
+  llm_overall_risk?: string;
+  llm_overall_viability?: string;
+  llm_key_findings?: string | string[];
+  llm_overall_summary?: string;
+  llm_route_summary?: string;
+  llm_recommended_actions?: string[];
+  llm_contingency_actions?: string[];
 }
 
 interface ReportDetailProps {
@@ -16,6 +19,9 @@ interface ReportDetailProps {
 
 const severityColor = (s: string) => {
   const normS = (s || "").toUpperCase();
+  if (normS === "UNVIABLE" || normS.includes("UNVIABLE")) return { text: "#D82C15", bg: "#2D1010", border: "#D82C15" };
+  if (normS.includes("MITIGATION")) return { text: "#F5A623", bg: "#2A1E08", border: "#F5A623" };
+  if (normS === "VIABLE" || normS.includes("VIABLE")) return { text: "#22C55E", bg: "#0A1F0F", border: "#22C55E" };
   if (normS === "HIGH" || normS === "CRITICAL" || normS === "RED") return { text: "#D82C15", bg: "#2D1010", border: "#D82C15" };
   if (normS === "MEDIUM" || normS === "AMBER") return { text: "#F5A623", bg: "#2A1E08", border: "#F5A623" };
   return { text: "#22C55E", bg: "#0A1F0F", border: "#22C55E" };
@@ -26,12 +32,10 @@ export default function ReportDetail({
   title = "Risk Report",
   subtitle = "Based on your threat assessment checklist"
 }: ReportDetailProps) {
-  const {
-    llm_overall_risk,
-    llm_key_findings,
-    llm_overall_summary,
-    llm_recommended_actions
-  } = reportData;
+  const llm_overall_risk = reportData.llm_overall_risk || reportData.llm_overall_viability || "N/A";
+  const llm_key_findings = reportData.llm_key_findings || [];
+  const llm_overall_summary = reportData.llm_overall_summary || reportData.llm_overall_summary || reportData.llm_route_summary || "";
+  const llm_recommended_actions = reportData.llm_recommended_actions || reportData.llm_contingency_actions || [];
 
   const riskCol = severityColor(llm_overall_risk);
 

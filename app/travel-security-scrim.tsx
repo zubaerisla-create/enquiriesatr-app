@@ -7,12 +7,14 @@ import {
   ScrollView,
   ActivityIndicator,
   KeyboardAvoidingView,
+  Keyboard,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
 import { ArrowLeft, ChevronDown, Check, Save } from "lucide-react-native";
 import Toast from "react-native-toast-message";
 import { api } from "../lib/api";
+import { AnimatedPage } from "../components/ui";
 
 const SHAPE_OPTIONS = [
   "Saloon",
@@ -35,6 +37,7 @@ export default function TravelSecurityScrim() {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
+    Keyboard.dismiss();
     if (!shape) {
       Toast.show({
         type: "error",
@@ -128,7 +131,8 @@ export default function TravelSecurityScrim() {
       className="flex-1 bg-white"
     >
       <StatusBar style="light" />
-      <View className="bg-[#0D1520] pt-14 pb-0">
+      <AnimatedPage>
+        <View className="bg-[#0D1520] pt-14 pb-0">
         <View className="px-5 pb-5">
           <TouchableOpacity
             onPress={() => router.back()}
@@ -276,6 +280,7 @@ export default function TravelSecurityScrim() {
           )}
         </TouchableOpacity>
       </View>
+      </AnimatedPage>
     </KeyboardAvoidingView>
   );
 }

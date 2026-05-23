@@ -12,7 +12,8 @@ import {
   Platform
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AppBottomSheet } from "../components/ui";
+import { AppBottomSheet, AnimatedPage } from "../components/ui";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { useBottomSheet } from "../hooks/useBottomSheet";
 import { rf, rs } from "../utils/responsive";
 
@@ -26,14 +27,17 @@ import {
   CheckCircle,
   ChevronRight,
   Edit2,
-  Save
+  Save,
+  Lock
 } from "lucide-react-native";
 import Toast from "react-native-toast-message";
 import { fetchModuleDetail, fetchModuleProgress, markModuleComplete } from "../lib/modules";
 import { createNote } from "../lib/notes";
+import { useAuth } from "../hooks/useAuth";
 
 
 export default function LessonReadingView() {
+  const { user } = useAuth();
   const { moduleId: moduleIdParam } = useLocalSearchParams();
   const moduleId = Number(moduleIdParam);
 
@@ -99,9 +103,52 @@ export default function LessonReadingView() {
 
   if (moduleLoading) {
     return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center", backgroundColor: "#FAF8F5" }]}>
-        <ActivityIndicator size="large" color="#D82C15" />
-      </View>
+      <SafeAreaView style={styles.container}>
+        <StatusBar style="dark" />
+        <Animated.View entering={FadeIn.duration(300)} style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color="#D82C15" />
+        </Animated.View>
+      </SafeAreaView>
+    );
+  }
+
+  const hasActiveSub = user?.has_active_sub || false;
+  const isLocked = moduleDetail && !moduleDetail.is_free && !hasActiveSub;
+
+  if (isLocked) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: "#0D1520" }]}>
+        <StatusBar style="light" />
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: rs(24) }}>
+          <View style={{ width: rs(80), height: rs(80), borderRadius: rs(24), backgroundColor: "#2D1010", borderWidth: 1, borderColor: "#E05252", alignItems: "center", justifyContent: "center", marginBottom: rs(24) }}>
+            <Lock size={32} color="#E05252" />
+          </View>
+          <Text style={{ fontSize: rf(24), fontWeight: "900", color: "#ffffff", textAlign: "center", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: rs(12) }}>
+            Premium Content
+          </Text>
+          <Text style={{ fontSize: rf(14), color: "#9ca3af", textAlign: "center", lineHeight: rf(22), marginBottom: rs(36) }}>
+            "{moduleDetail?.name}" is a premium close protection module. Upgrade to a premium subscription to gain immediate access to this lesson, practice tools, and safety assessments.
+          </Text>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => router.push("/profile/subscription-billing")}
+            style={{
+              width: "100%",
+              backgroundColor: "#D82C15",
+              paddingVertical: rs(16),
+              borderRadius: rs(12),
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: rs(16),
+            }}
+          >
+            <Text style={{ color: "#ffffff", fontWeight: "700", letterSpacing: 0.5, fontSize: rf(15) }}>UPGRADE NOW</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Text style={{ color: "#9ca3af", fontWeight: "600", fontSize: rf(14) }}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -144,199 +191,199 @@ export default function LessonReadingView() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
+      <AnimatedPage>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
+            <ArrowLeft size={22} color="#1f2937" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{moduleDetail?.name}</Text>
+        </View>
 
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-          <ArrowLeft size={22} color="#1f2937" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{moduleDetail?.name}</Text>
-      </View>
+        <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
-        <View style={styles.content}>
+            <View style={styles.breadcrumb}>
+              <Text style={styles.breadcrumbBase}>{moduleDetail?.category}</Text>
+              <ChevronRight size={10} color="#9ca3af" />
+              <Text style={styles.breadcrumbActive}>{moduleDetail?.name}</Text>
+            </View>
 
-          <View style={styles.breadcrumb}>
-            <Text style={styles.breadcrumbBase}>{moduleDetail?.category}</Text>
-            <ChevronRight size={10} color="#9ca3af" />
-            <Text style={styles.breadcrumbActive}>{moduleDetail?.name}</Text>
-          </View>
+            {moduleDetail?.use && (
+              <Text style={styles.useText}>
+                {moduleDetail.use}
+              </Text>
+            )}
 
-          {moduleDetail?.use && (
-            <Text style={styles.useText}>
-              {moduleDetail.use}
-            </Text>
-          )}
-
-          {moduleDetail?.topic && moduleDetail.topic.length > 0 && (
-            <View style={{ marginBottom: rs(24) }}>
-              <Text style={styles.sectionHeading}>Topics Covered</Text>
-              {moduleDetail.topic.map((t, idx) => (
-                <View key={idx} style={styles.bulletRow}>
-                  <View style={styles.bulletDotWrap}>
-                    <View style={styles.bulletDot} />
+            {moduleDetail?.topic && moduleDetail.topic.length > 0 && (
+              <View style={{ marginBottom: rs(24) }}>
+                <Text style={styles.sectionHeading}>Topics Covered</Text>
+                {moduleDetail.topic.map((t, idx) => (
+                  <View key={idx} style={styles.bulletRow}>
+                    <View style={styles.bulletDotWrap}>
+                      <View style={styles.bulletDot} />
+                    </View>
+                    <Text style={styles.bulletBodyText}>
+                      <Text style={styles.bulletTitle}>{t}</Text>
+                    </Text>
                   </View>
-                  <Text style={styles.bulletBodyText}>
-                    <Text style={styles.bulletTitle}>{t}</Text>
+                ))}
+              </View>
+            )}
+
+            {subsections.map((sub, index) => {
+              const paragraphs = sub.content.split(/\n\s*\n/);
+              return (
+                <View key={sub.id}>
+                  <Text style={styles.sectionHeading}>
+                    {index + 1}. {sub.name}
                   </Text>
+                  {paragraphs.map((p, i) => (
+                    <Text key={i} style={styles.bodyText}>
+                      {p.trim()}
+                    </Text>
+                  ))}
+                  {index < subsections.length - 1 && <View style={styles.sectionDivider} />}
                 </View>
-              ))}
-            </View>
+              );
+            })}
+
+          </View>
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.footerSaveBtn} onPress={presentNoteSheet}>
+            <Edit2 size={16} color="#D82C15" style={{ marginRight: 8 }} />
+            <Text style={styles.footerSaveBtnText}>Save Note</Text>
+          </TouchableOpacity>
+
+          {isCompleted ? (
+            <TouchableOpacity
+              style={[styles.footerActionBtn, { backgroundColor: "#D82C15" }]}
+              onPress={() => router.push(`/assessment/intro?moduleId=${moduleId}`)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.footerActionBtnText}>TAKE ASSESSMENT</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={[styles.footerActionBtn, { backgroundColor: "#D82C15" }]}
+              onPress={handleMarkComplete}
+              activeOpacity={0.8}
+              disabled={completeMutation.isPending}
+            >
+              {completeMutation.isPending ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <>
+                  <CheckCircle size={16} color="white" style={{ marginRight: 8 }} />
+                  <Text style={styles.footerActionBtnText}>MARK COMPLETE</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <AppBottomSheet
+          ref={noteSheetRef}
+          title="Save Note"
+          subtitle={moduleDetail?.name}
+          variant="light"
+          enableDynamicSizing={false}
+          snapPoints={["35%", "70%"]}
+          keyboardBehavior="extend"
+          onDismiss={() => setNoteText("")}
+        >
+          <BottomSheetTextInput
+            style={styles.noteInput}
+            placeholder="Write your note here..."
+            placeholderTextColor="#9ca3af"
+            multiline
+            value={noteText}
+            onChangeText={setNoteText}
+            textAlignVertical="top"
+          // autoFocus
+          />
+
+          {savedNotes.filter(n => n.lesson === moduleId).length > 0 && (
+            <Text style={styles.savedNotesHint}>
+              {savedNotes.filter(n => n.lesson === moduleId).length} note(s) already saved
+            </Text>
           )}
 
-          {subsections.map((sub, index) => {
-            const paragraphs = sub.content.split(/\n\s*\n/);
-            return (
-              <View key={sub.id}>
-                <Text style={styles.sectionHeading}>
-                  {index + 1}. {sub.name}
-                </Text>
-                {paragraphs.map((p, i) => (
-                  <Text key={i} style={styles.bodyText}>
-                    {p.trim()}
-                  </Text>
-                ))}
-                {index < subsections.length - 1 && <View style={styles.sectionDivider} />}
-              </View>
-            );
-          })}
-
-        </View>
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerSaveBtn} onPress={presentNoteSheet}>
-          <Edit2 size={16} color="#D82C15" style={{ marginRight: 8 }} />
-          <Text style={styles.footerSaveBtnText}>Save Note</Text>
-        </TouchableOpacity>
-
-        {isCompleted ? (
-          <TouchableOpacity
-            style={[styles.footerActionBtn, { backgroundColor: "#D82C15" }]}
-            onPress={() => router.push(`/assessment/intro?moduleId=${moduleId}`)}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.footerActionBtnText}>TAKE ASSESSMENT</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={[styles.footerActionBtn, { backgroundColor: "#D82C15" }]}
-            onPress={handleMarkComplete}
-            activeOpacity={0.8}
-            disabled={completeMutation.isPending}
-          >
-            {completeMutation.isPending ? (
-              <ActivityIndicator size="small" color="white" />
-            ) : (
-              <>
-                <CheckCircle size={16} color="white" style={{ marginRight: 8 }} />
-                <Text style={styles.footerActionBtnText}>MARK COMPLETE</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <AppBottomSheet
-        ref={noteSheetRef}
-        title="Save Note"
-        subtitle={moduleDetail?.name}
-        variant="light"
-        enableDynamicSizing={false}
-        snapPoints={["35%", "70%"]}
-        keyboardBehavior="extend"
-        onDismiss={() => setNoteText("")}
-      >
-        <BottomSheetTextInput
-          style={styles.noteInput}
-          placeholder="Write your note here..."
-          placeholderTextColor="#9ca3af"
-          multiline
-          value={noteText}
-          onChangeText={setNoteText}
-          textAlignVertical="top"
-        // autoFocus
-        />
-
-        {savedNotes.filter(n => n.lesson === moduleId).length > 0 && (
-          <Text style={styles.savedNotesHint}>
-            {savedNotes.filter(n => n.lesson === moduleId).length} note(s) already saved
-          </Text>
-        )}
-
-        <View style={styles.modalActions}>
-          <TouchableOpacity
-            style={styles.modalCancelBtn}
-            onPress={() => {
-              setNoteText("");
-              dismissNoteSheet();
-            }}
-          >
-            <Text style={styles.modalCancelText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.modalSaveBtn, saveNoteMutation.isPending && { opacity: 0.7 }]}
-            onPress={handleSaveNote}
-            disabled={saveNoteMutation.isPending}
-          >
-            {saveNoteMutation.isPending ? (
-              <ActivityIndicator size="small" color="white" />
-            ) : (
-              <>
-                <Save size={15} color="white" style={{ marginRight: 6 }} />
-                <Text style={styles.modalSaveText}>Save Note</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
-      </AppBottomSheet>
-
-      <Modal
-        visible={completeModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setCompleteModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <TouchableOpacity
-            style={styles.modalBackdrop}
-            activeOpacity={1}
-            onPress={() => setCompleteModalVisible(false)}
-          />
-          <View style={styles.completeModalContent}>
-            <View style={styles.successIconOuter}>
-              <View style={styles.successIconInner}>
-                <Check size={32} color="#4CAF50" strokeWidth={3} />
-              </View>
-            </View>
-
-            <Text style={styles.completeTitle}>Module Complete!</Text>
-            <Text style={styles.completeSubtitle}>
-              You've successfully finished "{moduleDetail?.name}".
-            </Text>
-
+          <View style={styles.modalActions}>
             <TouchableOpacity
-              style={styles.completeAssessmentBtn}
+              style={styles.modalCancelBtn}
               onPress={() => {
-                setCompleteModalVisible(false);
-                router.replace(`/assessment/intro?moduleId=${moduleId}`);
+                setNoteText("");
+                dismissNoteSheet();
               }}
             >
-              <Text style={styles.completeAssessmentBtnText}>Take Assessment</Text>
+              <Text style={styles.modalCancelText}>Cancel</Text>
             </TouchableOpacity>
-
             <TouchableOpacity
-              style={styles.completeDoneBtn}
-              onPress={() => {
-                setCompleteModalVisible(false);
-                router.back();
-              }}
+              style={[styles.modalSaveBtn, saveNoteMutation.isPending && { opacity: 0.7 }]}
+              onPress={handleSaveNote}
+              disabled={saveNoteMutation.isPending}
             >
-              <Text style={styles.completeDoneBtnText}>Back to Modules</Text>
+              {saveNoteMutation.isPending ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <>
+                  <Save size={15} color="white" style={{ marginRight: 6 }} />
+                  <Text style={styles.modalSaveText}>Save Note</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
+        </AppBottomSheet>
 
+        <Modal
+          visible={completeModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setCompleteModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <TouchableOpacity
+              style={styles.modalBackdrop}
+              activeOpacity={1}
+              onPress={() => setCompleteModalVisible(false)}
+            />
+            <View style={styles.completeModalContent}>
+              <View style={styles.successIconOuter}>
+                <View style={styles.successIconInner}>
+                  <Check size={32} color="#4CAF50" strokeWidth={3} />
+                </View>
+              </View>
+
+              <Text style={styles.completeTitle}>Module Complete!</Text>
+              <Text style={styles.completeSubtitle}>
+                You've successfully finished "{moduleDetail?.name}".
+              </Text>
+
+              <TouchableOpacity
+                style={styles.completeAssessmentBtn}
+                onPress={() => {
+                  setCompleteModalVisible(false);
+                  router.replace(`/assessment/intro?moduleId=${moduleId}`);
+                }}
+              >
+                <Text style={styles.completeAssessmentBtnText}>Take Assessment</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.completeDoneBtn}
+                onPress={() => {
+                  setCompleteModalVisible(false);
+                  router.back();
+                }}
+              >
+                <Text style={styles.completeDoneBtnText}>Back to Modules</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </AnimatedPage>
     </SafeAreaView>
   );
 }

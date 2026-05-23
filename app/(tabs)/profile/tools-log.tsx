@@ -19,6 +19,7 @@ import {
   ArrowLeft
 } from "lucide-react-native";
 import { api } from "../../../lib/api";
+import { AnimatedPage } from "../../../components/ui";
 
 interface ScrimData {
   id: number;
@@ -101,7 +102,18 @@ export default function ToolsLog() {
   const renderScrimCard = (item: LogEntry) => {
     const data = item.data as ScrimData;
     return (
-      <View className="mx-4 mb-4 bg-[#141E2B] rounded-2xl p-4 border border-[#1E2D3D]">
+      <TouchableOpacity
+        onPress={() => router.push({
+          pathname: "/log-detail",
+          params: {
+            log_type: item.log_type,
+            timestamp: item.timestamp,
+            data: JSON.stringify(data)
+          }
+        })}
+        activeOpacity={0.7}
+        className="mx-4 mb-4 bg-[#141E2B] rounded-2xl p-4 border border-[#1E2D3D]"
+      >
         <View className="flex-row justify-between items-start mb-3">
           <View className="flex-row items-center gap-2">
             <View className="w-8 h-8 rounded-lg bg-[#2D1010] items-center justify-center border border-[#5C2020]">
@@ -142,7 +154,7 @@ export default function ToolsLog() {
             <Text className="text-gray-500 text-[10px] font-bold uppercase tracking-wider">
               Identifying Features
             </Text>
-            <Text className="text-gray-300 text-xs leading-relaxed mt-0.5">
+            <Text className="text-gray-300 text-xs leading-relaxed mt-0.5" numberOfLines={2}>
               {data.identifying_features}
             </Text>
           </View>
@@ -155,7 +167,7 @@ export default function ToolsLog() {
             </View>
           ) : null}
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -166,7 +178,18 @@ export default function ToolsLog() {
     );
 
     return (
-      <View className="mx-4 mb-4 bg-[#141E2B] rounded-2xl p-4 border border-[#1E2D3D]">
+      <TouchableOpacity
+        onPress={() => router.push({
+          pathname: "/log-detail",
+          params: {
+            log_type: item.log_type,
+            timestamp: item.timestamp,
+            data: JSON.stringify(data)
+          }
+        })}
+        activeOpacity={0.7}
+        className="mx-4 mb-4 bg-[#141E2B] rounded-2xl p-4 border border-[#1E2D3D]"
+      >
         <View className="flex-row justify-between items-start mb-3">
           <View className="flex-row items-center gap-2">
             <View className="w-8 h-8 rounded-lg bg-[#101A24] items-center justify-center border border-[#1E2D3D]">
@@ -209,12 +232,12 @@ export default function ToolsLog() {
             <Text className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">
               Overall Notes
             </Text>
-            <Text className="text-gray-400 text-xs italic leading-relaxed">
+            <Text className="text-gray-400 text-xs italic leading-relaxed" numberOfLines={2}>
               "{data.overall_notes}"
             </Text>
           </View>
         ) : null}
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -232,51 +255,53 @@ export default function ToolsLog() {
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0D1520]">
       {isFocused && <StatusBar style="light" />}
 
-      <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D]">
-        <View className="px-4 py-4">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="flex-row items-center mb-4"
-          >
-            <ArrowLeft size={18} color="#9ca3af" />
-            <Text className="text-gray-400 font-medium ml-2 text-sm">Profile</Text>
-          </TouchableOpacity>
+      <AnimatedPage>
+        <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D]">
+          <View className="px-4 py-4">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="flex-row items-center mb-4"
+            >
+              <ArrowLeft size={18} color="#9ca3af" />
+              <Text className="text-gray-400 font-medium ml-2 text-sm">Profile</Text>
+            </TouchableOpacity>
 
-          <Text className="text-white text-2xl font-extrabold tracking-wider uppercase">
-            Tools Log
-          </Text>
-          <Text className="text-gray-500 text-sm mt-1">
-            Chronological tactical activity feed
-          </Text>
+            <Text className="text-white text-2xl font-extrabold tracking-wider uppercase">
+              Tools Log
+            </Text>
+            <Text className="text-gray-500 text-sm mt-1">
+              Chronological tactical activity feed
+            </Text>
+          </View>
         </View>
-      </View>
 
-      {loading && !refreshing ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#D82C15" />
-        </View>
-      ) : (
-        <FlatList
-          data={logs}
-          keyExtractor={(item) => item.log_type + "-" + item.data.id}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingTop: 16, paddingBottom: 40 }}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => fetchLogs(true)}
-              tintColor="#D82C15"
-            />
-          }
-          ListEmptyComponent={
-            <View className="py-20 items-center justify-center">
-              <FileClock size={48} color="#1F2937" />
-              <Text className="text-gray-500 mt-4 font-medium">No activity logged yet</Text>
-            </View>
-          }
-        />
-      )}
+        {loading && !refreshing ? (
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#D82C15" />
+          </View>
+        ) : (
+          <FlatList
+            data={logs}
+            keyExtractor={(item) => item.log_type + "-" + item.data.id}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingTop: 16, paddingBottom: 40 }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => fetchLogs(true)}
+                tintColor="#D82C15"
+              />
+            }
+            ListEmptyComponent={
+              <View className="py-20 items-center justify-center">
+                <FileClock size={48} color="#1F2937" />
+                <Text className="text-gray-500 mt-4 font-medium">No activity logged yet</Text>
+              </View>
+            }
+          />
+        )}
+      </AnimatedPage>
     </SafeAreaView>
   );
 }

@@ -6,6 +6,7 @@ import {
   ScrollView,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { AnimatedPage } from "../../../components/ui";
 
 import {
   ArrowLeft,
@@ -90,63 +91,64 @@ export default function TermsAndConditions() {
   return (
     <View className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
+      <AnimatedPage>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
+        >
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
-      >
+          {/* ── 01. OPERATIONAL USAGE ── */}
+          <SectionHeading number="01" title="Operational Usage" Icon={FileText} />
+          <BodyText>
+            The CPTAN application is engineered strictly for professional security personnel, tactical operators, and certified training organizations. Usage is contingent upon the user maintaining active credentials within their respective jurisdiction. Any deployment of CPTAN for unauthorized surveillance, non-professional activities, or outside regulated training environments is strictly prohibited.
+          </BodyText>
 
-        {/* ── 01. OPERATIONAL USAGE ── */}
-        <SectionHeading number="01" title="Operational Usage" Icon={FileText} />
-        <BodyText>
-          The CPTAN application is engineered strictly for professional security personnel, tactical operators, and certified training organizations. Usage is contingent upon the user maintaining active credentials within their respective jurisdiction. Any deployment of CPTAN for unauthorized surveillance, non-professional activities, or outside regulated training environments is strictly prohibited.
-        </BodyText>
+          {/* ── 02. DATA PRIVACY & ENCRYPTION ── */}
+          <SectionHeading number="02" title="Data Privacy & Encryption" Icon={Shield} />
 
-        {/* ── 02. DATA PRIVACY & ENCRYPTION ── */}
-        <SectionHeading number="02" title="Data Privacy & Encryption" Icon={Shield} />
+          <InsetBlock
+            label="Local-First Architecture"
+            body="Operational data remains on-device. Local-first AI processing ensures sensitive intel never leaves your hardware encrypted perimeter."
+          />
 
-        <InsetBlock
-          label="Local-First Architecture"
-          body="Operational data remains on-device. Local-first AI processing ensures sensitive intel never leaves your hardware encrypted perimeter."
-        />
+          <InsetBlock
+            label="Zero-Cloud Storage"
+            body="We do not provide cloud backups for mission-critical data. Users are responsible for their own secure physical redundancy protocols."
+          />
 
-        <InsetBlock
-          label="Zero-Cloud Storage"
-          body="We do not provide cloud backups for mission-critical data. Users are responsible for their own secure physical redundancy protocols."
-        />
+          <BodyText>
+            All transmissions within the CPTAN mesh network utilize AES-256 end-to-end encryption. Keys are generated and stored exclusively within the device's Secure Enclave.
+          </BodyText>
 
-        <BodyText>
-          All transmissions within the CPTAN mesh network utilize AES-256 end-to-end encryption. Keys are generated and stored exclusively within the device's Secure Enclave.
-        </BodyText>
+          {/* ── 03. LIABILITY LIMITATIONS ── */}
+          <SectionHeading number="03" title="Liability Limitations" Icon={AlertTriangle} />
 
-        {/* ── 03. LIABILITY LIMITATIONS ── */}
-        <SectionHeading number="03" title="Liability Limitations" Icon={AlertTriangle} />
+          <WarningBlock body="Critical Warning: The CPTAN interface is a tactical reference tool. It does not replace professional field judgment, standard operating procedures (SOP), or primary military-grade communication channels." />
 
-        <WarningBlock body="Critical Warning: The CPTAN interface is a tactical reference tool. It does not replace professional field judgment, standard operating procedures (SOP), or primary military-grade communication channels." />
+          <BodyText>
+            The developers assume no liability for tactical errors, equipment failure, or data loss occurring during live operations. Users act on CPTAN outputs at their own professional risk.
+          </BodyText>
 
-        <BodyText>
-          The developers assume no liability for tactical errors, equipment failure, or data loss occurring during live operations. Users act on CPTAN outputs at their own professional risk.
-        </BodyText>
+          {/* ── 04. SUBSCRIPTION TERMS ── */}
+          <SectionHeading number="04" title="Subscription Terms" Icon={Lock} />
 
-        {/* ── 04. SUBSCRIPTION TERMS ── */}
-        <SectionHeading number="04" title="Subscription Terms" Icon={Lock} />
-
-        <TermRow
-          badge="Term"
-          badgeColor="red"
-          body="Monthly or Annual recurring billing via secure tactical portal."
-        />
-        <TermRow
-          badge="Trial"
-          badgeColor="blue"
-          body="7-day operational evaluation period provided for verified agencies."
-        />
-        <TermRow
-          badge="Cancel"
-          badgeColor="gray"
-          body="Cancellation requires a 24-hour notice before the next billing cycle."
-        />
-      </ScrollView>
+          <TermRow
+            badge="Term"
+            badgeColor="red"
+            body="Monthly or Annual recurring billing via secure tactical portal."
+          />
+          <TermRow
+            badge="Trial"
+            badgeColor="blue"
+            body="7-day operational evaluation period provided for verified agencies."
+          />
+          <TermRow
+            badge="Cancel"
+            badgeColor="gray"
+            body="Cancellation requires a 24-hour notice before the next billing cycle."
+          />
+        </ScrollView>
+      </AnimatedPage>
     </View>
   );
 }

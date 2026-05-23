@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { AnimatedPage } from "../../../components/ui";
 import {
   LucideIcon,
   Search,
@@ -60,6 +61,9 @@ const iconStyles: Record<DocColor, { bg: string; border: string; text: string }>
 
 const getRiskInfo = (riskLevel: string): { icon: LucideIcon; color: DocColor } => {
   const level = riskLevel?.toLowerCase() || "";
+  if (level.includes("unviable")) return { icon: AlertTriangle, color: "red" };
+  if (level.includes("mitigation")) return { icon: FileText, color: "orange" };
+  if (level.includes("viable")) return { icon: CheckCircle, color: "green" };
   if (level.includes("high") || level.includes("critical")) return { icon: AlertTriangle, color: "red" };
   if (level.includes("medium")) return { icon: FileText, color: "orange" };
   if (level.includes("low")) return { icon: CheckCircle, color: "green" };
@@ -205,7 +209,17 @@ export default function MyDocuments() {
           icon,
           iconColor: color,
           title: d.title,
-          type: d.type === "THREAT_ASSESSMENT" ? "Threat Assessment" : d.type === "VENUE_REPORT" ? "Venue Assessment" : d.type === "SEARCH_REPORT" ? "Search Operations" : d.type === "RESIDENTIAL_REPORT" ? "Residential Handover" : d.type,
+          type: d.type === "THREAT_ASSESSMENT"
+            ? "Threat Assessment"
+            : d.type === "VENUE_REPORT"
+              ? "Venue Assessment"
+              : d.type === "SEARCH_REPORT"
+                ? "Search Operations"
+                : d.type === "RESIDENTIAL_REPORT"
+                  ? "Residential Handover"
+                  : d.type === "ROUTE_RECCE_REPORT"
+                    ? "Route Recce Briefing"
+                    : d.type,
           date: formatDate(d.created_at),
           status: "complete", // Backend only returns generated reports currently
         };
@@ -281,68 +295,69 @@ export default function MyDocuments() {
   return (
     <View className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => fetchDocuments(true)} tintColor="#E05252" />
-        }
-      >
-        {/* Search bar */}
-        <View className="mx-4 mb-5 flex-row items-center bg-[#141E2B] rounded-xl px-4 py-3 mt-4 gap-2">
-          <Search size={18} color="#4B5563" />
-          <TextInput
-            className="flex-1 text-gray-300 text-sm"
-            placeholder="Search documents..."
-            placeholderTextColor="#4B5563"
-            value={search}
-            onChangeText={setSearch}
-          />
-        </View>
-
-        {/* Stats row */}
-        <View className="flex-row mx-4 gap-3 mb-5">
-          <StatCard value={String(total)} label="Total" valueColor="#E05252" />
-          <StatCard value={String(complete)} label="Complete" valueColor="#4CAF82" bordered />
-          <StatCard value={String(drafts)} label="Drafts" valueColor="#D4A843" />
-        </View>
-
-        {/* Document list */}
-        {loading && !refreshing ? (
-          <View className="py-20">
-            <ActivityIndicator size="large" color="#E05252" />
-          </View>
-        ) : filtered.length > 0 ? (
-          filtered.map((doc) => (
-            <DocRow
-              key={doc.id}
-              doc={doc}
-              onPress={handlePress}
-              onDownload={handleDownload}
-              onDelete={handleDeletePress}
-              isDownloading={downloadingId === doc.id}
+      <AnimatedPage>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={() => fetchDocuments(true)} tintColor="#E05252" />
+          }
+        >
+          {/* Search bar */}
+          <View className="mx-4 mb-5 flex-row items-center bg-[#141E2B] rounded-xl px-4 py-3 mt-4 gap-2">
+            <Search size={18} color="#4B5563" />
+            <TextInput
+              className="flex-1 text-gray-300 text-sm"
+              placeholder="Search documents..."
+              placeholderTextColor="#4B5563"
+              value={search}
+              onChangeText={setSearch}
             />
-          ))
-        ) : (
-          <View className="py-20 items-center justify-center">
-            <FileText size={48} color="#1F2937" />
-            <Text className="text-gray-500 mt-4 font-medium">No documents found</Text>
           </View>
-        )}
-      </ScrollView>
 
-      <AlertModal
-        visible={deleteModalVisible}
-        title="Delete Document"
-        description="Are you sure you want to permanently delete this document? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
-        variant="danger"
-        loading={deleting}
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setDeleteModalVisible(false)}
-      />
+          {/* Stats row */}
+          <View className="flex-row mx-4 gap-3 mb-5">
+            <StatCard value={String(total)} label="Total" valueColor="#E05252" />
+            <StatCard value={String(complete)} label="Complete" valueColor="#4CAF82" bordered />
+            <StatCard value={String(drafts)} label="Drafts" valueColor="#D4A843" />
+          </View>
+
+          {/* Document list */}
+          {loading && !refreshing ? (
+            <View className="py-20">
+              <ActivityIndicator size="large" color="#E05252" />
+            </View>
+          ) : filtered.length > 0 ? (
+            filtered.map((doc) => (
+              <DocRow
+                key={doc.id}
+                doc={doc}
+                onPress={handlePress}
+                onDownload={handleDownload}
+                onDelete={handleDeletePress}
+                isDownloading={downloadingId === doc.id}
+              />
+            ))
+          ) : (
+            <View className="py-20 items-center justify-center">
+              <FileText size={48} color="#1F2937" />
+              <Text className="text-gray-500 mt-4 font-medium">No documents found</Text>
+            </View>
+          )}
+        </ScrollView>
+
+        <AlertModal
+          visible={deleteModalVisible}
+          title="Delete Document"
+          description="Are you sure you want to permanently delete this document? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="danger"
+          loading={deleting}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setDeleteModalVisible(false)}
+        />
+      </AnimatedPage>
     </View>
   );
 }

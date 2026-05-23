@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { AnimatedPage } from "../../../components/ui";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../../hooks/useAuth";
 import { api } from "../../../lib/api";
@@ -201,89 +202,90 @@ export default function Settings() {
   return (
     <View className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
+      <AnimatedPage>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        >
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      >
 
 
-
-        {/* Notifications section */}
-        <View className="mx-4 mb-4 bg-[#141E2B] rounded-2xl overflow-hidden">
-          {/* Section label */}
-          <View className="px-4 pt-4 pb-2">
-            <Text className="text-gray-500 text-[10px] font-bold tracking-widest uppercase">
-              Notifications
-            </Text>
-          </View>
-
-          {/* Rows */}
-          {NOTIFICATION_SETTINGS.map((item, index) => (
-            <NotificationRow
-              key={item.id}
-              item={item}
-              value={toggles[item.id]}
-              onToggle={(v) => handleToggle(item.id, v)}
-              isLast={index === NOTIFICATION_SETTINGS.length - 1}
-            />
-          ))}
-        </View>
-
-        {/* Danger Zone section */}
-        <View className="mx-4 bg-[#1A0E0E] border border-[#3D1A1A] rounded-2xl overflow-hidden">
-          {/* Section label */}
-          <View className="px-4 pt-4 pb-2">
-            <Text className="text-[#E05252] text-[10px] font-bold tracking-widest uppercase">
-              Danger Zone
-            </Text>
-          </View>
-
-          {/* Delete Account row */}
-          <TouchableOpacity onPress={handleDeleteAccount} className="flex-row items-center px-4 py-4">
-            {/* Icon */}
-            <View className="w-10 h-10 rounded-xl bg-[#2D1010] items-center justify-center mr-3">
-              <AlertTriangle size={18} color="#E05252" />
-            </View>
-
-            {/* Text */}
-            <View className="flex-1">
-              <Text className="text-[#E05252] font-semibold text-sm mb-0.5">
-                Delete Account
-              </Text>
-              <Text className="text-gray-500 text-xs leading-4">
-                Permanently delete your account and all data
+          {/* Notifications section */}
+          <View className="mx-4 mb-4 bg-[#141E2B] rounded-2xl overflow-hidden">
+            {/* Section label */}
+            <View className="px-4 pt-4 pb-2">
+              <Text className="text-gray-500 text-[10px] font-bold tracking-widest uppercase">
+                Notifications
               </Text>
             </View>
 
-            {/* Chevron */}
-            <ChevronRight size={18} color="#4B5563" />
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+            {/* Rows */}
+            {NOTIFICATION_SETTINGS.map((item, index) => (
+              <NotificationRow
+                key={item.id}
+                item={item}
+                value={toggles[item.id]}
+                onToggle={(v) => handleToggle(item.id, v)}
+                isLast={index === NOTIFICATION_SETTINGS.length - 1}
+              />
+            ))}
+          </View>
 
-      <AlertModal
-        visible={isDeleteModalVisible}
-        title="Delete Account"
-        description="Are you sure you want to permanently delete your account and all data? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
-        onConfirm={async () => {
-          setIsDeleting(true);
-          try {
-            await deleteUserAccount();
-            setIsDeleteModalVisible(false);
-            router.replace("/(auth)/login");
-          } catch (error) {
-            Alert.alert("Error", "Failed to delete account. Please try again.");
-          } finally {
-            setIsDeleting(false);
-          }
-        }}
-        onCancel={() => setIsDeleteModalVisible(false)}
-        variant="danger"
-        loading={isDeleting}
-      />
+          {/* Danger Zone section */}
+          <View className="mx-4 bg-[#1A0E0E] border border-[#3D1A1A] rounded-2xl overflow-hidden">
+            {/* Section label */}
+            <View className="px-4 pt-4 pb-2">
+              <Text className="text-[#E05252] text-[10px] font-bold tracking-widest uppercase">
+                Danger Zone
+              </Text>
+            </View>
+
+            {/* Delete Account row */}
+            <TouchableOpacity onPress={handleDeleteAccount} className="flex-row items-center px-4 py-4">
+              {/* Icon */}
+              <View className="w-10 h-10 rounded-xl bg-[#2D1010] items-center justify-center mr-3">
+                <AlertTriangle size={18} color="#E05252" />
+              </View>
+
+              {/* Text */}
+              <View className="flex-1">
+                <Text className="text-[#E05252] font-semibold text-sm mb-0.5">
+                  Delete Account
+                </Text>
+                <Text className="text-gray-500 text-xs leading-4">
+                  Permanently delete your account and all data
+                </Text>
+              </View>
+
+              {/* Chevron */}
+              <ChevronRight size={18} color="#4B5563" />
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+
+        <AlertModal
+          visible={isDeleteModalVisible}
+          title="Delete Account"
+          description="Are you sure you want to permanently delete your account and all data? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          onConfirm={async () => {
+            setIsDeleting(true);
+            try {
+              await deleteUserAccount();
+              setIsDeleteModalVisible(false);
+              router.replace("/(auth)/login");
+            } catch (error) {
+              Alert.alert("Error", "Failed to delete account. Please try again.");
+            } finally {
+              setIsDeleting(false);
+            }
+          }}
+          onCancel={() => setIsDeleteModalVisible(false)}
+          variant="danger"
+          loading={isDeleting}
+        />
+      </AnimatedPage>
     </View>
   );
 }

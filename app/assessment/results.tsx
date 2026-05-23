@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { router, useLocalSearchParams } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchModuleDetail } from "../../lib/modules";
 import { fetchAssessmentDetail } from "../../lib/assessments";
 import { ActivityIndicator } from "react-native";
@@ -18,6 +18,7 @@ import {
 } from "lucide-react-native";
 
 export default function AssessmentResults() {
+  const queryClient = useQueryClient();
   const { userAnswers, questions: questionsParam, moduleId, attemptId } = useLocalSearchParams<{
     userAnswers?: string;
     questions?: string;
@@ -175,7 +176,13 @@ export default function AssessmentResults() {
 
       <View style={styles.footer}>
         <TouchableOpacity
-          onPress={() => router.replace(`/assessment/quiz?moduleId=${currentModuleId}`)}
+          onPress={() => {
+            const parsedModuleId = parseInt(String(currentModuleId || ""), 10);
+            if (!isNaN(parsedModuleId)) {
+              queryClient.removeQueries({ queryKey: ["assessment-questions", parsedModuleId] });
+            }
+            router.replace(`/assessment/quiz?moduleId=${currentModuleId}`);
+          }}
           style={styles.retakeBtn}
         >
           <RefreshCcw size={16} color="white" />
@@ -201,7 +208,7 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#F8FAFC",
   },
   banner: {
     backgroundColor: "#131C2E",
@@ -301,6 +308,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#1E2D45",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
   },
   breakdownHeader: {
     flexDirection: "row",
@@ -405,13 +419,13 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     width: "100%",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#F8FAFC",
     paddingHorizontal: 20,
     paddingVertical: 24,
     flexDirection: "row",
     gap: 16,
     borderTopWidth: 1,
-    borderTopColor: "#F3F4F6",
+    borderTopColor: "#E2E8F0",
   },
   retakeBtn: {
     backgroundColor: "#1E293B",

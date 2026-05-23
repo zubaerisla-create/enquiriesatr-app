@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
+  Keyboard,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
@@ -15,7 +16,7 @@ import { ArrowLeft, Download, Save, Check, Shield } from "lucide-react-native";
 import { api } from "../lib/api";
 import { exportReportToPDF } from "../utils/pdf-export";
 import ReportDetail from "../components/ui/ReportDetail";
-import { GuardianLoader } from "../components/ui";
+import { GuardianLoader, AnimatedPage } from "../components/ui";
 
 const STANDARD_ZONES = [
   "Perimeter & Parking",
@@ -57,6 +58,7 @@ export default function VenueSecurityRAG() {
   };
 
   const handleSubmit = async () => {
+    Keyboard.dismiss();
     if (!venueName.trim()) {
       Alert.alert("Missing Field", "Please enter the Venue Name.");
       return;
@@ -133,7 +135,8 @@ export default function VenueSecurityRAG() {
       className="flex-1 bg-white"
     >
       <StatusBar style="light" />
-      <View className="bg-[#0D1520] pt-14 pb-0">
+      <AnimatedPage>
+        <View className="bg-[#0D1520] pt-14 pb-0">
         <View className="px-5 pb-5">
           <TouchableOpacity
             onPress={() => router.back()}
@@ -279,6 +282,7 @@ export default function VenueSecurityRAG() {
           </View>
         </View>
       )}
+      </AnimatedPage>
     </KeyboardAvoidingView>
   );
 }

@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { AnimatedPage } from "../../../components/ui";
 import { 
   Target, 
   Lock 
@@ -161,38 +162,39 @@ export default function Assessments() {
   return (
     <View className="flex-1 bg-[#0D1520]">
       <StatusBar style="light" />
+      <AnimatedPage>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        >
+          <View className="px-4 mb-5">
+            <Text className="text-gray-500 text-sm mt-1">
+              Test your knowledge after each module
+            </Text>
+          </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      >
-        <View className="px-4 mb-5">
-          <Text className="text-gray-500 text-sm mt-1">
-            Test your knowledge after each module
-          </Text>
-        </View>
+          <View className="flex-row mx-4 gap-3 mb-5">
+            <StatCard value={String(total)}    label="Total"    valueColor="#E05252" />
+            <StatCard value={String(attempted)} label="Attempted" valueColor="#4CAF82" bordered />
+            <StatCard value={String(passed)}   label="Passed"   valueColor="#4CAF82" bordered />
+          </View>
 
-        <View className="flex-row mx-4 gap-3 mb-5">
-          <StatCard value={String(total)}    label="Total"    valueColor="#E05252" />
-          <StatCard value={String(attempted)} label="Attempted" valueColor="#4CAF82" bordered />
-          <StatCard value={String(passed)}   label="Passed"   valueColor="#4CAF82" bordered />
-        </View>
-
-        {modules.map((item) => (
-          <AssessmentCard
-            key={item.module_id}
-            item={item}
-            latestAttempt={getModuleAttempt(item.module_id)}
-            onStart={() => router.navigate(`/assessment/quiz?moduleId=${item.module_id}`)}
-            onReview={() => {
-              const attempt = getModuleAttempt(item.module_id);
-              if (attempt) {
-                router.navigate(`/assessment/results?attemptId=${attempt.id}`);
-              }
-            }}
-          />
-        ))}
-      </ScrollView>
+          {modules.map((item) => (
+            <AssessmentCard
+              key={item.module_id}
+              item={item}
+              latestAttempt={getModuleAttempt(item.module_id)}
+              onStart={() => router.navigate(`/assessment/quiz?moduleId=${item.module_id}`)}
+              onReview={() => {
+                const attempt = getModuleAttempt(item.module_id);
+                if (attempt) {
+                  router.navigate(`/assessment/results?attemptId=${attempt.id}`);
+                }
+              }}
+            />
+          ))}
+        </ScrollView>
+      </AnimatedPage>
     </View>
   );
 }

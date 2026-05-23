@@ -29,7 +29,7 @@ import {
 } from "lucide-react-native";
 import { api } from "../lib/api";
 import AlertModal from "../components/ui/AlertModal";
-import { GuardianLoader } from "../components/ui";
+import { GuardianLoader, AnimatedPage } from "../components/ui";
 
 function debounce(func: Function, wait: number) {
   let timeout: any;
@@ -317,8 +317,8 @@ export default function ThreatAssessmentChecklist() {
       className="flex-1 bg-white"
     >
       <StatusBar style="light" />
-
-      <View className="bg-[#0D1520] pt-14 pb-0">
+      <AnimatedPage>
+        <View className="bg-[#0D1520] pt-14 pb-0">
         <View className="px-5 pb-5">
           <View className="flex-row items-center justify-between mb-6">
             <TouchableOpacity
@@ -532,6 +532,7 @@ export default function ThreatAssessmentChecklist() {
         variant={modalConfig.variant}
         confirmText={modalConfig.confirmText}
       />
+      </AnimatedPage>
     </KeyboardAvoidingView>
   );
 }

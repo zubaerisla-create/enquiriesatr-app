@@ -506,6 +506,7 @@ export default function Guardian() {
   };
 
   const sendMessage = async (text?: string) => {
+    Keyboard.dismiss();
     const messageText = (text || input).trim();
     if (!messageText || sending) return;
 

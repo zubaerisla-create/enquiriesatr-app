@@ -5,5 +5,7 @@ export { default as Input } from "./Input";
 export { default as SocialButton } from "./SocialButton";
 export { default as ReportDetail } from "./ReportDetail";
 export { default as GuardianLoader } from "./GuardianLoader";
+export { default as AnimatedPage, customSlideIn } from "./AnimatedPage";
+
 
 

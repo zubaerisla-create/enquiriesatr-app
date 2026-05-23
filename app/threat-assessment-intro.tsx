@@ -8,11 +8,13 @@ import {
   Target,
   ChevronRight
 } from "lucide-react-native";
+import { AnimatedPage } from "../components/ui";
 
 export default function ThreatAssessmentIntro() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
+      <AnimatedPage>
 
       {/* Header */}
       <View className="px-5 pt-12 pb-2 flex-row items-center">
@@ -80,6 +82,7 @@ export default function ThreatAssessmentIntro() {
           <ChevronRight size={18} color="white" />
         </TouchableOpacity>
       </View>
+      </AnimatedPage>
     </SafeAreaView>
   );
 }

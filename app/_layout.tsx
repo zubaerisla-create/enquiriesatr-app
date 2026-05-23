@@ -59,7 +59,11 @@ export default function RootLayout() {
             >
               <AuthProvider>
                 <AuthGate>
-                  <Stack screenOptions={{ headerShown: false }}>
+                  <Stack screenOptions={{
+                    headerShown: false,
+                    animation: 'none',
+                    contentStyle: { backgroundColor: 'transparent' },
+                  }}>
                     <Stack.Screen name="index" />
                     <Stack.Screen name="(onboarding)/index" />
                     <Stack.Screen name="(auth)/login" />

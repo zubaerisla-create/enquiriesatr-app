@@ -8,11 +8,11 @@ import {
   Platform,
   ActivityIndicator,
   Keyboard,
-  TouchableWithoutFeedback,
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import { AnimatedPage } from "../../../components/ui";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
@@ -234,6 +234,7 @@ export default function LiveChat() {
   }, []);
 
   const handleSend = () => {
+    Keyboard.dismiss();
     if (!input.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
       return;
     }
@@ -266,83 +267,83 @@ export default function LiveChat() {
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0F1824]">
       {isFocused && <StatusBar style="light" />}
-
       <Header status={status} onBack={() => router.back()} />
-
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={"padding"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
-        <View className="flex-1">
-          {loading ? (
-            <View className="flex-1 items-center justify-center">
-              <ActivityIndicator size="large" color="#60A5FA" />
-            </View>
-          ) : error ? (
-            <View className="flex-1 items-center justify-center px-6">
-              <AlertCircle size={48} color="#EF4444" />
-              <Text className="text-white text-base font-bold text-center mt-4 mb-2">
-                Failed to Load History
-              </Text>
-              <Text className="text-gray-400 text-sm text-center">
-                We couldn't load your chat messages. Please check your connection and try again.
-              </Text>
-            </View>
-          ) : messages.length === 0 ? (
-            <View className="flex-1 items-center justify-center px-6">
-              <MessageSquare size={48} color="#4A90D9" />
-              <Text className="text-white text-base font-bold text-center mt-4 mb-2">
-                No Messages Yet
-              </Text>
-              <Text className="text-gray-400 text-sm text-center">
-                Send a message below to start a live conversation with our support team.
-              </Text>
-            </View>
-          ) : (
-            <ScrollView
-              ref={scrollViewRef}
-              className="flex-1"
-              contentContainerStyle={{ paddingTop: 16, paddingBottom: 20 }}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              keyboardDismissMode="on-drag"
-            >
-              {[...messages].reverse().map((item) => {
-                const isUser = item.sender_id === user?.id;
-                const date = new Date(item.created_at);
-                const timestamp = `${String(date.getHours()).padStart(2, "0")}:${String(
-                  date.getMinutes()
-                ).padStart(2, "0")}`;
+        <AnimatedPage>
+          <View className="flex-1">
+            {loading ? (
+              <View className="flex-1 items-center justify-center">
+                <ActivityIndicator size="large" color="#60A5FA" />
+              </View>
+            ) : error ? (
+              <View className="flex-1 items-center justify-center px-6">
+                <AlertCircle size={48} color="#EF4444" />
+                <Text className="text-white text-base font-bold text-center mt-4 mb-2">
+                  Failed to Load History
+                </Text>
+                <Text className="text-gray-400 text-sm text-center">
+                  We couldn't load your chat messages. Please check your connection and try again.
+                </Text>
+              </View>
+            ) : messages.length === 0 ? (
+              <View className="flex-1 items-center justify-center px-6">
+                <MessageSquare size={48} color="#4A90D9" />
+                <Text className="text-white text-base font-bold text-center mt-4 mb-2">
+                  No Messages Yet
+                </Text>
+                <Text className="text-gray-400 text-sm text-center">
+                  Send a message below to start a live conversation with our support team.
+                </Text>
+              </View>
+            ) : (
+              <ScrollView
+                ref={scrollViewRef}
+                className="flex-1"
+                contentContainerStyle={{ paddingTop: 16, paddingBottom: 20 }}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+              >
+                {[...messages].reverse().map((item) => {
+                  const isUser = item.sender_id === user?.id;
+                  const date = new Date(item.created_at);
+                  const timestamp = `${String(date.getHours()).padStart(2, "0")}:${String(
+                    date.getMinutes()
+                  ).padStart(2, "0")}`;
 
-                return (
-                  <View key={item.id} className={`mb-4 px-4 ${isUser ? "items-end" : "items-start"}`}>
-                    <View
-                      className={`${isUser ? "bg-[#2A4A6B] rounded-tr-sm" : "bg-[#1B3558] rounded-tl-sm"
-                        } rounded-2xl p-4 max-w-[80%]`}
-                    >
-                      <Text className="text-white text-sm leading-6">{item.text}</Text>
-                    </View>
-                    {isUser ? (
-                      <Text className="text-gray-500 text-[10px] mt-1 mr-1">{timestamp}</Text>
-                    ) : (
-                      <View className="flex-row items-center gap-3 mt-1 px-1">
-                        <Text className="text-gray-500 text-[10px]">{timestamp}</Text>
+                  return (
+                    <View key={item.id} className={`mb-4 px-4 ${isUser ? "items-end" : "items-start"}`}>
+                      <View
+                        className={`${isUser ? "bg-[#2A4A6B] rounded-tr-sm" : "bg-[#1B3558] rounded-tl-sm"
+                          } rounded-2xl p-4 max-w-[80%]`}
+                      >
+                        <Text className="text-white text-sm leading-6">{item.text}</Text>
                       </View>
-                    )}
-                  </View>
-                );
-              })}
-            </ScrollView>
-          )}
-        </View>
+                      {isUser ? (
+                        <Text className="text-gray-500 text-[10px] mt-1 mr-1">{timestamp}</Text>
+                      ) : (
+                        <View className="flex-row items-center gap-3 mt-1 px-1">
+                          <Text className="text-gray-500 text-[10px]">{timestamp}</Text>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            )}
+          </View>
 
-        <InputBar
-          value={input}
-          onChange={setInput}
-          onSend={handleSend}
-          isConnected={isConnected}
-        />
+          <InputBar
+            value={input}
+            onChange={setInput}
+            onSend={handleSend}
+            isConnected={isConnected}
+          />
+        </AnimatedPage>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, NativeSyntheticEvent, TextInputKeyPressEventData, Keyboard } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
@@ -58,6 +58,7 @@ export default function Verify() {
   };
 
   const handleVerify = async () => {
+    Keyboard.dismiss();
     setFormError(null);
     setInfoMessage(null);
 
@@ -114,7 +115,7 @@ export default function Verify() {
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior="padding"
         className="flex-1"
       >
         <View className="px-6 pb-10 flex-1">

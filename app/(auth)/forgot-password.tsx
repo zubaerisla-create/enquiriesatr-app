@@ -9,6 +9,7 @@ import {
     NativeSyntheticEvent,
     TextInputKeyPressEventData,
     ScrollView,
+    Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -63,6 +64,7 @@ export default function ForgotPassword() {
     };
 
     const handleRequest = async () => {
+        Keyboard.dismiss();
         setFormError(null);
         setInfoMessage(null);
 
@@ -85,6 +87,7 @@ export default function ForgotPassword() {
     };
 
     const handleVerify = async () => {
+        Keyboard.dismiss();
         setFormError(null);
         setInfoMessage(null);
 
@@ -113,6 +116,7 @@ export default function ForgotPassword() {
     };
 
     const handleReset = async () => {
+        Keyboard.dismiss();
         setFormError(null);
         setInfoMessage(null);
 
@@ -156,7 +160,7 @@ export default function ForgotPassword() {
         <SafeAreaView className="flex-1 bg-white">
             <StatusBar style="dark" />
             <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                behavior="padding"
                 className="flex-1"
             >
                 <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>

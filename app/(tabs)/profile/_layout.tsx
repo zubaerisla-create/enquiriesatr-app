@@ -12,6 +12,8 @@ export default function ProfileLayout() {
           fontWeight: 'bold',
         },
         headerShadowVisible: false,
+        animation: 'none',
+        contentStyle: { backgroundColor: 'transparent' },
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />

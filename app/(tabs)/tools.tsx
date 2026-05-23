@@ -95,7 +95,7 @@ const TOOLS: Tool[] = [
     tagColor: "planning",
     description:
       "Route planning, hospital advances, and location recce templates.",
-    route: "/search-operations",
+    route: "/route-recce",
   },
   {
     id: "5",
@@ -118,17 +118,17 @@ const TOOLS: Tool[] = [
     description: "International travel security planning and documentation.",
     route: "/travel-security-scrim",
   },
-  {
-    id: "7",
-    icon: ShieldCheck,
-    iconBg: "#141A1E",
-    title: "Escort\nProcedures",
-    tag: "TACTICAL",
-    tagColor: "tactical",
-    description:
-      "Foot and vehicle escort drills, formations, and protocols.",
-    route: "/search-operations",
-  },
+  // {
+  //   id: "7",
+  //   icon: ShieldCheck,
+  //   iconBg: "#141A1E",
+  //   title: "Escort\nProcedures",
+  //   tag: "TACTICAL",
+  //   tagColor: "tactical",
+  //   description:
+  //     "Foot and vehicle escort drills, formations, and protocols.",
+  //   route: "/search-operations",
+  // },
 ];
 
 const tagStyle = (color: TagColor) => {
@@ -242,7 +242,17 @@ export default function Tools() {
           apiId: d.id,
           apiType: d.type,
           title: d.title,
-          type: d.type === "THREAT_ASSESSMENT" ? "Threat Assessment" : d.type === "VENUE_REPORT" ? "Venue Assessment" : d.type === "SEARCH_REPORT" ? "Search Operations" : d.type === "RESIDENTIAL_REPORT" ? "Residential Handover" : d.type,
+          type: d.type === "THREAT_ASSESSMENT"
+            ? "Threat Assessment"
+            : d.type === "VENUE_REPORT"
+              ? "Venue Assessment"
+              : d.type === "SEARCH_REPORT"
+                ? "Search Operations"
+                : d.type === "RESIDENTIAL_REPORT"
+                  ? "Residential Handover"
+                  : d.type === "ROUTE_RECCE_REPORT"
+                    ? "Route Recce Briefing"
+                    : d.type,
           date: formatDate(d.created_at)
         }));
       setSavedDocs(mapped);

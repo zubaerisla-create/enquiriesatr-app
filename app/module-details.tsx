@@ -17,6 +17,8 @@ import {
 } from "lucide-react-native";
 import { useQuery } from "@tanstack/react-query";
 import { fetchModuleDetail, fetchModuleProgress } from "../lib/modules";
+import { AnimatedPage } from "../components/ui";
+import { useAuth } from "../hooks/useAuth";
 
 const CATEGORY_COLORS: Record<string, string> = {
   FOUNDATION: "#3B82F6",
@@ -26,6 +28,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export default function ModuleDetails() {
+  const { user } = useAuth();
   const { id } = useLocalSearchParams();
   const moduleId = Number(id);
 
@@ -44,6 +47,46 @@ export default function ModuleDetails() {
     return (
       <View style={[styles.screen, { justifyContent: "center", alignItems: "center", backgroundColor: "#111824" }]}>
         <ActivityIndicator size="large" color="#3B82F6" />
+      </View>
+    );
+  }
+
+  const hasActiveSub = user?.has_active_sub || false;
+  const isLocked = moduleDetail && !moduleDetail.is_free && !hasActiveSub;
+
+  if (isLocked) {
+    return (
+      <View style={[styles.screen, { backgroundColor: "#0D1520" }]}>
+        <StatusBar style="light" />
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: rs(24) }}>
+          <View style={{ width: rs(80), height: rs(80), borderRadius: rs(24), backgroundColor: "#2D1010", borderWidth: 1, borderColor: "#E05252", alignItems: "center", justifyContent: "center", marginBottom: rs(24) }}>
+            <Lock size={32} color="#E05252" />
+          </View>
+          <Text style={{ fontSize: rf(24), fontWeight: "900", color: "#ffffff", textAlign: "center", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: rs(12) }}>
+            Premium Module
+          </Text>
+          <Text style={{ fontSize: rf(14), color: "#9ca3af", textAlign: "center", lineHeight: rf(22), marginBottom: rs(36) }}>
+            "{moduleDetail?.name}" is a premium module. Upgrade to a premium subscription to gain access.
+          </Text>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => router.push("/profile/subscription-billing")}
+            style={{
+              width: "100%",
+              backgroundColor: "#D82C15",
+              paddingVertical: rs(16),
+              borderRadius: rs(12),
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: rs(16),
+            }}
+          >
+            <Text style={{ color: "#ffffff", fontWeight: "700", letterSpacing: 0.5, fontSize: rf(15) }}>UPGRADE NOW</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Text style={{ color: "#9ca3af", fontWeight: "600", fontSize: rf(14) }}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -78,101 +121,102 @@ export default function ModuleDetails() {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
+      <AnimatedPage>
+        <View style={styles.darkHeader}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <ArrowLeft size={20} color="#9ca3af" />
+            <Text style={styles.backText}>Modules</Text>
+          </TouchableOpacity>
 
-      <View style={styles.darkHeader}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <ArrowLeft size={20} color="#9ca3af" />
-          <Text style={styles.backText}>Modules</Text>
-        </TouchableOpacity>
-
-        <View style={styles.headerContent}>
-          <View style={styles.headerLeft}>
-            <View style={[styles.foundationBadge, { borderColor: `${categoryColor}50`, backgroundColor: `${categoryColor}15` }]}>
-              <Text style={[styles.foundationBadgeText, { color: categoryColor }]}>{moduleDetail?.category}</Text>
-            </View>
-            <Text style={styles.moduleTitle}>{moduleDetail?.name}</Text>
-            <Text style={styles.moduleDesc}>
-              {moduleDetail?.description}
-            </Text>
-            <View style={styles.metaRow}>
-              <View style={styles.metaItem}>
-                <Clock size={14} color="#9ca3af" />
-                <Text style={styles.metaText}>{moduleDetail?.hours}h {moduleDetail?.minutes}m</Text>
+          <View style={styles.headerContent}>
+            <View style={styles.headerLeft}>
+              <View style={[styles.foundationBadge, { borderColor: `${categoryColor}50`, backgroundColor: `${categoryColor}15` }]}>
+                <Text style={[styles.foundationBadgeText, { color: categoryColor }]}>{moduleDetail?.category}</Text>
               </View>
-              <View style={styles.metaItem}>
-                <CheckCircle size={14} color="#9ca3af" />
-                <Text style={styles.metaText}>{completedCount}/{totalCount} sections</Text>
+              <Text style={styles.moduleTitle}>{moduleDetail?.name}</Text>
+              <Text style={styles.moduleDesc}>
+                {moduleDetail?.description}
+              </Text>
+              <View style={styles.metaRow}>
+                <View style={styles.metaItem}>
+                  <Clock size={14} color="#9ca3af" />
+                  <Text style={styles.metaText}>{moduleDetail?.hours}h {moduleDetail?.minutes}m</Text>
+                </View>
+                <View style={styles.metaItem}>
+                  <CheckCircle size={14} color="#9ca3af" />
+                  <Text style={styles.metaText}>{completedCount}/{totalCount} sections</Text>
+                </View>
               </View>
             </View>
-          </View>
 
-          <View style={[styles.progressRing, { borderColor: `${categoryColor}50` }]}>
-            <View style={[styles.progressRingArc, { borderColor: categoryColor }]} />
-            <Text style={styles.progressRingText}>{progressPercent}%</Text>
+            <View style={[styles.progressRing, { borderColor: `${categoryColor}50` }]}>
+              <View style={[styles.progressRingArc, { borderColor: categoryColor }]} />
+              <Text style={styles.progressRingText}>{progressPercent}%</Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-        <View style={styles.content}>
-          <Text style={styles.sectionLabel}>SECTIONS</Text>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
+            <Text style={styles.sectionLabel}>SECTIONS</Text>
 
-          {mappedSubsections.map((lesson, index) => {
-            const isComplete = lesson.status === "complete";
-            const isProgress = lesson.status === "in_progress";
+            {mappedSubsections.map((lesson, index) => {
+              const isComplete = lesson.status === "complete";
+              const isProgress = lesson.status === "in_progress";
 
-            return (
-              <TouchableOpacity
-                key={lesson.id}
-                activeOpacity={0.8}
-                onPress={() => router.push(`/lesson?moduleId=${moduleId}&startIndex=${index}`)}
-                style={[
-                  styles.lessonCard,
-                  isComplete && styles.lessonCardComplete,
-                  isProgress && styles.lessonCardProgress,
-                ]}
-              >
-                <View style={styles.lessonLeft}>
-                  <Text style={[styles.lessonId, isProgress && styles.lessonIdActive]}>
-                    {lesson.id}
-                  </Text>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.lessonTitle, isProgress && styles.lessonTitleProgress]} numberOfLines={1} ellipsizeMode="tail">
-                      {lesson.title}
+              return (
+                <TouchableOpacity
+                  key={lesson.id}
+                  activeOpacity={0.8}
+                  onPress={() => router.push(`/lesson?moduleId=${moduleId}&startIndex=${index}`)}
+                  style={[
+                    styles.lessonCard,
+                    isComplete && styles.lessonCardComplete,
+                    isProgress && styles.lessonCardProgress,
+                  ]}
+                >
+                  <View style={styles.lessonLeft}>
+                    <Text style={[styles.lessonId, isProgress && styles.lessonIdActive]}>
+                      {lesson.id}
                     </Text>
-                    <View style={styles.lessonMeta}>
-                      <Text style={[styles.lessonTime, isProgress && { color: "#6b7280" }]}>
-                        {lesson.time}
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.lessonTitle, isProgress && styles.lessonTitleProgress]} numberOfLines={1} ellipsizeMode="tail">
+                        {lesson.title}
                       </Text>
-                      {isComplete && (
-                        <Text style={styles.completeTag}>✓ Complete</Text>
-                      )}
-                      {isProgress && (
-                        <View style={styles.inProgressTag}>
-                          <View style={styles.inProgressDot} />
-                          <Text style={styles.inProgressText}>Read now</Text>
-                        </View>
-                      )}
+                      <View style={styles.lessonMeta}>
+                        <Text style={[styles.lessonTime, isProgress && { color: "#6b7280" }]}>
+                          {lesson.time}
+                        </Text>
+                        {isComplete && (
+                          <Text style={styles.completeTag}>✓ Complete</Text>
+                        )}
+                        {isProgress && (
+                          <View style={styles.inProgressTag}>
+                            <View style={styles.inProgressDot} />
+                            <Text style={styles.inProgressText}>Read now</Text>
+                          </View>
+                        )}
+                      </View>
                     </View>
                   </View>
-                </View>
-                {isComplete && <CheckCircle size={18} color="#059669" />}
-                {isProgress && <PlayCircle size={18} color="#D82C15" />}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </ScrollView>
+                  {isComplete && <CheckCircle size={18} color="#059669" />}
+                  {isProgress && <PlayCircle size={18} color="#D82C15" />}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </ScrollView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          onPress={handleContinue}
-          style={styles.continueBtn}
-        >
-          <Text style={styles.continueBtnText}>CONTINUE MODULE</Text>
-          <ChevronRight size={18} color="white" />
-        </TouchableOpacity>
-      </View>
+        <View style={styles.footer}>
+          <TouchableOpacity
+            onPress={handleContinue}
+            style={styles.continueBtn}
+          >
+            <Text style={styles.continueBtnText}>CONTINUE MODULE</Text>
+            <ChevronRight size={18} color="white" />
+          </TouchableOpacity>
+        </View>
+      </AnimatedPage>
     </View>
   );
 }

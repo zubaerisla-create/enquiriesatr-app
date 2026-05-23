@@ -7,6 +7,7 @@ import { ArrowLeft, Download } from "lucide-react-native";
 import { api } from "../lib/api";
 import { exportReportToPDF } from "../utils/pdf-export";
 import ReportDetail from "../components/ui/ReportDetail";
+import { AnimatedPage } from "../components/ui";
 
 export default function DocumentDetails() {
   const { id, type, title } = useLocalSearchParams();
@@ -46,8 +47,8 @@ export default function DocumentDetails() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
-
-      <View className="px-5 pb-4 flex-row items-center border-b border-gray-100">
+      <AnimatedPage>
+        <View className="px-5 pb-4 flex-row items-center border-b border-gray-100">
         <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
           <ArrowLeft size={22} color="#1f2937" />
         </TouchableOpacity>
@@ -62,7 +63,7 @@ export default function DocumentDetails() {
         <ReportDetail 
           reportData={reportData} 
           title={typeof title === "string" ? title : "Risk Report"}
-          subtitle="Based on your threat assessment checklist"
+          subtitle={type === "ROUTE_RECCE_REPORT" ? "Route Recce Briefing" : "Based on your threat assessment checklist"}
         />
       ) : (
         <View className="flex-1 items-center justify-center p-5">
@@ -95,6 +96,7 @@ export default function DocumentDetails() {
           </TouchableOpacity>
         </View>
       )}
+      </AnimatedPage>
     </SafeAreaView>
   );
 }

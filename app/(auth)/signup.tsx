@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Platform } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Platform, Keyboard } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as AppleAuthentication from "expo-apple-authentication";
@@ -47,6 +47,7 @@ export default function Signup() {
   }, []);
 
   const handleSignup = async () => {
+    Keyboard.dismiss();
     setFormError(null);
     setEmailError(undefined);
     setPasswordError(undefined);

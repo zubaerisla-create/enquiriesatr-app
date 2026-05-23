@@ -5,10 +5,10 @@ import { StatusBar } from "expo-status-bar";
 import { router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { fetchModuleDetail } from "../../lib/modules";
-import { 
-  ArrowLeft, 
-  Target, 
-  ChevronRight 
+import {
+  ArrowLeft,
+  Target,
+  ChevronRight
 } from "lucide-react-native";
 
 export default function AssessmentIntro() {
@@ -24,8 +24,8 @@ export default function AssessmentIntro() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
-      
-      <View className="px-5 pb-2 flex-row items-center">
+
+      <View className="px-5 pb-2 py-4 flex-row items-center">
         <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
           <ArrowLeft size={24} color="#1f2937" />
         </TouchableOpacity>
@@ -45,7 +45,7 @@ export default function AssessmentIntro() {
               {moduleDetail?.category ? `${moduleDetail.category} ASSESSMENT` : "ASSESSMENT"}
             </Text>
           </View>
-          
+
           <Text className="text-[#131C2E] text-2xl font-black uppercase text-center mb-4">
             {moduleDetail?.name ? `${moduleDetail.name} Assessment` : "Module Assessment"}
           </Text>
@@ -79,7 +79,7 @@ export default function AssessmentIntro() {
       </ScrollView>
 
       <View className="absolute bottom-10 w-full bg-white px-5 py-6">
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => router.push(`/assessment/quiz?moduleId=${moduleId}`)}
           className="w-full bg-[#D82C15] py-4 rounded-xl flex-row items-center justify-center gap-2"
         >

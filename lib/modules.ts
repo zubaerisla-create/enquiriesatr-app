@@ -15,6 +15,7 @@ export interface Module {
   order: number;
   category: Category;
   description: string;
+  is_free?: boolean;
 }
 
 export interface ModuleDetail extends Module {

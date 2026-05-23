@@ -9,6 +9,7 @@ import {
   AppState,
   AppStateStatus,
   KeyboardAvoidingView,
+  Keyboard,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
@@ -27,6 +28,7 @@ import {
 } from "lucide-react-native";
 import { fetchTemplates, submitOperation, syncPendingOperations, SearchTemplate } from "../lib/searchOperations";
 import AlertModal from "../components/ui/AlertModal";
+import { AnimatedPage } from "../components/ui";
 
 export default function SearchOperations() {
   const [templates, setTemplates] = useState<SearchTemplate[]>([]);
@@ -146,6 +148,7 @@ export default function SearchOperations() {
   const canSubmit = opName.trim() !== "";
 
   const handleSubmit = async () => {
+    Keyboard.dismiss();
     if (!canSubmit) return;
 
     const logs = Object.keys(answers).map((slug) => ({
@@ -237,7 +240,8 @@ export default function SearchOperations() {
       className="flex-1 bg-white"
     >
       <StatusBar style="light" />
-      <View className="bg-[#0D1520] pt-14 pb-0">
+      <AnimatedPage>
+        <View className="bg-[#0D1520] pt-14 pb-0">
         <View className="px-5 pb-5">
           <TouchableOpacity
             onPress={() => router.back()}
@@ -410,6 +414,7 @@ export default function SearchOperations() {
         onCancel={modalConfig.onCancel || (() => setModalVisible(false))}
         variant={modalConfig.variant}
       />
+      </AnimatedPage>
     </KeyboardAvoidingView>
   );
 }

@@ -6,6 +6,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft, Download } from "lucide-react-native";
 import { exportReportToPDF } from "../utils/pdf-export";
 import ReportDetail from "../components/ui/ReportDetail";
+import { AnimatedPage } from "../components/ui";
 
 export default function RiskReport() {
   const { report } = useLocalSearchParams();
@@ -25,8 +26,8 @@ export default function RiskReport() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
-
-      <View className="px-5 pb-4 flex-row items-center border-b border-gray-100">
+      <AnimatedPage>
+        <View className="px-5 pb-4 flex-row items-center border-b border-gray-100">
         <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
           <ArrowLeft size={22} color="#1f2937" />
         </TouchableOpacity>
@@ -50,6 +51,7 @@ export default function RiskReport() {
           <Text className="text-white font-bold text-sm">Export Report</Text>
         </TouchableOpacity>
       </View>
+      </AnimatedPage>
     </SafeAreaView>
   );
 }

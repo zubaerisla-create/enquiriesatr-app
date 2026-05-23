@@ -24,6 +24,7 @@ import {
 import { TextInput, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { fetchModules, fetchModuleProgress, Category } from "../../lib/modules";
+import { useAuth } from "../../hooks/useAuth";
 
 interface Module {
   id: string;
@@ -36,6 +37,7 @@ interface Module {
   minutes: number;
   progress: number;
   status: "in_progress" | "completed" | "not_started" | "locked";
+  is_free?: boolean;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -126,13 +128,19 @@ const StatusBadge = ({ status }: { status: Module["status"] }) => {
 };
 
 const ModuleCard = ({ module }: { module: Module }) => {
+  const { user } = useAuth();
+  const hasActiveSub = user?.has_active_sub || false;
+  const isLocked = !module.is_free && !hasActiveSub;
+
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={isLocked ? 1.0 : 0.8}
       onPress={() => {
-        router.push(`/lesson?moduleId=${module.id}`);
+        if (!isLocked) {
+          router.push(`/lesson?moduleId=${module.id}`);
+        }
       }}
-      style={[styles.card, styles.cardActive]}
+      style={[styles.card, isLocked ? styles.cardLocked : styles.cardActive]}
     >
       <View style={styles.cardTopRow}>
         <View style={[styles.categoryBadge, { backgroundColor: module.categoryColor + "22" }]}>
@@ -140,42 +148,58 @@ const ModuleCard = ({ module }: { module: Module }) => {
             {module.category}
           </Text>
         </View>
-        {module.status === "completed" && (
-          <View style={styles.completedBadge}>
-            <CheckCircle2 size={14} color="white" />
-          </View>
+        {isLocked ? (
+          <Lock size={16} color="#6b7280" />
+        ) : (
+          module.status === "completed" && (
+            <View style={styles.completedBadge}>
+              <CheckCircle2 size={14} color="white" />
+            </View>
+          )
         )}
       </View>
 
-      <Text style={styles.cardTitle}>
+      <Text style={[styles.cardTitle, isLocked && styles.cardTitleLocked]}>
         {module.title}
       </Text>
 
-      <Text style={styles.cardDesc}>
+      <Text style={[styles.cardDesc, isLocked && styles.cardDescLocked]}>
         {module.description}
       </Text>
 
       <View style={styles.metaRow}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Clock size={14} color="#9ca3af" style={{ marginRight: 4 }} />
-          <Text style={styles.metaText}>
+          <Clock size={14} color={isLocked ? "#4B5563" : "#9ca3af"} style={{ marginRight: 4 }} />
+          <Text style={[styles.metaText, isLocked && styles.metaTextLocked]}>
             {module.hours}h {module.minutes}m
           </Text>
         </View>
       </View>
 
-      <View>
-        <ProgressBar
-          progress={module.progress}
-          color={module.status === "completed" ? "#22C55E" : module.categoryColor}
-        />
-        <View style={styles.progressFooter}>
-          <StatusBadge status={module.status} />
-          <Text style={styles.progressPercent}>{module.progress}%</Text>
+      {isLocked ? (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => {
+            router.push("/profile/subscription-billing");
+          }}
+          style={styles.upgradeBtn}
+        >
+          <Text style={styles.upgradeBtnText}>Upgrade to Premium</Text>
+        </TouchableOpacity>
+      ) : (
+        <View>
+          <ProgressBar
+            progress={module.progress}
+            color={module.status === "completed" ? "#22C55E" : module.categoryColor}
+          />
+          <View style={styles.progressFooter}>
+            <StatusBadge status={module.status} />
+            <Text style={styles.progressPercent}>{module.progress}%</Text>
+          </View>
         </View>
-      </View>
+      )}
 
-      {module.status === "completed" && (
+      {!isLocked && module.status === "completed" && (
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => {
@@ -218,6 +242,7 @@ export default function ModulesLibrary() {
       minutes: m.minutes,
       progress: prog ? prog.progress_percent : 0,
       status: prog ? prog.status : "not_started",
+      is_free: m.is_free,
     };
   });
 

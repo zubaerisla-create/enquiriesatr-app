@@ -14,6 +14,7 @@ import {
   FileText, 
   Save 
 } from "lucide-react-native";
+import { AnimatedPage } from "../components/ui";
 
 // ─── Data ───────────────────────────────────────────────────────────────────
 
@@ -44,6 +45,7 @@ export default function ToolDetails() {
   return (
     <View className="flex-1 bg-white">
       <StatusBar style="light" />
+      <AnimatedPage>
       
       {/* Header (Dark) */}
       <View className="bg-[#0D1520] pt-14 pb-0">
@@ -181,7 +183,7 @@ export default function ToolDetails() {
           <Text className="text-white font-bold tracking-wide">COMPLETE & SAVE</Text>
         </TouchableOpacity>
       </View>
-
-    </View>
+    </AnimatedPage>
+  </View>
   );
 }
