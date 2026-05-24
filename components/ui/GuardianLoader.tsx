@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet, Animated } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { Sparkles, Shield } from "lucide-react-native";
+import { Shield, Sparkles } from "lucide-react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, StyleSheet, Text, View } from "react-native";
 
 interface GuardianLoaderProps {
   title?: string;
@@ -65,7 +64,7 @@ export default function GuardianLoader({
   const IconComponent = iconType === "shield" ? Shield : Sparkles;
 
   return (
-    <SafeAreaView style={styles.loadingContainer}>
+    <View style={styles.loadingContainer}>
       <StatusBar style="light" />
       <View style={styles.loadingContent}>
         <View style={styles.iconContainer}>
@@ -112,7 +111,7 @@ export default function GuardianLoader({
           />
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

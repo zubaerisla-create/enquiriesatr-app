@@ -1,21 +1,18 @@
+import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
   ScrollView,
+  Text,
+  View
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
 import { AnimatedPage } from "../../../components/ui";
 
 import {
-  ArrowLeft,
-  Shield,
-  Lock,
   AlertTriangle,
-  FileText
+  FileText,
+  Lock,
+  Shield
 } from "lucide-react-native";
-import { router } from "expo-router";
 
 // ─── Reusable building blocks ─────────────────────────────────────────────────
 

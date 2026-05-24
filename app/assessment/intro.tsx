@@ -1,15 +1,15 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
-import { router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { fetchModuleDetail } from "../../lib/modules";
+import { router, useLocalSearchParams } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import {
   ArrowLeft,
-  Target,
-  ChevronRight
+  ChevronRight,
+  Target
 } from "lucide-react-native";
+import React from "react";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { fetchModuleDetail } from "../../lib/modules";
 
 export default function AssessmentIntro() {
   const { moduleId } = useLocalSearchParams<{ moduleId: string }>();
@@ -78,7 +78,7 @@ export default function AssessmentIntro() {
         </View>
       </ScrollView>
 
-      <View className="absolute bottom-0 w-full bg-white px-5 py-6">
+      <View className="absolute bottom-10 w-full bg-white px-5 py-6">
         <TouchableOpacity
           onPress={() => router.push(`/assessment/quiz?moduleId=${moduleId}`)}
           className="w-full bg-[#D82C15] py-4 rounded-xl flex-row items-center justify-center gap-2"

@@ -1,14 +1,14 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
-import { 
-  ArrowLeft, 
-  Clock, 
-  CheckCircle, 
-  Target, 
-  ChevronRight 
+import { StatusBar } from "expo-status-bar";
+import {
+  ArrowLeft,
+  CheckCircle,
+  ChevronRight,
+  Clock,
+  Target
 } from "lucide-react-native";
+import React from "react";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 const LESSONS = [
   { id: "01", title: "Understanding Threat Levels", time: "30 min", status: "complete" },

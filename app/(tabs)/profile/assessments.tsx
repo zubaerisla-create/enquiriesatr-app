@@ -1,29 +1,29 @@
-import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { AnimatedPage } from "../../../components/ui";
-import { 
-  Target, 
-  Lock 
-} from "lucide-react-native";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { fetchModules, Module } from "../../../lib/modules";
+import { StatusBar } from "expo-status-bar";
+import {
+  Lock,
+  Target
+} from "lucide-react-native";
+import React from "react";
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { AnimatedPage } from "../../../components/ui";
 import { fetchAssessmentHistory, UserAssessmentAttempt } from "../../../lib/assessments";
+import { fetchModules, Module } from "../../../lib/modules";
 
 type TagKey = "FOUNDATION" | "TACTICAL" | "OPERATIONS" | "LEGAL";
 
 const TAG_STYLE: Record<TagKey, { bg: string; text: string }> = {
-  FOUNDATION: { bg: "#0D2318",  text: "#4CAF82" },
-  TACTICAL:   { bg: "#2D1010",  text: "#E05252" },
-  OPERATIONS: { bg: "#2D1C0A",  text: "#F5A623" },
-  LEGAL:      { bg: "#101828",  text: "#5B8DEF" },
+  FOUNDATION: { bg: "#0D2318", text: "#4CAF82" },
+  TACTICAL: { bg: "#2D1010", text: "#E05252" },
+  OPERATIONS: { bg: "#2D1C0A", text: "#F5A623" },
+  LEGAL: { bg: "#101828", text: "#5B8DEF" },
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -45,9 +45,8 @@ const StatCard = ({
   bordered?: boolean;
 }) => (
   <View
-    className={`flex-1 bg-[#141E2B] rounded-2xl py-4 items-center justify-center ${
-      bordered ? "border border-[#2A3D52]" : ""
-    }`}
+    className={`flex-1 bg-[#141E2B] rounded-2xl py-4 items-center justify-center ${bordered ? "border border-[#2A3D52]" : ""
+      }`}
   >
     <Text style={{ color: valueColor }} className="text-3xl font-extrabold">
       {value}
@@ -174,9 +173,9 @@ export default function Assessments() {
           </View>
 
           <View className="flex-row mx-4 gap-3 mb-5">
-            <StatCard value={String(total)}    label="Total"    valueColor="#E05252" />
+            <StatCard value={String(total)} label="Total" valueColor="#E05252" />
             <StatCard value={String(attempted)} label="Attempted" valueColor="#4CAF82" bordered />
-            <StatCard value={String(passed)}   label="Passed"   valueColor="#4CAF82" bordered />
+            <StatCard value={String(passed)} label="Passed" valueColor="#4CAF82" bordered />
           </View>
 
           {modules.map((item) => (

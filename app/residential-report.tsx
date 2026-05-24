@@ -1,9 +1,9 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
 import { router, useLocalSearchParams } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { ArrowLeft, Download, Shield, ShieldAlert, ShieldCheck } from "lucide-react-native";
+import React from "react";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { exportReportToPDF } from "../utils/pdf-export";
 
 const statusColor = (s: string) => {
@@ -114,7 +114,7 @@ export default function ResidentialReport() {
         </View>
       </ScrollView>
 
-      <View className="absolute bottom-0 w-full bg-white px-5 py-5 border-t border-gray-100 flex-row gap-4">
+      <View className="absolute bottom-10 w-full bg-white px-5 py-5 border-t border-gray-100 flex-row gap-4">
         <TouchableOpacity
           onPress={() => router.back()}
           className="flex-1 bg-[#F4F9F6] py-4 rounded-xl items-center border border-[#E0EBE4]"

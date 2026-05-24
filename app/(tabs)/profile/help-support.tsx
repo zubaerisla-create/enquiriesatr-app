@@ -1,23 +1,22 @@
-import React, { useState, useEffect } from "react";
+import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import {
-  View,
+  AlertTriangle,
+  ChevronRight
+} from "lucide-react-native";
+import React, { useEffect, useState } from "react";
+import {
+  LayoutAnimation,
+  Linking,
+  Platform,
+  ScrollView,
   Text,
   TouchableOpacity,
-  ScrollView,
-  LayoutAnimation,
-  Platform,
   UIManager,
-  Linking,
+  View,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { AnimatedPage } from "../../../components/ui";
 import Svg, { Path } from "react-native-svg";
-import {
-  MessageSquare,
-  ChevronRight,
-  AlertTriangle
-} from "lucide-react-native";
-import { router } from "expo-router";
+import { AnimatedPage } from "../../../components/ui";
 import { getSupportContact } from "../../../lib/support";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {

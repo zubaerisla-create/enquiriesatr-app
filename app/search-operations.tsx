@@ -1,34 +1,35 @@
-import React, { useState, useEffect } from "react";
+import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
+  ArrowLeft,
+  Building,
+  Car,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  MapPin,
+  Navigation,
+  Save,
+  Search,
+  User,
+} from "lucide-react-native";
+import React, { useEffect, useState } from "react";
+import {
   ActivityIndicator,
   AppState,
   AppStateStatus,
-  KeyboardAvoidingView,
   Keyboard,
+  KeyboardAvoidingView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { router } from "expo-router";
-import {
-  ArrowLeft,
-  ChevronDown,
-  ChevronUp,
-  Search,
-  Check,
-  Save,
-  Building,
-  MapPin,
-  Navigation,
-  Car,
-  User,
-} from "lucide-react-native";
-import { fetchTemplates, submitOperation, syncPendingOperations, SearchTemplate } from "../lib/searchOperations";
-import AlertModal from "../components/ui/AlertModal";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPage } from "../components/ui";
+import AlertModal from "../components/ui/AlertModal";
+import { fetchTemplates, SearchTemplate, submitOperation, syncPendingOperations } from "../lib/searchOperations";
 
 export default function SearchOperations() {
   const [templates, setTemplates] = useState<SearchTemplate[]>([]);
@@ -50,7 +51,7 @@ export default function SearchOperations() {
   }>({
     title: "",
     description: "",
-    onConfirm: () => {},
+    onConfirm: () => { },
   });
 
   const showAppAlert = (
@@ -216,206 +217,200 @@ export default function SearchOperations() {
     }
   };
 
-  if (loading && templates.length === 0) {
-    return (
-      <View className="flex-1 bg-white">
-        <StatusBar style="light" />
-        <View className="bg-[#0D1520] pt-14 pb-5 px-5">
-          <View className="flex-row items-center mb-6">
-            <ArrowLeft size={20} color="#9ca3af" />
-            <Text className="text-gray-400 font-medium ml-2">Operational Tools</Text>
-          </View>
-          <Text className="text-white text-2xl font-black uppercase tracking-wider">Search Operations</Text>
-        </View>
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#D82C15" />
-        </View>
-      </View>
-    );
-  }
+  const isInitialLoading = loading && templates.length === 0;
 
   return (
-    <KeyboardAvoidingView
-      behavior={"padding"}
-      className="flex-1 bg-white"
-    >
-      <StatusBar style="light" />
-      <AnimatedPage>
-        <View className="bg-[#0D1520] pt-14 pb-0">
-        <View className="px-5 pb-5">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="flex-row items-center mb-6"
-          >
-            <ArrowLeft size={20} color="#9ca3af" />
-            <Text className="text-gray-400 font-medium ml-2">Operational Tools</Text>
-          </TouchableOpacity>
-
-          <View className="flex-row items-end justify-between mb-2">
-            <Text className="text-white text-2xl font-black uppercase tracking-wider">
-              Search Operations
-            </Text>
-            <View className="items-end">
-              <Text className="text-gray-400 text-xs font-medium">
-                {passedQuestions}/{totalQuestions} steps
-              </Text>
-              <Text className="text-[#D82C15] text-sm font-bold mt-0.5">
-                {progressPercent}%
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="h-1 bg-[#2D3748] w-full flex-row">
-          <View
-            style={{ width: `${progressPercent}%` }}
-            className="h-full bg-[#D82C15]"
-          />
-        </View>
-      </View>
-
-      <ScrollView
-        className="flex-1 px-5 pt-4 bg-white"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140 }}
+    <SafeAreaView edges={["bottom", "left", "right"]} className="flex-1 bg-white">
+      <KeyboardAvoidingView
+        behavior={"padding"}
+        className="flex-1 bg-white"
       >
-        <Text className="text-gray-400 text-sm mb-6">
-          Perform checklist items and register any failures with logs
-        </Text>
-
-        <Text className="text-[#9ca3af] text-[10px] font-black uppercase tracking-widest mb-2">
-          Operation Name *
-        </Text>
-        <TextInput
-          className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-800 text-sm shadow-inner mb-6"
-          placeholder="Enter Operation Name..."
-          placeholderTextColor="#94A3B8"
-          value={opName}
-          onChangeText={setOpName}
-        />
-
-        <Text className="text-[#9ca3af] text-[10px] font-black uppercase tracking-widest mb-4">
-          Checklist
-        </Text>
-
-        {templates.map((template) => {
-          const isOpen = expanded[template.slug];
-          const templateAnswers = answers[template.slug] || {};
-          const IconComponent = getSearchIcon(template.slug);
-          const iconStyle = getIconStyles(template.slug);
-
-          return (
-            <View key={template.slug} className="mb-4">
+        <StatusBar style="light" />
+        <AnimatedPage>
+          <View className="bg-[#0D1520] pt-14 pb-0">
+            <View className="px-5 pb-5">
               <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => toggleExpand(template.slug)}
-                className="flex-row items-center justify-between px-4 py-3.5 bg-white border border-[#E2E8F0] rounded-xl mb-2 shadow-sm"
+                onPress={() => router.back()}
+                className="flex-row items-center mb-6"
               >
-                <View className="flex-row items-center gap-3 flex-1">
-                  <View className={`w-8 h-8 rounded-lg ${iconStyle.bg} items-center justify-center`}>
-                    <IconComponent size={14} color={iconStyle.color} />
-                  </View>
-                  <Text className="text-gray-800 font-bold text-sm uppercase tracking-wide flex-1">
-                    {template.title}
-                  </Text>
-                </View>
-                <View className="flex-row items-center gap-2">
-                  {isOpen ? (
-                    <ChevronUp size={16} color="#9ca3af" />
-                  ) : (
-                    <ChevronDown size={16} color="#9ca3af" />
-                  )}
-                </View>
+                <ArrowLeft size={20} color="#9ca3af" />
+                <Text className="text-gray-400 font-medium ml-2">Operational Tools</Text>
               </TouchableOpacity>
 
-              {isOpen && (
-                <View className="px-1 py-1 mb-2">
-                  {template.questions.map((question, qIndex) => {
-                    const isPassed = templateAnswers[question.key] === true;
-                    const idStr = String(qIndex + 1).padStart(2, "0");
-
-                    const pillBg = isPassed ? "bg-[#F4F9F6]" : "bg-[#141A24]";
-                    const pillBorder = isPassed ? "border-[#E0EBE4]" : "border-transparent";
-                    const textClasses = isPassed ? "text-gray-600 font-semibold" : "text-white font-medium";
-                    const checkboxBg = isPassed ? "bg-[#2E8B57]" : "bg-transparent";
-                    const checkboxBorder = isPassed ? "border-[#2E8B57]" : "border-[#2D3748]";
-
-                    return (
-                      <TouchableOpacity
-                        key={question.key}
-                        activeOpacity={0.8}
-                        onPress={() => toggleQuestion(template.slug, question.key)}
-                        className={`flex-row items-center px-4 py-3.5 rounded-xl mb-2 border ${pillBg} ${pillBorder}`}
-                      >
-                        <View className={`w-5 h-5 rounded items-center justify-center border ${checkboxBg} ${checkboxBorder}`}>
-                          {isPassed && <Check size={12} color="white" strokeWidth={3} />}
-                        </View>
-                        <Text className={`text-[10px] ml-3 mr-2 font-medium ${isPassed ? "text-gray-400" : "text-gray-500"}`}>
-                          {idStr}
-                        </Text>
-                        <Text className={`flex-1 text-sm ${textClasses}`}>
-                          {question.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
+              <View className="flex-row items-end justify-between mb-2">
+                <Text className="text-white text-2xl font-black uppercase tracking-wider">
+                  Search Operations
+                </Text>
+                <View className="items-end">
+                  <Text className="text-gray-400 text-xs font-medium">
+                    {passedQuestions}/{totalQuestions} steps
+                  </Text>
+                  <Text className="text-[#D82C15] text-sm font-bold mt-0.5">
+                    {progressPercent}%
+                  </Text>
                 </View>
-              )}
+              </View>
             </View>
-          );
-        })}
 
-        {hasFailures && (
-          <View className="border-l-2 border-l-[#D82C15] pl-3 mb-4">
-            <View className="flex-row items-center gap-1.5 mb-2">
-              <Text className="text-[#D82C15] text-[10px] font-black uppercase tracking-widest">
-                Notes
-              </Text>
+            <View className="h-1 bg-[#2D3748] w-full flex-row">
+              <View
+                style={{ width: `${progressPercent}%` }}
+                className="h-full bg-[#D82C15]"
+              />
             </View>
-            <TextInput
-              className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-800 text-sm shadow-inner"
-              placeholder="Provide immediate risk mitigation details and notes..."
-              placeholderTextColor="#94A3B8"
-              value={failureNotes}
-              onChangeText={setFailureNotes}
-              multiline
-              numberOfLines={4}
-              style={{ textAlignVertical: "top", height: 100 }}
-            />
           </View>
-        )}
-      </ScrollView>
 
-      <View className="absolute bottom-0 w-full bg-white border-t border-gray-100 flex-row px-5 py-4 pb-8 items-center justify-between gap-4">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="bg-[#2A3B54] w-[110px] py-3.5 rounded-xl flex-row items-center justify-center gap-2"
-        >
-          <Text className="text-white font-semibold">Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleSubmit}
-          disabled={!canSubmit}
-          className={`flex-1 py-3.5 rounded-xl flex-row items-center justify-center gap-2 ${canSubmit ? "bg-[#D82C15]" : "bg-gray-300"
-            }`}
-        >
-          <Save size={18} color="white" />
-          <Text className="text-white font-bold tracking-wide">SUBMIT & SAVE</Text>
-        </TouchableOpacity>
-      </View>
+          {isInitialLoading ? (
+            <View className="flex-1 justify-center items-center bg-white">
+              <ActivityIndicator size="large" color="#D82C15" />
+            </View>
+          ) : (
+            <>
+              <ScrollView
+                className="flex-1 px-5 pt-4 bg-white"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 140 }}
+              >
+                <Text className="text-gray-400 text-sm mb-6">
+                  Perform checklist items and register any failures with logs
+                </Text>
 
-      <AlertModal
-        visible={modalVisible}
-        title={modalConfig.title}
-        description={modalConfig.description}
-        confirmText={modalConfig.confirmText}
-        cancelText={modalConfig.cancelText}
-        onConfirm={modalConfig.onConfirm}
-        onCancel={modalConfig.onCancel || (() => setModalVisible(false))}
-        variant={modalConfig.variant}
-      />
-      </AnimatedPage>
-    </KeyboardAvoidingView>
+                <Text className="text-[#9ca3af] text-[10px] font-black uppercase tracking-widest mb-2">
+                  Operation Name *
+                </Text>
+                <TextInput
+                  className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-800 text-sm shadow-inner mb-6"
+                  placeholder="Enter Operation Name..."
+                  placeholderTextColor="#94A3B8"
+                  value={opName}
+                  onChangeText={setOpName}
+                />
+
+                <Text className="text-[#9ca3af] text-[10px] font-black uppercase tracking-widest mb-4">
+                  Checklist
+                </Text>
+
+                {templates.map((template) => {
+                  const isOpen = expanded[template.slug];
+                  const templateAnswers = answers[template.slug] || {};
+                  const IconComponent = getSearchIcon(template.slug);
+                  const iconStyle = getIconStyles(template.slug);
+
+                  return (
+                    <View key={template.slug} className="mb-4">
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => toggleExpand(template.slug)}
+                        className="flex-row items-center justify-between px-4 py-3.5 bg-white border border-[#E2E8F0] rounded-xl mb-2 shadow-sm"
+                      >
+                        <View className="flex-row items-center gap-3 flex-1">
+                          <View className={`w-8 h-8 rounded-lg ${iconStyle.bg} items-center justify-center`}>
+                            <IconComponent size={14} color={iconStyle.color} />
+                          </View>
+                          <Text className="text-gray-800 font-bold text-sm uppercase tracking-wide flex-1">
+                            {template.title}
+                          </Text>
+                        </View>
+                        <View className="flex-row items-center gap-2">
+                          {isOpen ? (
+                            <ChevronUp size={16} color="#9ca3af" />
+                          ) : (
+                            <ChevronDown size={16} color="#9ca3af" />
+                          )}
+                        </View>
+                      </TouchableOpacity>
+
+                      {isOpen && (
+                        <View className="px-1 py-1 mb-2">
+                          {template.questions.map((question, qIndex) => {
+                            const isPassed = templateAnswers[question.key] === true;
+                            const idStr = String(qIndex + 1).padStart(2, "0");
+
+                            const pillBg = isPassed ? "bg-[#F4F9F6]" : "bg-[#141A24]";
+                            const pillBorder = isPassed ? "border-[#E0EBE4]" : "border-transparent";
+                            const textClasses = isPassed ? "text-gray-600 font-semibold" : "text-white font-medium";
+                            const checkboxBg = isPassed ? "bg-[#2E8B57]" : "bg-transparent";
+                            const checkboxBorder = isPassed ? "border-[#2E8B57]" : "border-[#2D3748]";
+
+                            return (
+                              <TouchableOpacity
+                                key={question.key}
+                                activeOpacity={0.8}
+                                onPress={() => toggleQuestion(template.slug, question.key)}
+                                className={`flex-row items-center px-4 py-3.5 rounded-xl mb-2 border ${pillBg} ${pillBorder}`}
+                              >
+                                <View className={`w-5 h-5 rounded items-center justify-center border ${checkboxBg} ${checkboxBorder}`}>
+                                  {isPassed && <Check size={12} color="white" strokeWidth={3} />}
+                                </View>
+                                <Text className={`text-[10px] ml-3 mr-2 font-medium ${isPassed ? "text-gray-400" : "text-gray-500"}`}>
+                                  {idStr}
+                                </Text>
+                                <Text className={`flex-1 text-sm ${textClasses}`}>
+                                  {question.label}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+
+                {hasFailures && (
+                  <View className="border-l-2 border-l-[#D82C15] pl-3 mb-4">
+                    <View className="flex-row items-center gap-1.5 mb-2">
+                      <Text className="text-[#D82C15] text-[10px] font-black uppercase tracking-widest">
+                        Notes
+                      </Text>
+                    </View>
+                    <TextInput
+                      className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-800 text-sm shadow-inner"
+                      placeholder="Provide immediate risk mitigation details and notes..."
+                      placeholderTextColor="#94A3B8"
+                      value={failureNotes}
+                      onChangeText={setFailureNotes}
+                      multiline
+                      numberOfLines={4}
+                      style={{ textAlignVertical: "top", height: 100 }}
+                    />
+                  </View>
+                )}
+              </ScrollView>
+
+              <View className="absolute bottom-0 w-full bg-white border-t border-gray-100 flex-row px-5 py-4 items-center justify-between gap-4">
+                <TouchableOpacity
+                  onPress={() => router.back()}
+                  className="bg-[#2A3B54] w-[110px] py-3.5 rounded-xl flex-row items-center justify-center gap-2"
+                >
+                  <Text className="text-white font-semibold">Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleSubmit}
+                  disabled={!canSubmit}
+                  className={`flex-1 py-3.5 rounded-xl flex-row items-center justify-center gap-2 ${canSubmit ? "bg-[#D82C15]" : "bg-gray-300"
+                    }`}
+                >
+                  <Save size={18} color="white" />
+                  <Text className="text-white font-bold tracking-wide">SUBMIT & SAVE</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+
+          <AlertModal
+            visible={modalVisible}
+            title={modalConfig.title}
+            description={modalConfig.description}
+            confirmText={modalConfig.confirmText}
+            cancelText={modalConfig.cancelText}
+            onConfirm={modalConfig.onConfirm}
+            onCancel={modalConfig.onCancel || (() => setModalVisible(false))}
+            variant={modalConfig.variant}
+          />
+        </AnimatedPage>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

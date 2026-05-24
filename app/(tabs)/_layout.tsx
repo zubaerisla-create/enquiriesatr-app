@@ -1,16 +1,16 @@
 import { Redirect, Tabs } from "expo-router";
 import {
-  Home,
   BookOpen,
   Cpu,
+  Home,
   SquareCheck,
   User,
 } from "lucide-react-native";
 import React, { useEffect } from "react";
-import Animated, { useAnimatedStyle, useSharedValue, withTiming, Easing } from "react-native-reanimated";
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { rs, rf } from "../../utils/responsive";
 import { useAuth } from "../../hooks/useAuth";
+import { rf, rs } from "../../utils/responsive";
 
 function AnimatedTabIcon({ focused, children }: { focused: boolean; children: React.ReactNode }) {
   const scale = useSharedValue(1);
@@ -50,7 +50,7 @@ export default function TabLayout() {
           backgroundColor: "#15202B",
           borderTopColor: "#1a2634",
           borderTopWidth: 1,
-          height: rs(70) + insets.bottom,
+          height: rs(65) + insets.bottom,
           paddingBottom: rs(10) + insets.bottom,
           paddingTop: rs(10),
         },

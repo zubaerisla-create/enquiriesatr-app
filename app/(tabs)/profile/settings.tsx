@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Switch,
-  ScrollView,
-  Platform,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { AnimatedPage } from "../../../components/ui";
 import { useRouter } from "expo-router";
-import { useAuth } from "../../../hooks/useAuth";
-import { api } from "../../../lib/api";
-import AlertModal from "../../../components/ui/AlertModal";
+import { StatusBar } from "expo-status-bar";
 import {
-  LucideIcon,
+  AlertTriangle,
   Bell,
   BookOpen,
-  AlertTriangle,
   ChevronRight,
+  LucideIcon,
 } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  ScrollView,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { AnimatedPage } from "../../../components/ui";
+import AlertModal from "../../../components/ui/AlertModal";
+import { useAuth } from "../../../hooks/useAuth";
+import { api } from "../../../lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

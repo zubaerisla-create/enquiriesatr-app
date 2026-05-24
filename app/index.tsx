@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import { View, Image, Animated, useWindowDimensions } from "react-native";
-import { rs, wp } from "../utils/responsive";
+import { Animated, Image, useWindowDimensions, View } from "react-native";
+import { wp } from "../utils/responsive";
 
 
 

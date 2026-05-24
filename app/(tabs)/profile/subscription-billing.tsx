@@ -1,32 +1,29 @@
-import React, { useState, useMemo, useRef, useCallback } from "react";
+import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import * as WebBrowser from "expo-web-browser";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
+  Check,
+  Rocket,
+  Trophy,
+  Zap
+} from "lucide-react-native";
+import React, { useCallback, useMemo, useState } from "react";
+import {
   ActivityIndicator,
   Alert,
   Modal,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
-import { AppBottomSheet } from "../../../components/ui";
-import { useBottomSheet } from "../../../hooks/useBottomSheet";
-import { StatusBar } from "expo-status-bar";
-import { AnimatedPage } from "../../../components/ui";
-import * as WebBrowser from "expo-web-browser";
-import { router } from "expo-router";
-import {
-  Check,
-  Star,
-  Zap,
-  ArrowLeft,
-  Trophy,
-  Rocket,
-} from "lucide-react-native";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "../../../lib/api";
-import { useStripePayment } from "../../../hooks/useStripePayment";
+import { AnimatedPage, AppBottomSheet } from "../../../components/ui";
 import { useAuth } from "../../../hooks/useAuth";
+import { useBottomSheet } from "../../../hooks/useBottomSheet";
+import { useStripePayment } from "../../../hooks/useStripePayment";
+import { api } from "../../../lib/api";
 
 
 interface Plan {

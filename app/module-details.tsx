@@ -1,24 +1,23 @@
 // ## this file is deprecated and kept for backward compatability and will be removed before final relese
 
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
-import { rs, rf, wp } from "../utils/responsive";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { rf, rs } from "../utils/responsive";
 
-import { StatusBar } from "expo-status-bar";
+import { useQuery } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import {
   ArrowLeft,
-  Clock,
   CheckCircle,
-  PlayCircle,
+  ChevronRight,
+  Clock,
   Lock,
-  Target,
-  ChevronRight
+  PlayCircle
 } from "lucide-react-native";
-import { useQuery } from "@tanstack/react-query";
-import { fetchModuleDetail, fetchModuleProgress } from "../lib/modules";
 import { AnimatedPage } from "../components/ui";
 import { useAuth } from "../hooks/useAuth";
+import { fetchModuleDetail, fetchModuleProgress } from "../lib/modules";
 
 const CATEGORY_COLORS: Record<string, string> = {
   FOUNDATION: "#3B82F6",

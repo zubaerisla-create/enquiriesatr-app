@@ -1,3 +1,5 @@
+import { useIsFocused } from "@react-navigation/native";
+import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
@@ -7,11 +9,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { router } from "expo-router";
-import { useIsFocused } from "@react-navigation/native";
 import Markdown from "react-native-markdown-display";
 import { AnimatedPage } from "../../../components/ui";
-import { useNotesStore, deleteNote, Note, NoteType, loadNotes } from "./notesStore";
+import { deleteNote, loadNotes, Note, NoteType, useNotesStore } from "./notesStore";
 
 type FilterTab = "ALL" | "LESSONS" | "AI" | "PERSONAL";
 

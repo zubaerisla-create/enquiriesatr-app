@@ -1,28 +1,29 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-} from "react-native";
-import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import {
   ArrowLeft,
-  Shield,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Home,
   Map,
   Maximize,
-  Home,
-  ChevronUp,
-  ChevronDown,
-  Check,
   Save,
+  Shield,
 } from "lucide-react-native";
-import { api } from "../lib/api";
-import AlertModal from "../components/ui/AlertModal";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { GuardianLoader } from "../components/ui";
+import AlertModal from "../components/ui/AlertModal";
+import { api } from "../lib/api";
 
 function debounce(func: Function, wait: number) {
   let timeout: any;
@@ -260,23 +261,25 @@ export default function ResidentialSecurityChecklist() {
     }
   };
 
-  if (loading) {
-    return (
-      <View className="flex-1 bg-white">
-        <StatusBar style="light" />
-        <View className="bg-[#0D1520] pt-14 pb-5 px-5">
-          <View className="flex-row items-center mb-6">
-            <ArrowLeft size={20} color="#9ca3af" />
-            <Text className="text-gray-400 font-medium ml-2">Operational Tools</Text>
-          </View>
-          <Text className="text-white text-2xl font-black uppercase tracking-wider">Residential Security</Text>
-        </View>
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#D82C15" />
-        </View>
-      </View>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <View className="flex-1 bg-white">
+  //       <StatusBar style="light" />
+  //       <View className="bg-[#0D1520] pt-14 pb-5 px-5">
+  //         <View className="flex-row items-center mb-6">
+  //           <ArrowLeft size={20} color="#9ca3af" />
+  //           <Text className="text-gray-400 font-medium ml-2">Operational Tools</Text>
+  //         </View>
+  //         <Text className="text-white text-2xl font-black uppercase tracking-wider">Residential Security</Text>
+  //       </View>
+  //       <View className="flex-1 justify-center items-center">
+  //         <ActivityIndicator size="large" color="#D82C15" />
+  //       </View>
+  //     </View>
+  //   );
+  // }
+  const isInitialLoading = loading;
+
 
   if (generating) {
     return (
@@ -294,229 +297,239 @@ export default function ResidentialSecurityChecklist() {
   }
 
   return (
-    <KeyboardAvoidingView
-      behavior={"padding"}
-      className="flex-1 bg-white"
-    >
-      <StatusBar style="light" />
+    <SafeAreaView edges={["bottom", "left", "right"]} className="flex-1 bg-white">
 
-      <View className="bg-[#0D1520] pt-14 pb-0">
-        <View className="px-5 pb-5">
-          <View className="flex-row items-center justify-between mb-6">
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="flex-row items-center"
-            >
-              <ArrowLeft size={20} color="#9ca3af" />
-              <Text className="text-gray-400 font-medium ml-2">Operational Tools</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={handleReset}>
-              <Text className="text-[#E05252] text-xs font-semibold uppercase tracking-wider">Reset</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View className="flex-row items-end justify-between mb-2">
-            <Text className="text-white text-2xl font-black uppercase tracking-wider">
-              Residential Security
-            </Text>
-            <View className="items-end">
-              <Text className="text-gray-400 text-xs font-medium">
-                {totalChecked}/{totalItems} items
-              </Text>
-              <Text className="text-[#D82C15] text-sm font-bold mt-0.5">
-                {progressPercent}%
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="h-1 bg-[#2D3748] w-full flex-row">
-          <View
-            style={{ width: `${progressPercent}%` }}
-            className="h-full bg-[#D82C15]"
-          />
-        </View>
-      </View>
-
-      <ScrollView
-        className="flex-1 px-5 pt-4 bg-white"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140 }}
+      <KeyboardAvoidingView
+        behavior={"padding"}
+        className="flex-1 bg-white"
       >
-        <Text className="text-gray-400 text-sm mb-6">
-          Complete the checklist to generate an AI-powered handover report
-        </Text>
+        <StatusBar style="light" />
 
-        {categories.map((cat) => {
-          const isOpen = expanded[cat.id];
-          const done = catChecked(cat);
-          const catPercent = Math.round((done / cat.items.length) * 100);
-          const CatIcon = ICON_MAP[cat.icon as keyof typeof ICON_MAP] || Shield;
-
-          return (
-            <View key={cat.id} className="mb-4">
+        <View className="bg-[#0D1520] pt-14 pb-0">
+          <View className="px-5 pb-5">
+            <View className="flex-row items-center justify-between mb-6">
               <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => toggleExpand(cat.id)}
-                className="flex-row items-center justify-between px-4 py-3.5 bg-white border border-[#E2E8F0] rounded-xl mb-2 shadow-sm"
+                onPress={() => router.back()}
+                className="flex-row items-center"
               >
-                <View className="flex-row items-center gap-3 flex-1">
-                  <View
-                    style={{ backgroundColor: cat.iconBg }}
-                    className="w-8 h-8 rounded-lg items-center justify-center"
-                  >
-                    <CatIcon size={14} color={cat.iconColor} />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-gray-800 font-bold text-sm uppercase tracking-wide">
-                      {cat.title}
-                    </Text>
-                    <Text className="text-gray-400 text-[10px] mt-0.5">
-                      {done}/{cat.items.length} completed
-                    </Text>
-                  </View>
-                </View>
-
-                <View className="flex-row items-center gap-3">
-                  <Text className="text-gray-500 font-mono text-sm font-semibold">
-                    {catPercent}%
-                  </Text>
-                  {isOpen ? (
-                    <ChevronUp size={16} color="#9ca3af" />
-                  ) : (
-                    <ChevronDown size={16} color="#9ca3af" />
-                  )}
-                </View>
+                <ArrowLeft size={20} color="#9ca3af" />
+                <Text className="text-gray-400 font-medium ml-2">Operational Tools</Text>
               </TouchableOpacity>
 
-              {isOpen && (
-                <View className="px-1 py-1 mb-2">
-                  {cat.items.map((item) => {
-                    const key = item.key;
-                    const isChecked = !!checked[key];
-                    const status = statusState[key];
-                    const showDrop = statusDropdown === key;
-                    const statusCol = getStatusColors(status);
+              <TouchableOpacity onPress={handleReset}>
+                <Text className="text-[#E05252] text-xs font-semibold uppercase tracking-wider">Reset</Text>
+              </TouchableOpacity>
+            </View>
 
-                    const rowBg = isChecked ? "bg-[#F4F9F6]" : "bg-[#141A24]";
-                    const rowBorder = isChecked ? "border-[#E0EBE4]" : "border-transparent";
-                    const textClass = isChecked ? "text-gray-600 font-semibold" : "text-white font-medium";
-                    const checkboxBg = isChecked ? "bg-[#2E8B57]" : "bg-transparent";
-                    const checkboxBorder = isChecked ? "border-[#2E8B57]" : "border-[#2D3748]";
+            <View className="flex-row items-end justify-between mb-2">
+              <Text className="text-white text-2xl font-black uppercase tracking-wider">
+                Residential Security
+              </Text>
+              <View className="items-end">
+                <Text className="text-gray-400 text-xs font-medium">
+                  {totalChecked}/{totalItems} items
+                </Text>
+                <Text className="text-[#D82C15] text-sm font-bold mt-0.5">
+                  {progressPercent}%
+                </Text>
+              </View>
+            </View>
+          </View>
 
-                    return (
-                      <View
-                        key={key}
-                        className={`flex-row items-center px-4 py-3.5 rounded-xl mb-2 border ${rowBg} ${rowBorder}`}
-                      >
-                        <TouchableOpacity
-                          activeOpacity={0.8}
-                          onPress={() => toggleCheck(key)}
-                          className="flex-row items-center flex-1 mr-3"
+          <View className="h-1 bg-[#2D3748] w-full flex-row">
+            <View
+              style={{ width: `${progressPercent}%` }}
+              className="h-full bg-[#D82C15]"
+            />
+          </View>
+        </View>
+        {isInitialLoading ? (
+          <View className="flex-1 justify-center items-center bg-white">
+            <ActivityIndicator size="large" color="#D82C15" />
+          </View>
+        ) : (
+          <>
+            <ScrollView
+              className="flex-1 px-5 pt-4 bg-white"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 140 }}
+            >
+              <Text className="text-gray-400 text-sm mb-6">
+                Complete the checklist to generate an AI-powered handover report
+              </Text>
+
+              {categories.map((cat) => {
+                const isOpen = expanded[cat.id];
+                const done = catChecked(cat);
+                const catPercent = Math.round((done / cat.items.length) * 100);
+                const CatIcon = ICON_MAP[cat.icon as keyof typeof ICON_MAP] || Shield;
+
+                return (
+                  <View key={cat.id} className="mb-4">
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => toggleExpand(cat.id)}
+                      className="flex-row items-center justify-between px-4 py-3.5 bg-white border border-[#E2E8F0] rounded-xl mb-2 shadow-sm"
+                    >
+                      <View className="flex-row items-center gap-3 flex-1">
+                        <View
+                          style={{ backgroundColor: cat.iconBg }}
+                          className="w-8 h-8 rounded-lg items-center justify-center"
                         >
-                          <View className={`w-5 h-5 rounded items-center justify-center border ${checkboxBg} ${checkboxBorder}`}>
-                            {isChecked && <Check size={12} color="white" strokeWidth={3} />}
-                          </View>
-                          <Text className={`text-sm ml-3 flex-1 ${textClass}`}>
-                            {item.label}
+                          <CatIcon size={14} color={cat.iconColor} />
+                        </View>
+                        <View className="flex-1">
+                          <Text className="text-gray-800 font-bold text-sm uppercase tracking-wide">
+                            {cat.title}
                           </Text>
-                        </TouchableOpacity>
-
-                        <View style={{ zIndex: showDrop ? 100 : 1 }}>
-                          <TouchableOpacity
-                            onPress={() => setStatusDropdown(showDrop ? null : key)}
-                            style={{
-                              borderColor: statusCol.border,
-                              backgroundColor: statusCol.bg,
-                            }}
-                            className="px-4 py-2 rounded-xl border flex-row items-center gap-2"
-                          >
-                            <Text
-                              style={{ color: statusCol.text }}
-                              className="text-xs font-bold uppercase"
-                            >
-                              {status || "Status"}
-                            </Text>
-                            <ChevronDown size={12} color="#6B7280" />
-                          </TouchableOpacity>
-
-                          {showDrop && (
-                            <View
-                              style={{
-                                shadowColor: "#000",
-                                shadowOffset: { width: 0, height: 4 },
-                                shadowOpacity: 0.3,
-                                shadowRadius: 8,
-                                elevation: 8,
-                              }}
-                              className="absolute right-0 top-11 z-50 bg-[#1A2535] border border-[#2D3748] rounded-xl overflow-hidden w-32"
-                            >
-                              {STATUS_OPTS.map((opt) => (
-                                <TouchableOpacity
-                                  key={opt}
-                                  onPress={() => setStatusFor(key, opt)}
-                                  className="px-4 py-3 border-b border-[#2D3748] active:bg-[#202E42]"
-                                  style={{
-                                    borderBottomWidth: opt === "N/A" ? 0 : 1
-                                  }}
-                                >
-                                  <Text
-                                    style={{ color: getStatusOptColor(opt) }}
-                                    className="text-sm font-black text-center"
-                                  >
-                                    {opt}
-                                  </Text>
-                                </TouchableOpacity>
-                              ))}
-                            </View>
-                          )}
+                          <Text className="text-gray-400 text-[10px] mt-0.5">
+                            {done}/{cat.items.length} completed
+                          </Text>
                         </View>
                       </View>
-                    );
-                  })}
-                </View>
-              )}
-            </View>
-          );
-        })}
-      </ScrollView>
 
-      <View className="absolute bottom-0 w-full bg-white border-t border-gray-100 flex-row px-5 py-4 pb-8 items-center justify-between gap-4">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="bg-[#2A3B54] w-[110px] py-3.5 rounded-xl flex-row items-center justify-center gap-2"
-        >
-          <Text className="text-white font-semibold">Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleGenerate}
-          disabled={!canGenerate || generating}
-          className={`flex-1 py-3.5 rounded-xl flex-row items-center justify-center gap-2 ${canGenerate ? "bg-[#D82C15]" : "bg-gray-300"
-            }`}
-        >
-          {generating ? (
-            <ActivityIndicator size={18} color="white" />
-          ) : (
-            <>
-              <Save size={18} color="white" />
-              <Text className="text-white font-bold tracking-wide">
-                {canGenerate ? "GENERATE REPORT" : `NEED ${75 - progressPercent}% MORE`}
-              </Text>
-            </>
-          )}
-        </TouchableOpacity>
-      </View>
+                      <View className="flex-row items-center gap-3">
+                        <Text className="text-gray-500 font-mono text-sm font-semibold">
+                          {catPercent}%
+                        </Text>
+                        {isOpen ? (
+                          <ChevronUp size={16} color="#9ca3af" />
+                        ) : (
+                          <ChevronDown size={16} color="#9ca3af" />
+                        )}
+                      </View>
+                    </TouchableOpacity>
 
-      <AlertModal
-        visible={modalVisible}
-        title={modalConfig.title}
-        description={modalConfig.description}
-        onConfirm={modalConfig.onConfirm}
-        onCancel={() => setModalVisible(false)}
-        variant={modalConfig.variant}
-        confirmText={modalConfig.confirmText}
-      />
-    </KeyboardAvoidingView>
+                    {isOpen && (
+                      <View className="px-1 py-1 mb-2">
+                        {cat.items.map((item) => {
+                          const key = item.key;
+                          const isChecked = !!checked[key];
+                          const status = statusState[key];
+                          const showDrop = statusDropdown === key;
+                          const statusCol = getStatusColors(status);
+
+                          const rowBg = isChecked ? "bg-[#F4F9F6]" : "bg-[#141A24]";
+                          const rowBorder = isChecked ? "border-[#E0EBE4]" : "border-transparent";
+                          const textClass = isChecked ? "text-gray-600 font-semibold" : "text-white font-medium";
+                          const checkboxBg = isChecked ? "bg-[#2E8B57]" : "bg-transparent";
+                          const checkboxBorder = isChecked ? "border-[#2E8B57]" : "border-[#2D3748]";
+
+                          return (
+                            <View
+                              key={key}
+                              className={`flex-row items-center px-4 py-3.5 rounded-xl mb-2 border ${rowBg} ${rowBorder}`}
+                            >
+                              <TouchableOpacity
+                                activeOpacity={0.8}
+                                onPress={() => toggleCheck(key)}
+                                className="flex-row items-center flex-1 mr-3"
+                              >
+                                <View className={`w-5 h-5 rounded items-center justify-center border ${checkboxBg} ${checkboxBorder}`}>
+                                  {isChecked && <Check size={12} color="white" strokeWidth={3} />}
+                                </View>
+                                <Text className={`text-sm ml-3 flex-1 ${textClass}`}>
+                                  {item.label}
+                                </Text>
+                              </TouchableOpacity>
+
+                              <View style={{ zIndex: showDrop ? 100 : 1 }}>
+                                <TouchableOpacity
+                                  onPress={() => setStatusDropdown(showDrop ? null : key)}
+                                  style={{
+                                    borderColor: statusCol.border,
+                                    backgroundColor: statusCol.bg,
+                                  }}
+                                  className="px-4 py-2 rounded-xl border flex-row items-center gap-2"
+                                >
+                                  <Text
+                                    style={{ color: statusCol.text }}
+                                    className="text-xs font-bold uppercase"
+                                  >
+                                    {status || "Status"}
+                                  </Text>
+                                  <ChevronDown size={12} color="#6B7280" />
+                                </TouchableOpacity>
+
+                                {showDrop && (
+                                  <View
+                                    style={{
+                                      shadowColor: "#000",
+                                      shadowOffset: { width: 0, height: 4 },
+                                      shadowOpacity: 0.3,
+                                      shadowRadius: 8,
+                                      elevation: 8,
+                                    }}
+                                    className="absolute right-0 top-11 z-50 bg-[#1A2535] border border-[#2D3748] rounded-xl overflow-hidden w-32"
+                                  >
+                                    {STATUS_OPTS.map((opt) => (
+                                      <TouchableOpacity
+                                        key={opt}
+                                        onPress={() => setStatusFor(key, opt)}
+                                        className="px-4 py-3 border-b border-[#2D3748] active:bg-[#202E42]"
+                                        style={{
+                                          borderBottomWidth: opt === "N/A" ? 0 : 1
+                                        }}
+                                      >
+                                        <Text
+                                          style={{ color: getStatusOptColor(opt) }}
+                                          className="text-sm font-black text-center"
+                                        >
+                                          {opt}
+                                        </Text>
+                                      </TouchableOpacity>
+                                    ))}
+                                  </View>
+                                )}
+                              </View>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </ScrollView>
+          </>
+        )}
+
+        <View className="absolute bottom-0 w-full bg-white border-t border-gray-100 flex-row px-5 py-4 items-center justify-between gap-4">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="bg-[#2A3B54] w-[110px] py-3.5 rounded-xl flex-row items-center justify-center gap-2"
+          >
+            <Text className="text-white font-semibold">Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleGenerate}
+            disabled={!canGenerate || generating}
+            className={`flex-1 py-3.5 rounded-xl flex-row items-center justify-center gap-2 ${canGenerate ? "bg-[#D82C15]" : "bg-gray-300"
+              }`}
+          >
+            {generating ? (
+              <ActivityIndicator size={18} color="white" />
+            ) : (
+              <>
+                <Save size={18} color="white" />
+                <Text className="text-white font-bold tracking-wide">
+                  {canGenerate ? "GENERATE REPORT" : `NEED ${75 - progressPercent}% MORE`}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <AlertModal
+          visible={modalVisible}
+          title={modalConfig.title}
+          description={modalConfig.description}
+          onConfirm={modalConfig.onConfirm}
+          onCancel={() => setModalVisible(false)}
+          variant={modalConfig.variant}
+          confirmText={modalConfig.confirmText}
+        />
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
