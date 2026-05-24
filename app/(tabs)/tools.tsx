@@ -10,6 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
+import TabScreenWrapper from "../../components/ui/TabScreenWrapper";
 
 import {
   LucideIcon,
@@ -272,51 +273,54 @@ export default function Tools() {
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0D1520]">
       {isFocused && <StatusBar style="light" />}
+      <TabScreenWrapper>
 
-      <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D]">
-        <View className="px-4 py-4">
-          <Text className="text-white text-2xl font-extrabold tracking-wider uppercase">
-            Operational Tools
-          </Text>
-          <Text className="text-gray-500 text-sm mt-1">
-            Procedures and templates for the field
-          </Text>
-        </View>
-      </View>
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: 20, paddingBottom: 40 }}
-      >
-        {TOOLS.map((tool) => (
-          <ToolCard key={tool.id} tool={tool} />
-        ))}
-
-        <View className="px-4 mt-8 mb-3 flex-row items-center justify-between">
-          <Text className="text-gray-400 text-xs font-bold tracking-widest uppercase">
-            My Saved Documents
-          </Text>
-          <TouchableOpacity onPress={() => router.push("/profile/my-documents")}>
-            <Text className="text-[#C0392B] text-xs font-bold uppercase tracking-wider">
-              View All
+        <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D]">
+          <View className="px-4 py-4">
+            <Text className="text-white text-2xl font-extrabold tracking-wider uppercase">
+              Operational Tools
             </Text>
-          </TouchableOpacity>
+            <Text className="text-gray-500 text-sm mt-1">
+              Procedures and templates for the field
+            </Text>
+          </View>
         </View>
 
-        {docsLoading ? (
-          <View className="py-8">
-            <ActivityIndicator size="small" color="#C0392B" />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingTop: 20, paddingBottom: 40 }}
+        >
+          {TOOLS.map((tool) => (
+            <ToolCard key={tool.id} tool={tool} />
+          ))}
+
+          <View className="px-4 mt-8 mb-3 flex-row items-center justify-between">
+            <Text className="text-gray-400 text-xs font-bold tracking-widest uppercase">
+              My Saved Documents
+            </Text>
+            <TouchableOpacity onPress={() => router.push("/profile/my-documents")}>
+              <Text className="text-[#C0392B] text-xs font-bold uppercase tracking-wider">
+                View All
+              </Text>
+            </TouchableOpacity>
           </View>
-        ) : savedDocs.length > 0 ? (
-          savedDocs.map((doc) => (
-            <SavedDocRow key={doc.id} doc={doc} />
-          ))
-        ) : (
-          <View className="mx-4 bg-[#141E2B] rounded-2xl px-4 py-6 items-center justify-center">
-            <Text className="text-gray-500 text-xs">No recent documents</Text>
-          </View>
-        )}
-      </ScrollView>
+
+          {docsLoading ? (
+            <View className="py-8">
+              <ActivityIndicator size="small" color="#C0392B" />
+            </View>
+          ) : savedDocs.length > 0 ? (
+            savedDocs.map((doc) => (
+              <SavedDocRow key={doc.id} doc={doc} />
+            ))
+          ) : (
+            <View className="mx-4 bg-[#141E2B] rounded-2xl px-4 py-6 items-center justify-center">
+              <Text className="text-gray-500 text-xs">No recent documents</Text>
+            </View>
+          )}
+        </ScrollView>
+      </TabScreenWrapper>
+
     </SafeAreaView>
   );
 }

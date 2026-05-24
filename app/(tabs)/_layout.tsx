@@ -5,14 +5,33 @@ import {
   Cpu,
   SquareCheck,
   User,
-  ClipboardList
 } from "lucide-react-native";
+import React, { useEffect } from "react";
+import Animated, { useAnimatedStyle, useSharedValue, withTiming, Easing } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { rs, rf } from "../../utils/responsive";
 import { useAuth } from "../../hooks/useAuth";
 
+function AnimatedTabIcon({ focused, children }: { focused: boolean; children: React.ReactNode }) {
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    scale.value = withTiming(focused ? 1.15 : 1, {
+      duration: 150,
+      easing: Easing.out(Easing.quad),
+    });
+  }, [focused]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return <Animated.View style={animatedStyle}>{children}</Animated.View>;
+}
 
 export default function TabLayout() {
   const { accessToken, isBootstrapping } = useAuth();
+  const insets = useSafeAreaInsets();
 
   if (isBootstrapping) {
     return null;
@@ -26,12 +45,13 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarAllowFontScaling: false,
         tabBarStyle: {
           backgroundColor: "#15202B",
           borderTopColor: "#1a2634",
           borderTopWidth: 1,
-          height: rs(75),
-          paddingBottom: rs(10),
+          height: rs(70) + insets.bottom,
+          paddingBottom: rs(10) + insets.bottom,
           paddingTop: rs(10),
         },
         tabBarActiveTintColor: "#D82C15",
@@ -46,56 +66,55 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <Home size={rs(20)} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedTabIcon focused={focused}>
+              <Home size={rs(22)} color={color} />
+            </AnimatedTabIcon>
           ),
-
         }}
       />
       <Tabs.Screen
         name="learn"
         options={{
           title: "Learn",
-          tabBarIcon: ({ color, size }) => (
-            <BookOpen size={rs(20)} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedTabIcon focused={focused}>
+              <BookOpen size={rs(22)} color={color} />
+            </AnimatedTabIcon>
           ),
-
         }}
       />
       <Tabs.Screen
         name="guardian"
         options={{
           title: "Guardian",
-          tabBarIcon: ({ color, size }) => (
-            <Cpu size={rs(20)} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedTabIcon focused={focused}>
+              <Cpu size={rs(22)} color={color} />
+            </AnimatedTabIcon>
           ),
-
         }}
       />
       <Tabs.Screen
         name="tools"
         options={{
           title: "Tools",
-          tabBarIcon: ({ color, size }) => (
-            <SquareCheck size={rs(20)} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedTabIcon focused={focused}>
+              <SquareCheck size={rs(22)} color={color} />
+            </AnimatedTabIcon>
           ),
-
-        }}
-      />
-      <Tabs.Screen
-        name="tools-log"
-        options={{
-          href: null,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color, size }) => (
-            <User size={rs(20)} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedTabIcon focused={focused}>
+              <User size={rs(22)} color={color} />
+            </AnimatedTabIcon>
           ),
-
         }}
       />
     </Tabs>

@@ -25,6 +25,7 @@ import {
   X,
   Plus,
 } from "lucide-react-native";
+import TabScreenWrapper from "../../components/ui/TabScreenWrapper";
 
 import { llmChat, llmChatStream, getConversations, getConversationMessages, type Conversation } from "../../lib/llm";
 import Markdown from "react-native-markdown-display";
@@ -579,86 +580,88 @@ export default function Guardian() {
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0F1824]">
       {isFocused && <StatusBar style="light" />}
+      <TabScreenWrapper>
 
-      <Header onHistoryPress={handleOpenHistory} onNewChatPress={handleNewChat} />
+        <Header onHistoryPress={handleOpenHistory} onNewChatPress={handleNewChat} />
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={"padding"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            ref={scrollViewRef}
-            className="flex-1"
-            contentContainerStyle={{ paddingBottom: 20 }}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            {messages.length > 1 && <View className="h-6" />}
-            {displayedMessages.map((msg, index) =>
-              msg.role === "ai" ? (
-                msg.text !== "" ? (
-                  <AIMessage
-                    key={msg.id}
-                    message={msg}
-                    onCopy={() => void handleCopy(msg)}
-                    onSave={() => void handleSave(msg)}
-                    copied={copiedMessageId === msg.id}
-                    saved={savedMessageId === msg.id}
-                    saving={savingMessageId === msg.id}
-                    isStreaming={sending && index === displayedMessages.length - 1}
-                  />
-                ) : null
-              ) : (
-                <UserMessage key={msg.id} message={msg} />
-              )
-            )}
-            {sending && messages[messages.length - 1]?.role === "ai" && messages[messages.length - 1]?.text === "" && <ThinkingBubble />}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={"padding"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <ScrollView
+              ref={scrollViewRef}
+              className="flex-1"
+              contentContainerStyle={{ paddingBottom: 20 }}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {messages.length > 1 && <View className="h-6" />}
+              {displayedMessages.map((msg, index) =>
+                msg.role === "ai" ? (
+                  msg.text !== "" ? (
+                    <AIMessage
+                      key={msg.id}
+                      message={msg}
+                      onCopy={() => void handleCopy(msg)}
+                      onSave={() => void handleSave(msg)}
+                      copied={copiedMessageId === msg.id}
+                      saved={savedMessageId === msg.id}
+                      saving={savingMessageId === msg.id}
+                      isStreaming={sending && index === displayedMessages.length - 1}
+                    />
+                  ) : null
+                ) : (
+                  <UserMessage key={msg.id} message={msg} />
+                )
+              )}
+              {sending && messages[messages.length - 1]?.role === "ai" && messages[messages.length - 1]?.text === "" && <ThinkingBubble />}
 
-            {messages.length === 1 && <QuickTopics onSelect={sendMessage} />}
-          </ScrollView>
-        </TouchableWithoutFeedback>
+              {messages.length === 1 && <QuickTopics onSelect={sendMessage} />}
+            </ScrollView>
+          </TouchableWithoutFeedback>
 
-        <InputBar
-          value={input}
-          onChange={setInput}
-          onSend={() => void sendMessage()}
-          onStop={handleStop}
-          sending={sending}
-        />
-      </KeyboardAvoidingView>
-
-      <AppBottomSheet
-        ref={historySheetRef}
-        title="Chat History"
-        snapPoints={["60%", "90%"]}
-        enableDynamicSizing={false}
-      >
-        {loadingHistory ? (
-          <View className="py-20 items-center justify-center">
-            <ActivityIndicator size="large" color="#60A5FA" />
-          </View>
-        ) : (
-          <BottomSheetFlatList
-            data={conversations}
-            keyExtractor={(item) => String(item.id)}
-            contentContainerStyle={{ paddingBottom: 20 }}
-            initialNumToRender={10}
-            maxToRenderPerBatch={10}
-            windowSize={5}
-            removeClippedSubviews={Platform.OS === "android"}
-            ListEmptyComponent={
-              historySheetOpen && !loadingHistory && conversations.length === 0 ? (
-                <View className="py-12 items-center justify-center">
-                  <Text className="text-gray-400 text-sm">No past conversations found</Text>
-                </View>
-              ) : null
-            }
-            renderItem={renderHistoryItem}
+          <InputBar
+            value={input}
+            onChange={setInput}
+            onSend={() => void sendMessage()}
+            onStop={handleStop}
+            sending={sending}
           />
-        )}
-      </AppBottomSheet>
+        </KeyboardAvoidingView>
+
+        <AppBottomSheet
+          ref={historySheetRef}
+          title="Chat History"
+          snapPoints={["60%", "90%"]}
+          enableDynamicSizing={false}
+        >
+          {loadingHistory ? (
+            <View className="py-20 items-center justify-center">
+              <ActivityIndicator size="large" color="#60A5FA" />
+            </View>
+          ) : (
+            <BottomSheetFlatList
+              data={conversations}
+              keyExtractor={(item) => String(item.id)}
+              contentContainerStyle={{ paddingBottom: 20 }}
+              initialNumToRender={10}
+              maxToRenderPerBatch={10}
+              windowSize={5}
+              removeClippedSubviews={Platform.OS === "android"}
+              ListEmptyComponent={
+                historySheetOpen && !loadingHistory && conversations.length === 0 ? (
+                  <View className="py-12 items-center justify-center">
+                    <Text className="text-gray-400 text-sm">No past conversations found</Text>
+                  </View>
+                ) : null
+              }
+              renderItem={renderHistoryItem}
+            />
+          )}
+        </AppBottomSheet>
+      </TabScreenWrapper>
     </SafeAreaView>
   );
 }

@@ -73,7 +73,7 @@ export default function ThreatAssessmentIntro() {
       </ScrollView>
 
       {/* Footer */}
-      <View className="absolute bottom-10 w-full bg-white px-5 py-6">
+      <View className="absolute bottom-0 w-full bg-white px-5 py-6">
         <TouchableOpacity
           onPress={() => router.push("/assessment/quiz")}
           className="w-full bg-[#D82C15] py-4 rounded-xl flex-row items-center justify-center gap-2"

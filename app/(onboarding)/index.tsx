@@ -102,27 +102,12 @@ export default function Onboarding() {
         renderItem={({ item }) => (
           <View style={{ width }} className="px-6 flex-1">
             <View className="flex-1 justify-center items-center">
-              <View style={{ width: wp(85), height: wp(85) }} className="rounded-3xl overflow-hidden shadow-2xl elevation-10 bg-gray-900 border-4 border-gray-100">
+              <View style={{ width: wp(80), height: wp(75) }} className="rounded-3xl overflow-hidden shadow-2xl elevation-10 bg-gray-900 border-4 border-gray-100">
                 <Image
                   source={item.image}
                   className="w-full h-full"
-                  resizeMode="cover"
+                  resizeMode="contain"
                 />
-                {/* Mock Overlay from UI Design */}
-                <View className="absolute top-4 left-4 right-4 bg-black/60 p-4 rounded-xl border-l-2 border-[#D82C15]">
-                  <Text
-                    style={{ fontSize: rf(10) }}
-                    className="text-white font-bold opacity-60 uppercase mb-1"
-                  >
-                    {item.module}
-                  </Text>
-                  <Text
-                    style={{ fontSize: rf(14) }}
-                    className="text-white font-bold uppercase leading-tight"
-                  >
-                    Tactical positioning for high-threat environments.
-                  </Text>
-                </View>
               </View>
 
             </View>

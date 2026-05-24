@@ -15,6 +15,7 @@ import AlertModal from "../../../components/ui/AlertModal";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserStats } from "../../../lib/stats";
 import Svg, { Circle } from "react-native-svg";
+import TabScreenWrapper from "../../../components/ui/TabScreenWrapper";
 
 import {
   LucideIcon,
@@ -262,90 +263,93 @@ export default function Profile() {
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0D1520]">
       {isFocused && <StatusBar style="light" />}
-      {/* Sticky User Card */}
-      <View className="bg-[#0D1520] z-10 py-4 border-b border-[#1E2D3D]">
-        <View className="mx-4">
-          <View className="flex-row items-center gap-4">
-            {/* Avatar */}
-            <View className="w-14 h-14 rounded-2xl bg-[#C0392B] items-center justify-center">
-              <Text className="text-white font-bold text-lg">{initials}</Text>
-            </View>
+      <TabScreenWrapper>
+        {/* Sticky User Card */}
+        <View className="bg-[#0D1520] z-10 py-4 border-b border-[#1E2D3D]">
+          <View className="mx-4">
+            <View className="flex-row items-center gap-4">
+              {/* Avatar */}
+              <View className="w-14 h-14 rounded-2xl bg-[#C0392B] items-center justify-center">
+                <Text className="text-white font-bold text-lg">{initials}</Text>
+              </View>
 
-            {/* Name + email + plan */}
-            <View>
-              <Text className="text-white font-bold text-lg">{displayName}</Text>
-              <Text className="text-gray-400 text-xs mb-1.5">
-                {email}
-              </Text>
-              <View className="flex-row items-center bg-[#2D1010] border border-[#E05252] rounded-full px-3 py-0.5 self-start">
-                <View className="w-1.5 h-1.5 rounded-full bg-[#E05252] mr-1.5" />
-                <Text className="text-[#E05252] text-[10px] font-bold tracking-widest">
-                  {planLabel}
+              {/* Name + email + plan */}
+              <View>
+                <Text className="text-white font-bold text-lg">{displayName}</Text>
+                <Text className="text-gray-400 text-xs mb-1.5">
+                  {email}
                 </Text>
+                <View className="flex-row items-center bg-[#2D1010] border border-[#E05252] rounded-full px-3 py-0.5 self-start">
+                  <View className="w-1.5 h-1.5 rounded-full bg-[#E05252] mr-1.5" />
+                  <Text className="text-[#E05252] text-[10px] font-bold tracking-widest">
+                    {planLabel}
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
         </View>
-      </View>
 
-      {/* Scrollable Content */}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      >
-        {/* Stats strip */}
-        <View className="mx-4 mt-4 mb-4 bg-[#141E2B] rounded-2xl px-3 py-4 flex-row">
-          {displayStats.map((s) => (
-            <StatCell key={s.label} stat={s} />
-          ))}
-        </View>
-
-        {/* Overall progress card */}
-        <View className="mx-4 mb-2 bg-[#141E2B] rounded-2xl p-4 flex-row items-center gap-4">
-          <CircularProgress percent={statsData?.assessments_total ? Math.round(((statsData.assessments_passed ?? 0) / statsData.assessments_total) * 100) : 0} />
-          <View>
-            <Text className="text-white font-bold text-base">Overall Progress</Text>
-            <Text className="text-gray-400 text-xs mt-0.5">
-              {statsData?.assessments_passed ?? 0}/{statsData?.assessments_total ?? 0} assessments passed
-            </Text>
+        {/* Scrollable Content */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        >
+          {/* Stats strip */}
+          <View className="mx-4 mt-4 mb-4 bg-[#141E2B] rounded-2xl px-3 py-4 flex-row">
+            {displayStats.map((s) => (
+              <StatCell key={s.label} stat={s} />
+            ))}
           </View>
-        </View>
 
-        {/* Content section */}
-        <SectionLabel title="Content" />
-        <MenuSection rows={contentRows} />
+          {/* Overall progress card */}
+          <View className="mx-4 mb-2 bg-[#141E2B] rounded-2xl p-4 flex-row items-center gap-4">
+            <CircularProgress percent={statsData?.assessments_total ? Math.round(((statsData.assessments_passed ?? 0) / statsData.assessments_total) * 100) : 0} />
+            <View>
+              <Text className="text-white font-bold text-base">Overall Progress</Text>
+              <Text className="text-gray-400 text-xs mt-0.5">
+                {statsData?.assessments_passed ?? 0}/{statsData?.assessments_total ?? 0} assessments passed
+              </Text>
+            </View>
+          </View>
 
-        {/* Account section */}
-        <SectionLabel title="Account" />
-        <MenuSection rows={ACCOUNT_ROWS} />
+          {/* Content section */}
+          <SectionLabel title="Content" />
+          <MenuSection rows={contentRows} />
 
-        {/* Support section */}
-        <SectionLabel title="Support" />
-        <MenuSection rows={supportRows} />
-      </ScrollView>
+          {/* Account section */}
+          <SectionLabel title="Account" />
+          <MenuSection rows={ACCOUNT_ROWS} />
 
-      <AlertModal
-        visible={isLogoutModalVisible}
-        title="Log Out"
-        description="Are you sure you want to log out?"
-        confirmText="Log Out"
-        cancelText="Cancel"
-        onConfirm={async () => {
-          setIsLoggingOut(true);
-          try {
-            await logout();
-            setIsLogoutModalVisible(false);
-            router.replace("/(auth)/login");
-          } catch (error) {
-            Alert.alert("Error", "Failed to log out. Please try again.");
-          } finally {
-            setIsLoggingOut(false);
-          }
-        }}
-        onCancel={() => setIsLogoutModalVisible(false)}
-        variant="danger"
-        loading={isLoggingOut}
-      />
+          {/* Support section */}
+          <SectionLabel title="Support" />
+          <MenuSection rows={supportRows} />
+        </ScrollView>
+
+        <AlertModal
+          visible={isLogoutModalVisible}
+          title="Log Out"
+          description="Are you sure you want to log out?"
+          confirmText="Log Out"
+          cancelText="Cancel"
+          onConfirm={async () => {
+            setIsLoggingOut(true);
+            try {
+              await logout();
+              setIsLogoutModalVisible(false);
+              router.replace("/(auth)/login");
+            } catch (error) {
+              Alert.alert("Error", "Failed to log out. Please try again.");
+            } finally {
+              setIsLoggingOut(false);
+            }
+          }}
+          onCancel={() => setIsLogoutModalVisible(false)}
+          variant="danger"
+          loading={isLoggingOut}
+        />
+      </TabScreenWrapper>
+
     </SafeAreaView>
   );
 }

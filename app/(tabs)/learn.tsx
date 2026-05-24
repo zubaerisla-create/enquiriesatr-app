@@ -25,6 +25,7 @@ import { TextInput, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { fetchModules, fetchModuleProgress, Category } from "../../lib/modules";
 import { useAuth } from "../../hooks/useAuth";
+import TabScreenWrapper from "../../components/ui/TabScreenWrapper";
 
 interface Module {
   id: string;
@@ -257,40 +258,43 @@ export default function ModulesLibrary() {
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0D1520]">
       {isFocused && <StatusBar style="light" />}
-      <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D]">
-        <View className="px-4 py-4">
-          <Text className="text-white text-2xl font-extrabold tracking-wider uppercase">
-            MODULES LIBRARY
-          </Text>
+      <TabScreenWrapper>
+        <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D]">
+          <View className="px-4 py-4">
+            <Text className="text-white text-2xl font-extrabold tracking-wider uppercase">
+              MODULES LIBRARY
+            </Text>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.searchBar}>
-        <Search size={18} color="#6B7280" style={{ marginRight: 8 }} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search modules..."
-          placeholderTextColor="#6B7280"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-      </View>
-
-      <FilterTabs active={activeTab} onChange={setActiveTab} />
-
-      {modulesLoading ? (
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <ActivityIndicator size="large" color="#3B82F6" />
+        <View style={styles.searchBar}>
+          <Search size={18} color="#6B7280" style={{ marginRight: 8 }} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search modules..."
+            placeholderTextColor="#6B7280"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
         </View>
-      ) : (
-        <FlatList
-          data={filteredModules}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <ModuleCard module={item} />}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
-        />
-      )}
+
+        <FilterTabs active={activeTab} onChange={setActiveTab} />
+
+        {modulesLoading ? (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <ActivityIndicator size="large" color="#3B82F6" />
+          </View>
+        ) : (
+          <FlatList
+            data={filteredModules}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <ModuleCard module={item} />}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 40 }}
+          />
+        )}
+      </TabScreenWrapper>
+
     </SafeAreaView>
   );
 }
