@@ -7,6 +7,7 @@ import {
   User,
 } from "lucide-react-native";
 import React, { useEffect } from "react";
+import { useColorScheme } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../hooks/useAuth";
@@ -32,6 +33,7 @@ function AnimatedTabIcon({ focused, children }: { focused: boolean; children: Re
 export default function TabLayout() {
   const { accessToken, isBootstrapping } = useAuth();
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
 
   if (isBootstrapping) {
     return null;

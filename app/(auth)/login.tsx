@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Platform, Keyboard } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Platform, Keyboard, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as AppleAuthentication from "expo-apple-authentication";
@@ -103,7 +103,14 @@ export default function Login() {
     } catch (error: unknown) {
       if (!isGoogleSignInCancelled(error)) {
         const apiError = error as ApiError;
-        setFormError(apiError.message ?? "Google sign-in failed.");
+        const errorDetails = JSON.stringify(error, null, 2);
+        
+        // Show the full detailed error in a native popup
+        Alert.alert("Google Login Error Details", errorDetails);
+        
+        // Also show a simplified version on the screen
+        setFormError(`Details: ${apiError.message || errorDetails}`);
+        
         // Sign out so user can pick a different account next time
         await signOutFromGoogle();
       }
