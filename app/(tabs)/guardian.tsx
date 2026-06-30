@@ -166,7 +166,7 @@ const AIMessage = ({
 }) => (
   <View className="mb-6">
     <View className="flex-row items-center gap-2 mb-2 px-4">
-      <Text className="text-[#4A90D9] mt-4 text-xs font-bold tracking-widest">CPTAN AI</Text>
+      <Text className="text-[#4A90D9] mt-4 text-xs font-bold tracking-widest">GUARDIAN</Text>
       <Text className="text-gray-500 mt-4 text-xs">{message.timestamp}</Text>
     </View>
 
@@ -224,7 +224,7 @@ const ThinkingBubble = () => {
   return (
     <View className="mb-6">
       <View className="flex-row items-center gap-2 mb-2 px-4">
-        <Text className="text-[#4A90D9] mt-4 text-xs font-bold tracking-widest">CPTAN AI</Text>
+        <Text className="text-[#4A90D9] mt-4 text-xs font-bold tracking-widest">GUARDIAN</Text>
       </View>
       <Animated.View
         style={[animatedStyle]}

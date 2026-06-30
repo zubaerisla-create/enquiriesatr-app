@@ -198,7 +198,7 @@ export default function Signup() {
             Create Your Account
           </Text>
           <Text className="text-gray-500 text-lg mb-8">
-            Join thousands of CP professionals on CPTAN.
+            Join thousands of CP professionals on Guardian.
           </Text>
 
           {/* Form */}

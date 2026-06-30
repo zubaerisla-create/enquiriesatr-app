@@ -97,7 +97,7 @@ export default function TermsAndConditions() {
           {/* ── 01. OPERATIONAL USAGE ── */}
           <SectionHeading number="01" title="Operational Usage" Icon={FileText} />
           <BodyText>
-            The CPTAN application is engineered strictly for professional security personnel, tactical operators, and certified training organizations. Usage is contingent upon the user maintaining active credentials within their respective jurisdiction. Any deployment of CPTAN for unauthorized surveillance, non-professional activities, or outside regulated training environments is strictly prohibited.
+            The Guardian application is engineered strictly for professional security personnel, tactical operators, and certified training organizations. Usage is contingent upon the user maintaining active credentials within their respective jurisdiction. Any deployment of Guardian for unauthorized surveillance, non-professional activities, or outside regulated training environments is strictly prohibited.
           </BodyText>
 
           {/* ── 02. DATA PRIVACY & ENCRYPTION ── */}
@@ -114,16 +114,16 @@ export default function TermsAndConditions() {
           />
 
           <BodyText>
-            All transmissions within the CPTAN mesh network utilize AES-256 end-to-end encryption. Keys are generated and stored exclusively within the device's Secure Enclave.
+            All transmissions within the Guardian mesh network utilize AES-256 end-to-end encryption. Keys are generated and stored exclusively within the device's Secure Enclave.
           </BodyText>
 
           {/* ── 03. LIABILITY LIMITATIONS ── */}
           <SectionHeading number="03" title="Liability Limitations" Icon={AlertTriangle} />
 
-          <WarningBlock body="Critical Warning: The CPTAN interface is a tactical reference tool. It does not replace professional field judgment, standard operating procedures (SOP), or primary military-grade communication channels." />
+          <WarningBlock body="Critical Warning: The Guardian interface is a tactical reference tool. It does not replace professional field judgment, standard operating procedures (SOP), or primary military-grade communication channels." />
 
           <BodyText>
-            The developers assume no liability for tactical errors, equipment failure, or data loss occurring during live operations. Users act on CPTAN outputs at their own professional risk.
+            The developers assume no liability for tactical errors, equipment failure, or data loss occurring during live operations. Users act on Guardian outputs at their own professional risk.
           </BodyText>
 
           {/* ── 04. SUBSCRIPTION TERMS ── */}

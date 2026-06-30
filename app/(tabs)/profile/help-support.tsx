@@ -121,15 +121,15 @@ const ContactRow = ({
 );
 
 const FAQS = [
-  { id: "1", question: "What is CPTAN and who is it for?" },
+  { id: "1", question: "What is Guardian and who is it for?" },
   { id: "2", question: "What does my subscription include?" },
   { id: "3", question: "How does the AI Assistant work?" },
   { id: "4", question: "Are my notes and documents stored securely?" },
-  { id: "5", question: "Can I use CPTAN offline?" },
+  { id: "5", question: "Can I use Guardian offline?" },
   { id: "6", question: "How do I cancel my subscription?" },
   {
     id: "7",
-    question: "I'm a course instructor. Can I access CPTAN for my students?",
+    question: "I'm a course instructor. Can I access Guardian for my students?",
   },
 ];
 
@@ -170,7 +170,7 @@ const FaqRow = ({
 };
 
 export default function HelpSupport() {
-  const [supportEmail, setSupportEmail] = useState("support@cptan.com");
+  const [supportEmail, setSupportEmail] = useState("support@guardian.com");
   const [supportPhone, setSupportPhone] = useState("");
 
   useEffect(() => {
@@ -278,7 +278,7 @@ export default function HelpSupport() {
           <View className="mx-4 bg-[#1A0E0E] border border-[#3D1A1A] rounded-2xl px-4 py-4 flex-row items-start gap-3">
             <AlertTriangle size={20} color="#E05252" style={{ marginTop: 2, flexShrink: 0 }} />
             <Text className="text-gray-400 text-xs leading-5 flex-1">
-              CPTAN is a training and operational reference tool. It does not replace formal SIA-accredited CP training, legal advice, or professional operational judgment. Always act within your training, competence, and the law.
+              Guardian is a training and operational reference tool. It does not replace formal SIA-accredited CP training, legal advice, or professional operational judgment. Always act within your training, competence, and the law.
             </Text>
           </View>
         </ScrollView>
