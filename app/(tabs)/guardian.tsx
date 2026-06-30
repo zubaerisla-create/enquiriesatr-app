@@ -1,45 +1,44 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useIsFocused } from "@react-navigation/native";
+import * as Clipboard from "expo-clipboard";
+import { StatusBar } from "expo-status-bar";
 import {
-  View,
+  Bookmark,
+  Copy,
+  History,
+  Plus,
+  SendHorizontal,
+  Sparkles,
+  Square
+} from "lucide-react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Keyboard,
   TouchableWithoutFeedback,
-  ActivityIndicator,
+  View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
-import { useIsFocused } from "@react-navigation/native";
-import * as Clipboard from "expo-clipboard";
-import {
-  Sparkles,
-  History,
-  Copy,
-  Bookmark,
-  SendHorizontal,
-  Square,
-  X,
-  Plus,
-} from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TabScreenWrapper from "../../components/ui/TabScreenWrapper";
 
-import { llmChat, llmChatStream, getConversations, getConversationMessages, type Conversation } from "../../lib/llm";
+import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import Markdown from "react-native-markdown-display";
-import { createNote } from "../../lib/notes";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 import { AppBottomSheet } from "../../components/ui";
 import { useBottomSheet } from "../../hooks/useBottomSheet";
-import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  withSequence,
-} from "react-native-reanimated";
+import { getConversationMessages, getConversations, llmChatStream, type Conversation } from "../../lib/llm";
+import { createNote } from "../../lib/notes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -363,6 +362,7 @@ const mapBackendMessage = (msg: any): Message => {
 
 export default function Guardian() {
   const isFocused = useIsFocused();
+  const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -578,7 +578,7 @@ export default function Guardian() {
     : messages;
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0F1824]">
+    <View className="flex-1 bg-[#0F1824]" style={{ backgroundColor: '#0F1824', paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right }}>
       {isFocused && <StatusBar style="light" />}
       <TabScreenWrapper>
 
@@ -662,6 +662,6 @@ export default function Guardian() {
           )}
         </AppBottomSheet>
       </TabScreenWrapper>
-    </SafeAreaView>
+    </View>
   );
 }

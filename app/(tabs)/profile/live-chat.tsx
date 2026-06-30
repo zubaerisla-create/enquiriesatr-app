@@ -162,6 +162,7 @@ export default function LiveChat() {
       if (!active) return;
 
       setStatus("connecting");
+      if (!accessToken) return;
       const url = getWsUrl(accessToken);
       ws = new WebSocket(url);
       wsRef.current = ws;

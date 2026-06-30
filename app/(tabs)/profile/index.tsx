@@ -1,38 +1,38 @@
+import { useIsFocused } from "@react-navigation/native";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
-  View,
+  Alert,
+  ScrollView,
   Text,
   TouchableOpacity,
-  ScrollView,
-  Alert,
+  View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
-import { useRouter } from "expo-router";
-import { useIsFocused } from "@react-navigation/native";
-import { useAuth } from "../../../hooks/useAuth";
-import AlertModal from "../../../components/ui/AlertModal";
-import { useQuery } from "@tanstack/react-query";
-import { fetchUserStats } from "../../../lib/stats";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Circle } from "react-native-svg";
+import AlertModal from "../../../components/ui/AlertModal";
 import TabScreenWrapper from "../../../components/ui/TabScreenWrapper";
+import { useAuth } from "../../../hooks/useAuth";
+import { fetchUserStats } from "../../../lib/stats";
 
 import {
-  LucideIcon,
+  Award,
   BookOpen,
   CheckCircle,
-  Sparkles,
-  Flame,
-  FileText,
-  Folder,
-  Target,
+  ClipboardList,
   CreditCard,
-  Settings,
+  FileText,
+  Flame,
+  Folder,
   LifeBuoy,
-  ShieldCheck,
   LogOut,
-  Award,
-  ClipboardList
+  LucideIcon,
+  Settings,
+  ShieldCheck,
+  Sparkles,
+  Target
 } from "lucide-react-native";
 
 // ─── Stat item ────────────────────────────────────────────────────────────────
@@ -195,6 +195,7 @@ const MenuSection = ({ rows }: { rows: MenuRow[] }) => (
 
 export default function Profile() {
   const isFocused = useIsFocused();
+  const insets = useSafeAreaInsets();
   const { user, logout, refreshUser } = useAuth();
   const router = useRouter();
 
@@ -261,7 +262,7 @@ export default function Profile() {
   ];
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0D1520]">
+    <View className="flex-1 bg-[#0D1520]" style={{ backgroundColor: '#0D1520', paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right }}>
       {isFocused && <StatusBar style="light" />}
       <TabScreenWrapper>
         {/* Sticky User Card */}
@@ -350,6 +351,6 @@ export default function Profile() {
         />
       </TabScreenWrapper>
 
-    </SafeAreaView>
+    </View>
   );
 }

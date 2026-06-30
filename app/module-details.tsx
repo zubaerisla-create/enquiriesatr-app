@@ -91,8 +91,8 @@ export default function ModuleDetails() {
   }
 
   const mappedSubsections = (moduleDetail?.subsections || []).map((sub, index) => {
-    const subProg = progressData?.subsections.find((p) => p.subsection === sub.id);
-    const isComplete = subProg?.is_completed || false;
+    // Subsection progress is not currently returned by the API
+    const isComplete = false;
     const totalWords = sub.content.split(/\s+/).length;
     const minutes = Math.max(1, Math.round(totalWords / 200));
     let status: "complete" | "in_progress" = isComplete ? "complete" : "in_progress";
@@ -105,7 +105,7 @@ export default function ModuleDetails() {
     };
   });
 
-  const moduleProgress = progressData?.modules.find(p => p.module === moduleId);
+  const moduleProgress = progressData?.find(p => p.module === moduleId);
   const progressPercent = moduleProgress?.progress_percent || 0;
   const completedCount = mappedSubsections.filter(s => s.status === "complete").length;
   const totalCount = mappedSubsections.length;
@@ -139,7 +139,7 @@ export default function ModuleDetails() {
               <View style={styles.metaRow}>
                 <View style={styles.metaItem}>
                   <Clock size={14} color="#9ca3af" />
-                  <Text style={styles.metaText}>{moduleDetail?.hours}h {moduleDetail?.minutes}m</Text>
+                  <Text style={styles.metaText}>--h --m</Text>
                 </View>
                 <View style={styles.metaItem}>
                   <CheckCircle size={14} color="#9ca3af" />
@@ -223,7 +223,7 @@ export default function ModuleDetails() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#0B1120",
   },
   darkHeader: {
     backgroundColor: "#111824",
@@ -357,17 +357,21 @@ const styles = StyleSheet.create({
     marginBottom: rs(12),
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#1E2535",
+    borderWidth: 1,
+    borderColor: "#2D3748",
   },
   lessonCardComplete: {
     backgroundColor: "#131C2E",
+    borderColor: "#1E2D45",
   },
   lessonCardProgress: {
-    backgroundColor: "#FFF0F0",
-    borderWidth: 1,
+    backgroundColor: "#1F1517",
     borderColor: "#D82C15",
   },
   lessonCardLocked: {
-    backgroundColor: "#788086",
+    backgroundColor: "#141B2A",
+    borderColor: "#2D3748",
   },
   lessonLeft: {
     flex: 1,
@@ -393,7 +397,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   lessonTitleProgress: {
-    color: "#131C2E",
+    color: "#ffffff",
   },
   lessonMeta: {
     flexDirection: "row",
@@ -474,12 +478,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     width: "100%",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#0B1120",
     paddingHorizontal: rs(20),
     paddingTop: rs(16),
     paddingBottom: rs(24),
     borderTopWidth: 1,
-    borderTopColor: "#F3F4F6",
+    borderTopColor: "#1E2D3D",
   },
   continueBtn: {
     width: "100%",

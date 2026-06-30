@@ -176,13 +176,13 @@ export default function Login() {
           {/* Header */}
           <Text
             style={{ fontSize: rf(36) }}
-            className="text-[#1a1a1a] font-black uppercase leading-tight mb-2"
+            className="text-dark font-black uppercase leading-tight mb-2"
           >
             Welcome Back
           </Text>
           <Text
             style={{ fontSize: rf(18) }}
-            className="text-gray-500 mb-10"
+            className="text-gray-500 mb-8"
           >
             Log in to your ATR Guardian account.
           </Text>
@@ -212,7 +212,7 @@ export default function Login() {
             />
 
             <TouchableOpacity className="self-end mb-8" onPress={handleForgotPassword}>
-              <Text style={{ fontSize: rf(14) }} className="text-[#D82C15] font-bold">Forgot Password?</Text>
+              <Text style={{ fontSize: rf(14) }} className="text-primary font-bold">Forgot Password?</Text>
             </TouchableOpacity>
 
 
@@ -220,7 +220,7 @@ export default function Login() {
           </View>
 
           {/* Divider */}
-          <View className="flex-row items-center my-10">
+          <View className="flex-row items-center my-8">
             <View className="flex-1 h-[1px] bg-gray-200" />
             <Text style={{ fontSize: rf(12) }} className="mx-4 text-gray-400 font-bold uppercase">or</Text>
             <View className="flex-1 h-[1px] bg-gray-200" />
@@ -228,7 +228,7 @@ export default function Login() {
           </View>
 
           {/* Social Logins */}
-          <View className="flex-row gap-4 mb-10">
+          <View className="flex-row gap-4 mb-8">
             <SocialButton type="google" onPress={handleGoogleLogin} />
             {appleAvailable ? (
               <SocialButton type="apple" onPress={handleAppleLogin} />
@@ -239,7 +239,7 @@ export default function Login() {
           <View className="flex-row justify-center mt-auto">
             <Text style={{ fontSize: rf(16) }} className="text-gray-500">Don't have an account? </Text>
             <TouchableOpacity onPress={() => router.push("/(auth)/signup")}>
-              <Text style={{ fontSize: rf(16) }} className="text-[#1a1a1a] font-black underline">Sign Up</Text>
+              <Text style={{ fontSize: rf(16) }} className="text-dark font-black underline">Sign Up</Text>
             </TouchableOpacity>
           </View>
 

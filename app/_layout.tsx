@@ -1,14 +1,14 @@
-import React, { useEffect } from "react";
-import { Stack, usePathname, useRouter, useSegments } from "expo-router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "../contexts/AuthContext";
-import { useAuth } from "../hooks/useAuth";
-import { StripeProvider } from "@stripe/stripe-react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { StripeProvider } from "@stripe/stripe-react-native";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Stack, usePathname, useRouter, useSegments } from "expo-router";
+import React, { useEffect } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { AuthProvider } from "../contexts/AuthContext";
 import "../global.css";
+import { useAuth } from "../hooks/useAuth";
 
 const queryClient = new QueryClient({
   defaultOptions: {

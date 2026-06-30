@@ -1,13 +1,15 @@
-import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as WebBrowser from "expo-web-browser";
 import {
   Check,
+  ChevronLeft,
   Rocket,
+  Star,
   Trophy,
-  Zap
+  Zap,
+  ShieldCheck
 } from "lucide-react-native";
 import React, { useCallback, useMemo, useState } from "react";
 import {
@@ -19,12 +21,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { AnimatedPage, AppBottomSheet } from "../../../components/ui";
 import { useAuth } from "../../../hooks/useAuth";
-import { useBottomSheet } from "../../../hooks/useBottomSheet";
 import { useStripePayment } from "../../../hooks/useStripePayment";
 import { api } from "../../../lib/api";
-
+import { AppBottomSheet } from "../../../components/ui";
+import { useBottomSheet } from "../../../hooks/useBottomSheet";
 
 interface Plan {
   plan_name: string;
@@ -44,126 +45,179 @@ interface MySubscription {
   cancel_at_period_end?: boolean;
 }
 
-const CheckItem = ({
-  text,
-  muted,
-  color = "#4CAF82",
-}: {
-  text: string;
-  muted?: boolean;
-  color?: string;
-}) => (
-  <View className="flex-row items-center gap-3 mb-2">
-    <View
-      style={{ backgroundColor: muted ? "#1F2937" : `${color}15` }}
-      className="w-5 h-5 rounded-full items-center justify-center"
-    >
-      <Check size={12} color={muted ? "#4B5563" : color} strokeWidth={4} />
+const getCurrencySymbol = (currency: string) => {
+  const code = currency?.toLowerCase();
+  switch (code) {
+    case "gbp":
+      return "£";
+    case "usd":
+      return "$";
+    case "eur":
+      return "€";
+    default:
+      return "£"; // default to GBP
+  }
+};
+
+const TrialCard = () => (
+  <View className="bg-gray-100 rounded-2xl p-5 mb-4 border border-gray-200">
+    <View className="flex-row justify-between items-center mb-4">
+      <View className="flex-row items-center gap-3">
+        <View className="w-5 h-5 rounded-full border border-gray-300 bg-gray-200" />
+        <Text className="text-gray-500 font-black text-xl tracking-wider uppercase">Trial</Text>
+      </View>
+      <Text className="text-gray-400 font-black text-xl tracking-tight">Free</Text>
     </View>
-    <Text className={`text-sm ${muted ? "text-gray-600" : "text-gray-200"}`}>
-      {text}
-    </Text>
+    <View className="space-y-2">
+      {["3 lessons", "Limited AI queries", "No operational tools"].map((text, i) => (
+        <View key={i} className="flex-row items-center gap-3">
+          <Check size={14} color="#9CA3AF" strokeWidth={3} />
+          <Text className="text-gray-500 text-sm font-medium">{text}</Text>
+        </View>
+      ))}
+    </View>
   </View>
 );
 
-const PlanCard = ({
-  plan,
-  selected,
-  onPress,
-  isCurrent
-}: {
-  plan: Plan;
-  selected: boolean;
-  onPress: () => void;
-  isCurrent?: boolean;
-}) => {
-  const isAnnual = plan.interval === "year";
-  const isMonthly = plan.interval === "month";
-  const isTrial = plan.plan_slug === "trial";
-
-  const accentColor = isAnnual ? "#E05252" : isMonthly ? "#3B82F6" : "#10B981";
-  const bgColor = selected ? "#1A2433" : "#111827";
+const MonthlyCard = ({ plan, isCurrent, onPress, onManage, loading }: { plan: Plan; isCurrent: boolean; onPress: () => void; onManage: () => void; loading: boolean }) => {
+  const symbol = getCurrencySymbol(plan.currency);
+  const price = ((plan.amount || 0) / 100).toFixed(2);
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={isCurrent}
-      activeOpacity={0.8}
-      style={{
-        borderColor: selected ? accentColor : "#1F2937",
-        backgroundColor: bgColor,
-        borderWidth: 2
-      }}
-      className={`mx-4 mb-4 rounded-3xl p-5 shadow-sm ${isCurrent ? "opacity-95" : ""}`}
+    <View
+      className={`rounded-2xl p-5 mb-4 relative border-2 ${isCurrent ? 'border-emerald-500' : 'border-[#1E293B]'}`}
+      style={{ backgroundColor: "#1C2433" }}
     >
-      {isAnnual && !isCurrent && (
-        <View className="absolute -top-3 right-6 bg-[#E05252] rounded-full px-4 py-1 shadow-lg">
-          <Text className="text-white text-[10px] font-black tracking-widest uppercase">Best Value</Text>
-        </View>
-      )}
-
       {isCurrent && (
-        <View className="absolute -top-3 right-6 bg-[#10B981] rounded-full px-4 py-1 shadow-lg">
-          <Text className="text-white text-[10px] font-black tracking-widest uppercase">Current Plan</Text>
+        <View className="absolute -top-3 left-4 bg-emerald-500 rounded-md px-3 py-1 flex-row items-center gap-1 z-10">
+          <Check size={10} color="white" strokeWidth={3} />
+          <Text className="text-white text-[10px] font-black tracking-widest uppercase">Active Plan</Text>
         </View>
       )}
-
-      <View className="flex-row justify-between items-start mb-4">
-        <View className="flex-1 mr-4">
-          <Text className="text-gray-400 text-[10px] font-bold tracking-widest uppercase mb-1">
-            {isTrial ? 'Trial Tier' : isAnnual ? 'Annual Plan' : 'Monthly Plan'}
-          </Text>
-          <Text className="text-white font-black text-xl tracking-tight">
-            {plan.plan_name}
-          </Text>
+      <View className="flex-row justify-between items-center mb-4">
+        <View className="flex-row items-center gap-3">
+          <View className={`w-5 h-5 rounded-full border items-center justify-center border-gray-600`} />
+          <Text className="text-white font-black text-xl tracking-wider uppercase">{plan.plan_name}</Text>
         </View>
-        <View className="items-end">
-          <View className="flex-row items-baseline">
-            <Text className="text-white font-black text-2xl tracking-tighter">
-              {plan.amount === 0 ? "Free" : `${(plan.currency || "GBP").toUpperCase()} ${((plan.amount || 0) / 100).toFixed(2)}`}
-            </Text>
-          </View>
-          <Text className="text-gray-500 text-[10px] font-bold uppercase tracking-wider">
-            {plan.amount === 0 ? "14 Days" : `Per ${plan.interval}`}
-          </Text>
+        <View className="flex-row items-baseline">
+          <Text className="text-[#3B82F6] font-black text-2xl tracking-tighter">{symbol}{price}</Text>
+          <Text className="text-gray-400 text-xs font-medium ml-1">/{plan.interval}</Text>
         </View>
       </View>
 
-      <View className="space-y-1">
-        {(plan.features || []).map((f, i) => (
-          <CheckItem key={i} text={f} color={accentColor} />
+      <View className="space-y-2 mb-5">
+        {(plan.features || []).map((text, i) => (
+          <View key={i} className="flex-row items-center gap-3">
+            <Check size={14} color="#3B82F6" strokeWidth={3} />
+            <Text className="text-gray-300 text-sm font-medium">{text}</Text>
+          </View>
         ))}
       </View>
 
-      <View className="mt-4 pt-4 border-t border-gray-800/50 flex-row items-center justify-between">
-        <Text className="text-gray-500 text-[10px] font-medium italic">
-          {isTrial ? "No credit card required." : isAnnual ? "Billed annually. Secure checkout." : "Cancel anytime. Billed monthly."}
-        </Text>
-        {selected && (
-          <View style={{ backgroundColor: accentColor }} className="rounded-full p-1">
-            <Check size={12} color="white" strokeWidth={4} />
-          </View>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={isCurrent ? onManage : onPress}
+        disabled={loading}
+        className={`rounded-xl py-4 items-center flex-row justify-center gap-2 ${isCurrent ? 'bg-emerald-500' : 'bg-[#3B82F6]'}`}
+      >
+        {loading ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text className="font-bold text-sm tracking-wider text-white">
+            {isCurrent ? 'Manage Subscription' : 'Choose Monthly'}
+          </Text>
         )}
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 };
+
+const AnnualCard = ({ plan, isCurrent, onPress, onManage, loading, monthlyPriceAmount }: { plan: Plan; isCurrent: boolean; onPress: () => void; onManage: () => void; loading: boolean; monthlyPriceAmount: number }) => {
+  const symbol = getCurrencySymbol(plan.currency);
+  const price = ((plan.amount || 0) / 100).toFixed(2);
+
+  const monthlyCostAnnualized = (monthlyPriceAmount / 100) * 12;
+  const annualCost = (plan.amount || 0) / 100;
+  const savings = monthlyCostAnnualized > annualCost ? (monthlyCostAnnualized - annualCost).toFixed(2) : null;
+
+  return (
+    <View
+      className={`rounded-2xl p-5 mb-4 relative border-2 ${isCurrent ? 'border-emerald-500' : 'border-[#D83B3B]'}`}
+      style={{ backgroundColor: "#FFF5F5" }}
+    >
+      {isCurrent ? (
+        <View className="absolute -top-3 left-4 bg-emerald-500 rounded-md px-3 py-1 flex-row items-center gap-1 z-10">
+          <Check size={10} color="white" strokeWidth={3} />
+          <Text className="text-white text-[10px] font-black tracking-widest uppercase">Active Plan</Text>
+        </View>
+      ) : (
+        <View className="absolute -top-3 right-4 bg-[#D83B3B] rounded-md px-3 py-1 flex-row items-center gap-1 z-10">
+          <Star size={10} color="white" fill="white" />
+          <Text className="text-white text-[10px] font-black tracking-widest uppercase">Recommended</Text>
+        </View>
+      )}
+
+      <View className="flex-row justify-between items-center mb-4 mt-2">
+        <View className="flex-row items-center gap-3">
+          <View className={`w-5 h-5 rounded-full border items-center justify-center border-gray-400`} />
+          <Text className="text-[#1F2937] font-black text-xl tracking-wider uppercase">{plan.plan_name}</Text>
+
+          {savings && (
+            <View className="bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200">
+              <Text className="text-amber-700 font-bold text-[10px]">Save {symbol}{savings}</Text>
+            </View>
+          )}
+        </View>
+        <View className="flex-row items-baseline">
+          <Text className="text-[#D83B3B] font-black text-2xl tracking-tighter">{symbol}{price}</Text>
+          <Text className="text-gray-500 text-xs font-medium ml-1">/{plan.interval}</Text>
+        </View>
+      </View>
+
+      <View className="space-y-2 mb-5">
+        {(plan.features || []).map((text, i) => (
+          <View key={i} className="flex-row items-center gap-3">
+            <Check size={14} color="#D83B3B" strokeWidth={3} />
+            <Text className="text-gray-600 text-sm font-medium">{text}</Text>
+          </View>
+        ))}
+      </View>
+
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={isCurrent ? onManage : onPress}
+        disabled={loading}
+        className={`rounded-xl py-4 items-center flex-row justify-center gap-2 ${isCurrent ? 'bg-emerald-500' : 'bg-[#D83B3B]'}`}
+      >
+        {loading ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <>
+            {!isCurrent && <Zap size={16} color="white" fill="white" />}
+            <Text className="font-bold text-sm tracking-wider text-white">
+              {isCurrent ? 'Manage Subscription' : 'Choose Annual'}
+            </Text>
+          </>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 
 export default function UpgradeAccess() {
   const queryClient = useQueryClient();
   const { subscribe, loading: paymentLoading } = useStripePayment();
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
-  const {
-    ref: changePlanRef,
-    present: presentChangePlan,
-    dismiss: dismissChangePlan,
-  } = useBottomSheet();
-  const [modalSelectedSlug, setModalSelectedSlug] = useState<string | null>(null);
+  const [activeActionSlug, setActiveActionSlug] = useState<string | null>(null);
 
-  const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const successSheet = useBottomSheet();
+  const confirmSheet = useBottomSheet();
+
+  const [isUpgrading, setIsUpgrading] = useState(false);
+  const [pendingUpgradeSlug, setPendingUpgradeSlug] = useState<string | null>(null);
 
   const handleSuccessClose = useCallback(() => {
-    setSuccessModalVisible(false);
+    successSheet.dismiss();
     router.replace("/(tabs)/profile");
   }, []);
 
@@ -183,48 +237,7 @@ export default function UpgradeAccess() {
     },
   });
 
-  const filteredPlans = useMemo(() => {
-    if (!plans) return [];
-    const currentSlug = mySub?.plan_slug;
-    return plans.filter(
-      (p) => p.plan_slug !== "trial" && (!currentSlug || p.plan_slug !== currentSlug)
-    );
-  }, [plans, mySub]);
-
-  const selectedPlan = useMemo(() => {
-    if (!filteredPlans || filteredPlans.length === 0) return null;
-    if (selectedSlug) return filteredPlans.find((p) => p.plan_slug === selectedSlug) || null;
-    const currentSlug = mySub?.plan_slug;
-    if (currentSlug) {
-      if (currentSlug === "trial") {
-        return filteredPlans.find((p) => p.interval === "year") || filteredPlans.find((p) => p.interval === "month") || filteredPlans[0];
-      }
-      return null;
-    }
-    return filteredPlans.find((p) => p.interval === "year") || filteredPlans[0];
-  }, [filteredPlans, selectedSlug, mySub]);
-
   const { refreshUser } = useAuth();
-
-  const handleContinue = async () => {
-    if (!selectedPlan) return;
-
-    if (mySub?.plan_slug && mySub?.plan_slug === selectedPlan.plan_slug) {
-      Alert.alert("Already Subscribed", "You are already on this plan.");
-      return;
-    }
-
-    if (mySub?.plan_slug && mySub?.plan_slug !== "trial" && selectedPlan.plan_slug !== mySub.plan_slug) {
-      await handleManage();
-      return;
-    }
-
-    await subscribe(selectedPlan.plan_slug, async () => {
-      await queryClient.invalidateQueries({ queryKey: ["my-subscription"] });
-      await refreshUser();
-      setSuccessModalVisible(true);
-    });
-  };
 
   const handleManage = async () => {
     try {
@@ -240,383 +253,194 @@ export default function UpgradeAccess() {
     }
   };
 
-  const handleConfirmChange = async () => {
-    if (!modalSelectedSlug) return;
-    dismissChangePlan();
-    await handleManage();
-  };
+  const monthlyPlan = useMemo(() => plans?.find(p => p.interval === "month" && p.plan_slug !== "trial"), [plans]);
+  const annualPlan = useMemo(() => plans?.find(p => p.interval === "year" && p.plan_slug !== "trial"), [plans]);
 
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "N/A";
+  const handleConfirmUpgrade = async () => {
+    if (!pendingUpgradeSlug) return;
+    setIsUpgrading(true);
     try {
-      return new Date(dateStr).toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      });
-    } catch {
-      return dateStr;
+      await api.post("/subscriptions/plan/change/", { plan_slug: pendingUpgradeSlug }, { requireAuth: true });
+      
+      const newPlan = plans?.find(p => p.plan_slug === pendingUpgradeSlug);
+      if (newPlan) {
+        queryClient.setQueryData<MySubscription>(["my-subscription"], (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            plan_slug: newPlan.plan_slug,
+            plan_name: newPlan.plan_name,
+            status: "active"
+          };
+        });
+      }
+
+      await refreshUser();
+      confirmSheet.dismiss();
+      setTimeout(() => {
+        successSheet.present();
+      }, 500);
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Could not change plan.");
+    } finally {
+      setIsUpgrading(false);
+      setPendingUpgradeSlug(null);
     }
   };
 
-  const buttonText = useMemo(() => {
-    if (!selectedPlan) return "Select a Plan";
-    if (mySub?.plan_slug === selectedPlan.plan_slug) {
-      return "Current Plan Active";
+  const handleContinue = async (planSlug: string) => {
+    if (mySub?.plan_slug && mySub?.plan_slug === planSlug) {
+      Alert.alert("Already Subscribed", "You are already on this plan.");
+      return;
     }
-    if (mySub?.plan_slug === "trial" && selectedPlan.plan_slug !== "trial") {
-      return `Upgrade to ${selectedPlan.plan_name}`;
-    }
-    if (mySub?.plan_slug && mySub?.plan_slug !== "trial" && selectedPlan.plan_slug !== mySub.plan_slug) {
-      return "Change Plan via Portal";
-    }
-    return `Get ${selectedPlan.plan_name} Now`;
-  }, [mySub, selectedPlan]);
 
-  const isButtonDisabled = useMemo(() => {
-    if (paymentLoading) return true;
-    if (!selectedPlan) return true;
-    if (mySub?.plan_slug === selectedPlan.plan_slug) return true;
-    return false;
-  }, [paymentLoading, selectedPlan, mySub]);
+    if (mySub?.plan_slug && mySub?.plan_slug !== "trial" && planSlug !== mySub.plan_slug) {
+      setPendingUpgradeSlug(planSlug);
+      confirmSheet.present();
+      return;
+    }
+
+    setActiveActionSlug(planSlug);
+    await subscribe(planSlug, async () => {
+      await queryClient.invalidateQueries({ queryKey: ["my-subscription"] });
+      await refreshUser();
+      successSheet.present();
+    });
+    setActiveActionSlug(null);
+  };
 
   if (plansLoading || mySubLoading) {
     return (
-      <View className="flex-1 bg-[#030712] items-center justify-center">
-        <ActivityIndicator size="large" color="#E05252" />
+      <View className="flex-1 bg-[#111827] items-center justify-center">
+        <ActivityIndicator size="large" color="#D83B3B" />
       </View>
     );
   }
 
-  if (!plans || plans.length === 0) {
-    return (
-      <View className="flex-1 bg-[#030712] items-center justify-center px-8">
-        <Text className="text-white text-center font-bold text-lg">No Plans Available</Text>
-        <Text className="text-gray-500 text-center mt-2">Please check back later.</Text>
-      </View>
-    );
-  }
+  const isCurrentActivePlan = mySub?.plan_slug && mySub?.plan_slug !== "trial";
 
   return (
-    <View className="flex-1 bg-[#030712]">
+    <View className="flex-1 bg-[#111827]">
       <StatusBar style="light" />
-      <AnimatedPage>
-        <Modal
-          visible={successModalVisible}
-          transparent
-          animationType="slide"
-          onRequestClose={handleSuccessClose}
-        >
-          <View className="flex-1 justify-end">
-            <TouchableOpacity
-              className="absolute inset-0 bg-black/60"
-              activeOpacity={1}
-              onPress={handleSuccessClose}
-            />
-            <View className="bg-[#030712] rounded-t-[40px] px-6 pt-8 pb-12 border-t border-gray-900 shadow-2xl items-center w-full z-50">
-              <View className="items-center mb-8">
-                <View className="w-20 h-20 bg-[#22C55E] rounded-full items-center justify-center mb-5 shadow-2xl">
-                  <Trophy size={40} color="white" />
-                </View>
-                <Text className="text-white font-black text-3xl text-center tracking-tighter">
-                  You're All Set!
-                </Text>
-                <Text className="text-gray-400 text-base text-center mt-2 font-medium">
-                  Welcome to the Premium experience.
-                </Text>
-              </View>
+      <Stack.Screen options={{ headerShown: false }} />
 
-              <View className="w-full mb-8">
-                <View className="flex-row items-center gap-4 bg-[#111827] p-5 rounded-2xl mb-4">
-                  <Zap size={22} color="#E05252" fill="#E05252" />
-                  <Text className="text-gray-200 font-bold text-base">Unlimited AI Features Unlocked</Text>
-                </View>
-                <View className="flex-row items-center gap-4 bg-[#111827] p-5 rounded-2xl">
-                  <Rocket size={22} color="#E05252" />
-                  <Text className="text-gray-200 font-bold text-base">Full Lesson Library Access</Text>
-                </View>
-              </View>
-
-              <TouchableOpacity
-                onPress={handleSuccessClose}
-                className="bg-white w-full py-5 rounded-2xl items-center shadow-lg"
-              >
-                <Text className="text-black font-black text-lg tracking-tight">Start Exploring</Text>
-              </TouchableOpacity>
-            </View>
+      {/* Success Bottom Sheet */}
+      <AppBottomSheet
+        ref={successSheet.ref}
+        enableDynamicSizing={true}
+        showCloseButton={false}
+        onDismiss={() => {
+          if (successSheet.isOpen) handleSuccessClose();
+        }}
+      >
+        <View className="items-center mb-8 pt-6">
+          <View className="w-20 h-20 bg-[#22C55E] rounded-full items-center justify-center mb-5 shadow-2xl">
+            <Trophy size={40} color="white" />
           </View>
-        </Modal>
+          <Text className="text-white font-black text-3xl text-center tracking-tighter">
+            You're All Set!
+          </Text>
+          <Text className="text-gray-400 text-base text-center mt-2 font-medium">
+            Welcome to the Premium experience.
+          </Text>
+        </View>
 
-        {/* Change Plan Dialog */}
-        <Modal
-          visible={!!modalSelectedSlug}
-          transparent
-          animationType="fade"
-          onRequestClose={dismissChangePlan}
+        <TouchableOpacity
+          onPress={handleSuccessClose}
+          className="bg-white w-full py-5 rounded-2xl items-center shadow-lg"
         >
-          <View className="flex-1 bg-black/60 items-center justify-center p-6">
-            <View className="bg-[#111827] rounded-3xl p-6 w-full max-w-sm border border-gray-800">
-              <Text className="text-white text-lg font-bold mb-2">Change Subscription</Text>
-              <Text className="text-gray-400 text-sm mb-6 leading-relaxed">
-                You are currently on the <Text className="text-white font-bold">{mySub?.plan_name}</Text> plan. Changing plans requires confirming details within your Stripe billing portal.
-              </Text>
+          <Text className="text-black font-black text-lg tracking-tight">Start Exploring</Text>
+        </TouchableOpacity>
+      </AppBottomSheet>
 
-              <View className="flex-row gap-3">
-                <TouchableOpacity
-                  onPress={dismissChangePlan}
-                  className="flex-1 border border-gray-800 py-3.5 rounded-2xl items-center justify-center"
-                >
-                  <Text className="text-gray-400 font-bold text-xs tracking-wider uppercase">
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={handleConfirmChange}
-                  className="flex-1 bg-[#E05252] py-3.5 rounded-2xl items-center justify-center"
-                >
-                  <Text className="text-white font-extrabold text-xs tracking-wider uppercase">
-                    Open Portal
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+      {/* Confirm Upgrade Bottom Sheet */}
+      <AppBottomSheet
+        ref={confirmSheet.ref}
+        enableDynamicSizing={true}
+        showCloseButton={false}
+      >
+        <View className="items-center mb-8 w-full pt-4">
+          <View className="w-20 h-20 bg-[#D83B3B]/10 rounded-full items-center justify-center mb-5 border border-[#D83B3B]/20 shadow-2xl">
+            <Rocket size={40} color="#D83B3B" />
           </View>
-        </Modal>
+          <Text className="text-white font-black text-2xl text-center tracking-tighter mb-2">
+            Confirm Plan Change
+          </Text>
+          <Text className="text-gray-400 text-sm text-center font-medium px-4">
+            Are you sure you want to switch to the {pendingUpgradeSlug === 'annual' ? 'Annual' : 'Monthly'} plan?
+          </Text>
+        </View>
 
-        <AppBottomSheet
-          ref={changePlanRef}
-          title="Change Your Plan"
-          subtitle="Select a new subscription tier below."
-          variant="dark"
-          enableDynamicSizing={false}
-          snapPoints={["45%"]}
-        >
-          <BottomSheetScrollView
-            className="flex-1 mb-6"
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingTop: 12, paddingBottom: 12 }}
-          >
-            {filteredPlans.map((plan) => {
-              const isSelected = modalSelectedSlug === plan.plan_slug;
-              return (
-                <PlanCard
-                  key={plan.plan_slug}
-                  plan={plan}
-                  selected={isSelected}
-                  onPress={() => setModalSelectedSlug(plan.plan_slug)}
-                />
-              );
-            })}
-          </BottomSheetScrollView>
-
+        <View className="w-full gap-3">
           <TouchableOpacity
-            onPress={handleConfirmChange}
-            disabled={!modalSelectedSlug}
-            className={`rounded-2xl py-5 items-center justify-center shadow-lg ${!modalSelectedSlug ? "bg-gray-800" : "bg-[#E05252]"
-              }`}
+            onPress={handleConfirmUpgrade}
+            disabled={isUpgrading}
+            className="bg-[#D83B3B] w-full py-4 rounded-2xl items-center flex-row justify-center gap-2 shadow-lg"
           >
-            <Text className="text-white font-black text-base tracking-tight">
-              Continue to Checkout
-            </Text>
+            {isUpgrading ?
+              <ActivityIndicator color="white" />
+              :
+              <Text className="text-white font-black text-lg tracking-tight">Yes, Switch Plan</Text>
+            }
           </TouchableOpacity>
-        </AppBottomSheet>
+          <TouchableOpacity
+            onPress={() => confirmSheet.dismiss()}
+            disabled={isUpgrading}
+            className="bg-transparent border border-gray-700 w-full py-4 rounded-2xl items-center"
+          >
+            <Text className="text-gray-300 font-bold text-lg tracking-tight">Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </AppBottomSheet>
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 180 }}
-        >
-          <View className="px-6 mb-6 mt-6">
-            <Text className="text-white font-black text-3xl tracking-tight">
-              {mySub?.plan_slug === "trial"
-                ? "Upgrade Your Premium Plan"
-                : mySub?.plan_slug
-                  ? "Manage Your Subscription"
-                  : "Level Up Your App"}
-            </Text>
-            <Text className="text-gray-400 text-sm mt-3 leading-6 font-medium">
-              {mySub?.plan_slug === "trial"
-                ? "Unlock the full power of Premium today. Choose a plan below to continue with uninterrupted access to all tools, templates, and courses."
-                : mySub?.plan_slug
-                  ? "You are currently on a premium active tier. Below you can view other options or click to manage your active payment methods and invoices."
-                  : "Unlock premium features, unlimited AI access, and priority operational support to accelerate your development."}
-            </Text>
-          </View>
+      {/* Fixed Header */}
+      <View className="px-6 pt-16 pb-8 bg-[#111827] z-10">
+        <TouchableOpacity onPress={() => router.back()} className="flex-row items-center mb-6">
+          <ChevronLeft size={20} color="#9CA3AF" />
+          <Text className="text-gray-400 font-medium ml-1">Back</Text>
+        </TouchableOpacity>
 
-          {mySub?.plan_slug && (mySub?.status === "active" || mySub?.status === "trialing" || mySub?.status === "past_due") ? (
-            <View className="mx-4 mb-6 rounded-3xl p-6 bg-[#111827] border border-gray-800 shadow-xl">
-              <View className="flex-row justify-between items-center mb-4">
-                <View>
-                  <Text className="text-gray-500 text-[10px] font-bold tracking-widest uppercase mb-1">
-                    Your Current Plan
-                  </Text>
-                  <Text className="text-white font-black text-2xl tracking-tight">
-                    {mySub.plan_name || (mySub.plan_slug === "trial" ? "Free Trial" : "Premium Plan")}
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    backgroundColor:
-                      mySub.status === "active"
-                        ? "#22C55E15"
-                        : mySub.status === "trialing"
-                          ? "#F59E0B15"
-                          : "#EF444415",
-                    borderColor:
-                      mySub.status === "active"
-                        ? "#22C55E30"
-                        : mySub.status === "trialing"
-                          ? "#F59E0B30"
-                          : "#EF444430",
-                    borderWidth: 1,
-                  }}
-                  className="px-3 py-1.5 rounded-full"
-                >
-                  <Text
-                    style={{
-                      color:
-                        mySub.status === "active"
-                          ? "#22C55E"
-                          : mySub.status === "trialing"
-                            ? "#F59E0B"
-                            : "#EF4444",
-                    }}
-                    className="text-[10px] font-black tracking-widest uppercase"
-                  >
-                    {mySub.status === "trialing" ? "Trialing" : mySub.status || "Active"}
-                  </Text>
-                </View>
-              </View>
+        <Text className="text-white font-black text-3xl tracking-wider uppercase mb-3">
+          Upgrade Your Access
+        </Text>
+        <Text className="text-gray-400 text-sm leading-5">
+          Full access to all 30 lessons, unlimited AI queries, and all operational tools.
+        </Text>
 
-              <View className="space-y-3 mt-2 border-t border-gray-800/60 pt-4">
-                <View className="flex-row justify-between">
-                  <Text className="text-gray-400 text-xs">Billing Period End</Text>
-                  <Text className="text-gray-200 text-xs font-bold">
-                    {formatDate(mySub.current_period_end)}
-                  </Text>
-                </View>
-                <View className="flex-row justify-between">
-                  <Text className="text-gray-400 text-xs">Renewal Status</Text>
-                  <Text
-                    className={`text-xs font-bold ${mySub.cancel_at_period_end ? "text-amber-500" : "text-emerald-500"
-                      }`}
-                  >
-                    {mySub.cancel_at_period_end ? "Expires on end date" : "Renews automatically"}
-                  </Text>
-                </View>
-              </View>
 
-              {mySub.plan_slug !== "trial" && (
-                <TouchableOpacity
-                  onPress={handleManage}
-                  activeOpacity={0.8}
-                  className="mt-5 w-full bg-[#1F2937] py-4 rounded-2xl border border-gray-800/80 items-center"
-                >
-                  <Text className="text-gray-300 font-bold text-xs uppercase tracking-widest">
-                    Manage Billing
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          ) : (
-            <View className="mx-4 mb-6 rounded-3xl p-6 bg-[#111827] border border-gray-800 shadow-xl">
-              <View className="flex-row justify-between items-center">
-                <View>
-                  <Text className="text-gray-500 text-[10px] font-bold tracking-widest uppercase mb-1">
-                    Your Current Plan
-                  </Text>
-                  <Text className="text-white font-black text-2xl tracking-tight">
-                    Free Trial
-                  </Text>
-                </View>
-                <View className="px-3 py-1.5 rounded-full bg-gray-800 border border-gray-700">
-                  <Text className="text-gray-400 text-[10px] font-black tracking-widest uppercase">
-                    FREE
-                  </Text>
-                </View>
-              </View>
-              <Text className="text-gray-400 text-xs mt-3 leading-5">
-                You are currently on the free version. Upgrade below to unlock complete AI access, all resources, and premium features!
-              </Text>
-            </View>
+      </View>
+
+      <ScrollView
+        className="flex-1 bg-[#111827]"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
+        {/* White container for plans */}
+        <View className="bg-white rounded-t-3xl px-4 pt-8 pb-12 flex-1">
+          {!isCurrentActivePlan && <TrialCard />}
+
+          {monthlyPlan && (
+            <MonthlyCard
+              plan={monthlyPlan}
+              isCurrent={mySub?.plan_slug === monthlyPlan.plan_slug}
+              onPress={() => handleContinue(monthlyPlan.plan_slug)}
+              onManage={handleManage}
+              loading={paymentLoading && activeActionSlug === monthlyPlan.plan_slug}
+            />
           )}
 
-          {!mySub?.plan_slug || mySub?.plan_slug === "trial" ? (
-            filteredPlans.map((plan) => (
-              <PlanCard
-                key={plan.plan_slug}
-                plan={plan}
-                selected={selectedPlan?.plan_slug === plan.plan_slug}
-                isCurrent={mySub?.plan_slug === plan.plan_slug}
-                onPress={() => setSelectedSlug(plan.plan_slug)}
-              />
-            ))
-          ) : null}
-
-          <View className="px-10 mt-4">
-            <Text className="text-gray-600 text-[10px] font-bold text-center leading-4 uppercase tracking-widest">
-              {mySub?.plan_slug === "trial"
-                ? "Upgrade to Premium Tier • Fast & Secure Checkout • Cancel Anytime"
-                : mySub?.plan_slug
-                  ? "Secured by Stripe • End-to-end Encrypted • Manage Anytime"
-                  : "Secured by Stripe • End-to-end Encrypted • Cancel Anytime"}
-            </Text>
-          </View>
-
-        </ScrollView>
-
-        {filteredPlans.length > 0 && (
-          <View className="absolute bottom-0 left-0 right-0 px-6 pb-10 pt-6 bg-[#030712]/90 border-t border-gray-900">
-            {mySub?.plan_slug && mySub?.plan_slug !== "trial" ? (
-              <TouchableOpacity
-                onPress={() => {
-                  setModalSelectedSlug(null);
-                  presentChangePlan();
-                }}
-                activeOpacity={0.8}
-                className="rounded-2xl py-5 flex-row items-center justify-center bg-[#E05252] shadow-2xl"
-              >
-                <View className="flex-row items-center gap-3">
-                  <Zap size={20} color="white" fill="white" />
-                  <Text className="text-white font-black text-base tracking-tight">
-                    Switch Plan
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                onPress={handleContinue}
-                disabled={isButtonDisabled}
-                className={`rounded-2xl py-5 flex-row items-center justify-center shadow-2xl ${isButtonDisabled
-                  ? "bg-gray-800"
-                  : "bg-[#E05252]"
-                  }`}
-              >
-                {paymentLoading ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <View className="flex-row items-center gap-3">
-                    <Zap size={20} color="white" fill="white" />
-                    <Text className="text-white font-black text-base tracking-tight">
-                      {buttonText}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            )}
-
-            {mySub?.plan_slug === "trial" ? (
-              <Text className="text-gray-500 text-[9px] text-center mt-3 font-bold uppercase tracking-widest">
-                Upgrade will take effect immediately. Billed by Stripe.
-              </Text>
-            ) : !mySub?.plan_slug ? (
-              <Text className="text-gray-500 text-[9px] text-center mt-3 font-bold uppercase tracking-widest">
-                Automatic renewal until cancelled in settings.
-              </Text>
-            ) : null}
-          </View>
-        )}
-      </AnimatedPage>
+          {annualPlan && (
+            <AnnualCard
+              plan={annualPlan}
+              isCurrent={mySub?.plan_slug === annualPlan.plan_slug}
+              onPress={() => handleContinue(annualPlan.plan_slug)}
+              onManage={handleManage}
+              loading={paymentLoading && activeActionSlug === annualPlan.plan_slug}
+              monthlyPriceAmount={monthlyPlan?.amount || 0}
+            />
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 }

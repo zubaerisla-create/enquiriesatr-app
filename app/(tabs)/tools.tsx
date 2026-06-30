@@ -1,27 +1,27 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useIsFocused } from "@react-navigation/native";
+import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  ScrollView,
   Text,
   TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
+  View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
-import { router } from "expo-router";
-import { useIsFocused } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TabScreenWrapper from "../../components/ui/TabScreenWrapper";
 
 import {
-  LucideIcon,
-  Search,
+  ChevronRight,
   ClipboardList,
-  MapPin,
-  Home,
-  Plane,
-  ShieldCheck,
   FileText,
-  ChevronRight
+  Home,
+  LucideIcon,
+  MapPin,
+  Plane,
+  Search,
+  ShieldCheck
 } from "lucide-react-native";
 import { api } from "../../lib/api";
 
@@ -227,8 +227,9 @@ const formatDate = (dateString: string) => {
   }
 };
 
-export default function Tools() {
+export default function ToolsDirectory() {
   const isFocused = useIsFocused();
+  const insets = useSafeAreaInsets();
   const [savedDocs, setSavedDocs] = useState<SavedDoc[]>([]);
   const [docsLoading, setDocsLoading] = useState(true);
 
@@ -271,7 +272,7 @@ export default function Tools() {
   }, [isFocused, fetchDocs]);
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0D1520]">
+    <View className="flex-1 bg-[#0D1520]" style={{ backgroundColor: '#0D1520', paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right }}>
       {isFocused && <StatusBar style="light" />}
       <TabScreenWrapper>
 
@@ -321,6 +322,6 @@ export default function Tools() {
         </ScrollView>
       </TabScreenWrapper>
 
-    </SafeAreaView>
+    </View>
   );
 }

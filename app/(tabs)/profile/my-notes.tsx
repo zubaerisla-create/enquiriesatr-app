@@ -52,31 +52,32 @@ const cardMarkdownStyles = {
   heading1: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     marginVertical: 4,
   },
   heading2: {
     color: '#ffffff',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     marginVertical: 4,
   },
   heading3: {
     color: '#ffffff',
     fontSize: 13,
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     marginVertical: 4,
   },
   strong: {
-    fontWeight: 'bold',
+    fontWeight: "bold" as const,
     color: '#ffffff',
   },
   em: {
-    fontStyle: 'italic',
+    fontStyle: "italic" as const,
+    color: '#D1D5DB',
   },
   link: {
     color: '#E05252',
-    textDecorationLine: 'underline',
+    textDecorationLine: 'underline' as const,
   },
   bullet_list: {
     marginVertical: 4,
@@ -85,8 +86,8 @@ const cardMarkdownStyles = {
     marginVertical: 4,
   },
   list_item: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: 'row' as const,
+    alignItems: 'flex-start' as const,
     marginVertical: 2,
   },
   code_inline: {
@@ -119,7 +120,7 @@ const cardMarkdownStyles = {
     borderLeftColor: '#4b5563',
     paddingLeft: 8,
     marginVertical: 4,
-    fontStyle: 'italic',
+    fontStyle: 'italic' as const,
   },
 };
 

@@ -27,11 +27,11 @@ const Input: React.FC<InputProps> = ({
   const [showPassword, setShowPassword] = useState(!secureTextEntry);
 
   return (
-    <View className={`mb-5 ${className}`}>
+    <View className={`mb-4 ${className}`}>
       {label && (
         <Text 
           style={{ fontSize: rf(14) }}
-          className="text-[#1a1a1a] font-bold mb-2 ml-1"
+          className="text-dark font-bold mb-2 ml-1"
         >
           {label}
         </Text>
@@ -40,13 +40,13 @@ const Input: React.FC<InputProps> = ({
       <View
         style={{ height: rs(56) }}
         className={`flex-row items-center px-4 rounded-xl bg-gray-100 border ${
-          isFocused ? "border-[#D82C15] bg-white" : "border-gray-200"
+          isFocused ? "border-primary bg-white" : "border-gray-200"
         } ${error ? "border-red-500" : ""}`}
       >
 
         <TextInput
           style={{ fontSize: rf(16) }}
-          className="flex-1 h-full text-[#1a1a1a]"
+          className="flex-1 h-full text-dark"
 
           placeholder={placeholder}
           placeholderTextColor="#9ca3af"

@@ -25,35 +25,36 @@ const markdownStyles = {
   },
   heading1: {
     color: '#0f172a',
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: 'bold' as const,
     marginTop: 16,
     marginBottom: 8,
   },
   heading2: {
     color: '#0f172a',
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: 'bold' as const,
     marginTop: 14,
     marginBottom: 6,
   },
   heading3: {
-    color: '#1e293b',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: '#0f172a',
+    fontSize: 16,
+    fontWeight: 'bold' as const,
     marginTop: 12,
     marginBottom: 6,
   },
   strong: {
-    fontWeight: 'bold',
-    color: '#0f172a',
+    fontWeight: "bold" as const,
+    color: "#2D1010",
   },
   em: {
-    fontStyle: 'italic',
+    fontStyle: "italic" as const,
+    color: '#334155',
   },
   link: {
     color: '#E05252',
-    textDecorationLine: 'underline',
+    textDecorationLine: 'underline' as const,
   },
   bullet_list: {
     marginVertical: 8,
@@ -62,8 +63,8 @@ const markdownStyles = {
     marginVertical: 8,
   },
   list_item: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: 'row' as const,
+    alignItems: 'flex-start' as const,
     marginVertical: 4,
   },
   code_inline: {
@@ -96,11 +97,11 @@ const markdownStyles = {
     borderColor: '#e2e8f0',
   },
   blockquote: {
-    borderLeftWidth: 4,
+    borderLeftWidth: 3,
     borderLeftColor: '#cbd5e1',
-    paddingLeft: 12,
-    marginVertical: 8,
-    fontStyle: 'italic',
+    paddingLeft: 8,
+    marginVertical: 4,
+    fontStyle: 'italic' as const,
   },
 };
 

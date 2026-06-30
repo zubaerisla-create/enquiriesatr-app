@@ -23,20 +23,20 @@ const Button: React.FC<ButtonProps> = ({
   const getVariantStyles = () => {
     switch (variant) {
       case "primary":
-        return "bg-[#D82C15]";
+        return "bg-primary";
       case "secondary":
-        return "bg-[#1a1a1a]";
+        return "bg-dark";
       case "outline":
-        return "bg-transparent border border-[#1a1a1a]";
+        return "bg-transparent border border-dark";
       default:
-        return "bg-[#D82C15]";
+        return "bg-primary";
     }
   };
 
   const getTextColor = () => {
     switch (variant) {
       case "outline":
-        return "text-[#1a1a1a]";
+        return "text-dark";
       default:
         return "text-white";
     }

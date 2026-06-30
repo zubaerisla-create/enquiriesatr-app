@@ -1,31 +1,30 @@
-import React, { useState } from "react";
-import {
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  FlatList,
-  Dimensions,
-  ActivityIndicator
-} from "react-native";
+import { useIsFocused } from "@react-navigation/native";
+import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useIsFocused } from "@react-navigation/native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import {
-  Search,
-  Lock,
   CheckCircle2,
-  BookOpen,
-  Clock,
+  Circle,
   CircleDot,
-  Circle
+  Clock,
+  Lock,
+  Search
 } from "lucide-react-native";
-import { TextInput, View } from "react-native";
-import { useQuery } from "@tanstack/react-query";
-import { fetchModules, fetchModuleProgress, Category } from "../../lib/modules";
-import { useAuth } from "../../hooks/useAuth";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TabScreenWrapper from "../../components/ui/TabScreenWrapper";
+import { useAuth } from "../../hooks/useAuth";
+import { Category, fetchModuleProgress, fetchModules } from "../../lib/modules";
 
 interface Module {
   id: string;
@@ -48,7 +47,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   LEGAL: "#A855F7",
 };
 
-const TABS: { label: string; value: Category }[] = [
+const TABS: { label: string; value: Category | "ALL" }[] = [
   { label: "ALL", value: "ALL" },
   { label: "FOUNDATION", value: "FOUNDATION" },
   { label: "TACTICAL", value: "TACTICAL" },
@@ -60,8 +59,8 @@ const FilterTabs = ({
   active,
   onChange,
 }: {
-  active: Category;
-  onChange: (c: Category) => void;
+  active: Category | "ALL";
+  onChange: (c: Category | "ALL") => void;
 }) => {
   const screenWidth = Dimensions.get("window").width;
   const tabMinWidth = screenWidth < 380 ? 75 : 82;
@@ -144,7 +143,7 @@ const ModuleCard = ({ module }: { module: Module }) => {
       style={[styles.card, isLocked ? styles.cardLocked : styles.cardActive]}
     >
       <View style={styles.cardTopRow}>
-        <View style={[styles.categoryBadge, { backgroundColor: module.categoryColor + "22" }]}>
+        <View style={[styles.categoryBadge, { backgroundColor: module.categoryColor + "15", borderColor: module.categoryColor + "50" }]}>
           <Text style={[styles.categoryText, { color: module.categoryColor }]}>
             {module.category}
           </Text>
@@ -154,7 +153,7 @@ const ModuleCard = ({ module }: { module: Module }) => {
         ) : (
           module.status === "completed" && (
             <View style={styles.completedBadge}>
-              <CheckCircle2 size={14} color="white" />
+              <CheckCircle2 size={14} color="#4ADE80" />
             </View>
           )
         )}
@@ -217,7 +216,8 @@ const ModuleCard = ({ module }: { module: Module }) => {
 
 export default function ModulesLibrary() {
   const isFocused = useIsFocused();
-  const [activeTab, setActiveTab] = useState<Category>("ALL");
+  const insets = useSafeAreaInsets();
+  const [activeTab, setActiveTab] = useState<Category | "ALL">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: modulesList, isLoading: modulesLoading } = useQuery({
@@ -238,9 +238,9 @@ export default function ModulesLibrary() {
       categoryColor: CATEGORY_COLORS[m.category] || "#3B82F6",
       title: m.name,
       description: m.description,
-      lessons: m.lessons,
-      hours: m.hours,
-      minutes: m.minutes,
+      lessons: 0,
+      hours: 0,
+      minutes: 0,
       progress: prog ? prog.progress_percent : 0,
       status: prog ? prog.status : "not_started",
       is_free: m.is_free,
@@ -256,12 +256,12 @@ export default function ModulesLibrary() {
   });
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#0D1520]">
+    <View className="flex-1 bg-[#0D1520]" style={{ backgroundColor: '#0D1520', paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right }}>
       {isFocused && <StatusBar style="light" />}
       <TabScreenWrapper>
-        <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D]">
-          <View className="px-4 py-4">
-            <Text className="text-white text-2xl font-extrabold tracking-wider uppercase">
+        <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D] pb-2">
+          <View className="px-5 py-4 pt-6">
+            <Text className="text-slate-100 text-[26px] font-black tracking-widest uppercase">
               MODULES LIBRARY
             </Text>
           </View>
@@ -295,7 +295,7 @@ export default function ModulesLibrary() {
         )}
       </TabScreenWrapper>
 
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -320,10 +320,12 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1E2535",
-    borderRadius: 12,
+    backgroundColor: "#161F2E",
+    borderWidth: 1,
+    borderColor: "#2D3748",
+    borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingVertical: 10,
     marginHorizontal: 16,
     marginVertical: 16,
   },
@@ -343,28 +345,28 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   tabPill: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 999,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 24,
     borderWidth: 1,
     alignItems: "center",
   },
   tabPillActive: {
-    backgroundColor: "#ffffff",
-    borderColor: "#ffffff",
+    backgroundColor: "#D82C15",
+    borderColor: "#D82C15",
   },
   tabPillInactive: {
     backgroundColor: "transparent",
     borderColor: "#2D3748",
   },
   tabLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 1.5,
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 1,
     textAlign: "center",
   },
   tabLabelActive: {
-    color: "#0F1624",
+    color: "#ffffff",
   },
   tabLabelInactive: {
     color: "#9ca3af",
@@ -372,14 +374,14 @@ const styles = StyleSheet.create({
 
   // Progress bar
   progressTrack: {
-    height: 4,
-    backgroundColor: "#2D3748",
-    borderRadius: 2,
+    height: 6,
+    backgroundColor: "#1E2D3D",
+    borderRadius: 3,
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    borderRadius: 2,
+    borderRadius: 3,
   },
 
   // Status badge
@@ -400,14 +402,19 @@ const styles = StyleSheet.create({
   // Module Card
   card: {
     marginHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: 16,
-    padding: 16,
+    marginBottom: 16,
+    borderRadius: 20,
+    padding: 20,
     borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
   },
   cardActive: {
-    backgroundColor: "#131C2E",
-    borderColor: "#1E2D45",
+    backgroundColor: "#161F2E",
+    borderColor: "#2D3748",
   },
   cardLocked: {
     backgroundColor: "#141B2A",
@@ -420,24 +427,28 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categoryBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
   },
   categoryText: {
     fontSize: 10,
-    fontWeight: "700",
-    letterSpacing: 1.5,
+    fontWeight: "800",
+    letterSpacing: 2,
+    textTransform: "uppercase",
   },
   lockIcon: {
     fontSize: 18,
     color: "#6b7280",
   },
   completedBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#22C55E",
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: "rgba(34, 197, 94, 0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(34, 197, 94, 0.4)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -481,17 +492,17 @@ const styles = StyleSheet.create({
     color: "#4B5563",
   },
   upgradeBtn: {
-    backgroundColor: "#1E2535",
+    backgroundColor: "#050505", // Almost pure black
     borderWidth: 1,
-    borderColor: "#2D3748",
+    borderColor: "#262626", // Dark gray border
     borderRadius: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     alignItems: "center",
   },
   upgradeBtnText: {
-    color: "#D1D5DB",
-    fontSize: 12,
-    fontWeight: "600",
+    color: "#e5e5e5", // Off-white text
+    fontSize: 13,
+    fontWeight: "700",
   },
   progressFooter: {
     flexDirection: "row",
@@ -504,17 +515,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   assessmentCardBtn: {
-    backgroundColor: "#D82C15",
+    backgroundColor: "rgba(216, 44, 21, 0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(216, 44, 21, 0.5)",
     borderRadius: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     alignItems: "center",
-    marginTop: 12,
+    marginTop: 16,
   },
   assessmentCardBtnText: {
-    color: "#ffffff",
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.5,
+    color: "#D82C15",
+    fontSize: 13,
+    fontWeight: "800",
+    letterSpacing: 1,
     textTransform: "uppercase",
   },
 });

@@ -75,7 +75,7 @@ export default function SplashScreen() {
           >
 
             <Animated.View
-              className="h-full bg-[#D82C15]"
+              className="h-full bg-primary"
               style={{
                 width: '100%',
                 transform: [{
