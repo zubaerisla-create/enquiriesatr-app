@@ -74,9 +74,9 @@ export default function Onboarding() {
       <View className="flex-row justify-between items-center px-6 py-4">
         <View className="flex-row items-center">
           <Image
-            source={require("../../assets/images/logo.jpeg")}
-            style={{ width: rs(32), height: rs(32) }}
-            className="mr-2 mt-4"
+            source={require("../../assets/images/logo.png")}
+            style={{ width: rs(36), height: rs(36) }}
+            className="mr-2"
             resizeMode="contain"
           />
           <Text

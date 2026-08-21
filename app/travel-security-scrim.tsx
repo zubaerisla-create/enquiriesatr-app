@@ -147,7 +147,7 @@ export default function TravelSecurityScrim() {
 
               <View className="flex-row items-end justify-between mb-2">
                 <Text className="text-white text-2xl font-black uppercase tracking-wider">
-                  Travel Security
+                  Vehicle SCRIM
                 </Text>
               </View>
             </View>

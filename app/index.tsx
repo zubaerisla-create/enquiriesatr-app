@@ -63,8 +63,8 @@ export default function SplashScreen() {
         }}
       >
         <Image
-          source={require("../assets/images/logo.jpeg")}
-          style={{ width: wp(40), height: wp(40) }}
+          source={require("../assets/images/logo.png")}
+          style={{ width: wp(45), height: wp(45) }}
           resizeMode="contain"
         />
 

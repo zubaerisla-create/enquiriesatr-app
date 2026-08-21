@@ -13,13 +13,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TabScreenWrapper from "../../components/ui/TabScreenWrapper";
 
 import {
+  Car,
   ChevronRight,
   ClipboardList,
   FileText,
   Home,
   LucideIcon,
   MapPin,
-  Plane,
   Search,
   ShieldCheck
 } from "lucide-react-native";
@@ -111,12 +111,12 @@ const TOOLS: Tool[] = [
   },
   {
     id: "6",
-    icon: Plane,
-    iconBg: "#181C14",
-    title: "Travel\nSecurity",
-    tag: "PLANNING",
-    tagColor: "planning",
-    description: "International travel security planning and documentation.",
+    icon: Car,
+    iconBg: "#1E1214",
+    title: "Vehicle\nSCRIM",
+    tag: "OPERATIONS",
+    tagColor: "operations",
+    description: "Log and identify suspicious vehicles using the SCRIM method.",
     route: "/travel-security-scrim",
   },
   // {
