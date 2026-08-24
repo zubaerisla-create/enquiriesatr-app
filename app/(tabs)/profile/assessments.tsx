@@ -15,7 +15,8 @@ import {
 } from "react-native";
 import { AnimatedPage } from "../../../components/ui";
 import { fetchAssessmentHistory, UserAssessmentAttempt } from "../../../lib/assessments";
-import { fetchModules, Module } from "../../../lib/modules";
+import { fetchModuleProgress, fetchModules, Module } from "../../../lib/modules";
+import { useAuth } from "../../../hooks/useAuth";
 
 type TagKey = "FOUNDATION" | "TACTICAL" | "OPERATIONS" | "LEGAL";
 
@@ -60,7 +61,7 @@ const StatCard = ({
 const RingIcon = ({ color, locked }: { color: string; locked: boolean }) => (
   <View className="w-10 h-10 items-center justify-center">
     {locked ? (
-      <Lock size={20} color="#4B5563" />
+      <Lock size={20} color="#6B7280" />
     ) : (
       <Target size={24} color={color} />
     )}
@@ -70,11 +71,17 @@ const RingIcon = ({ color, locked }: { color: string; locked: boolean }) => (
 const AssessmentCard = ({
   item,
   latestAttempt,
+  isLocked,
+  isCompleted,
+  progressPercent,
   onStart,
   onReview,
 }: {
   item: Module;
   latestAttempt?: UserAssessmentAttempt;
+  isLocked: boolean;
+  isCompleted: boolean;
+  progressPercent: number;
   onStart: () => void;
   onReview: () => void;
 }) => {
@@ -83,7 +90,7 @@ const AssessmentCard = ({
 
   return (
     <View className="mx-4 mb-3 bg-[#141E2B] rounded-2xl px-4 py-4 flex-row items-center gap-3">
-      <RingIcon color={color} locked={false} />
+      <RingIcon color={color} locked={isLocked || !isCompleted} />
       <View className="flex-1">
         <View className="flex-row items-center gap-2 flex-wrap">
           <Text className="text-white font-semibold text-sm">{item.name}</Text>
@@ -93,45 +100,84 @@ const AssessmentCard = ({
             </Text>
           </View>
         </View>
-        {latestAttempt ? (
+
+        {isLocked ? (
+          <Text className="text-gray-500 text-xs mt-0.5 font-medium">
+            Premium Module · Upgrade to unlock
+          </Text>
+        ) : !isCompleted ? (
+          <Text className="text-gray-400 text-xs mt-0.5 font-medium">
+            Progress: {progressPercent}% · Complete lessons first
+          </Text>
+        ) : latestAttempt ? (
           <Text className={latestAttempt.passed ? "text-[#10B981] text-xs mt-0.5 font-medium" : "text-[#EF4444] text-xs mt-0.5 font-medium"}>
             {latestAttempt.passed ? "PASSED" : "FAILED"} · Score: {latestAttempt.percent}%
           </Text>
         ) : (
-          <Text className="text-gray-500 text-xs mt-0.5">
+          <Text className="text-gray-400 text-xs mt-0.5">
             5 questions · 70% to pass
           </Text>
         )}
       </View>
-      <View className="flex-row gap-2">
-        {latestAttempt && (
+
+      <View className="flex-row gap-2 items-center">
+        {isLocked ? (
           <TouchableOpacity
-            onPress={onReview}
-            className="bg-[#1E293B] rounded-xl px-3 py-2 border border-[#2D3748]"
+            onPress={() => router.push("/profile/subscription-billing")}
+            className="bg-[#C0392B] rounded-xl px-3 py-2"
           >
-            <Text className="text-white text-xs font-semibold">
-              Review
+            <Text className="text-white text-xs font-bold">
+              Upgrade
             </Text>
           </TouchableOpacity>
+        ) : !isCompleted ? (
+          <TouchableOpacity
+            onPress={() => router.push(`/lesson?moduleId=${item.module_id}`)}
+            className="bg-[#1E293B] rounded-xl px-3 py-2 border border-[#2D3748]"
+          >
+            <Text className="text-gray-300 text-xs font-semibold">
+              Learn
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <>
+            {latestAttempt && (
+              <TouchableOpacity
+                onPress={onReview}
+                className="bg-[#1E293B] rounded-xl px-3 py-2 border border-[#2D3748]"
+              >
+                <Text className="text-white text-xs font-semibold">
+                  Review
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              onPress={onStart}
+              style={{ borderColor: color }}
+              className="border rounded-xl px-3 py-2"
+            >
+              <Text style={{ color }} className="text-xs font-semibold">
+                {latestAttempt ? "Retake" : "Start"}
+              </Text>
+            </TouchableOpacity>
+          </>
         )}
-        <TouchableOpacity
-          onPress={onStart}
-          style={{ borderColor: color }}
-          className="border rounded-xl px-3 py-2"
-        >
-          <Text style={{ color }} className="text-xs font-semibold">
-            {latestAttempt ? "Retake" : "Start"}
-          </Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
 };
 
 export default function Assessments() {
+  const { user } = useAuth();
+
   const { data: modules = [], isLoading: isLoadingModules } = useQuery({
     queryKey: ["modules"],
     queryFn: fetchModules,
+  });
+
+  const { data: progressData = [], isLoading: isLoadingProgress } = useQuery({
+    queryKey: ["modules-progress"],
+    queryFn: fetchModuleProgress,
   });
 
   const { data: history = [], isLoading: isLoadingHistory } = useQuery({
@@ -139,7 +185,7 @@ export default function Assessments() {
     queryFn: fetchAssessmentHistory,
   });
 
-  if (isLoadingModules || isLoadingHistory) {
+  if (isLoadingModules || isLoadingHistory || isLoadingProgress) {
     return (
       <View className="flex-1 bg-[#0D1520] justify-center items-center">
         <ActivityIndicator size="large" color="#D82C15" />
@@ -156,6 +202,10 @@ export default function Assessments() {
 
   const getModuleAttempt = (moduleId: number) => {
     return history.find(h => h.module_id === moduleId);
+  };
+
+  const getModuleProgress = (moduleId: number) => {
+    return progressData.find(p => p.module === moduleId);
   };
 
   return (
@@ -178,20 +228,30 @@ export default function Assessments() {
             <StatCard value={String(passed)} label="Passed" valueColor="#4CAF82" bordered />
           </View>
 
-          {modules.map((item) => (
-            <AssessmentCard
-              key={item.module_id}
-              item={item}
-              latestAttempt={getModuleAttempt(item.module_id)}
-              onStart={() => router.navigate(`/assessment/quiz?moduleId=${item.module_id}`)}
-              onReview={() => {
-                const attempt = getModuleAttempt(item.module_id);
-                if (attempt) {
-                  router.navigate(`/assessment/results?attemptId=${attempt.id}`);
-                }
-              }}
-            />
-          ))}
+          {modules.map((item) => {
+            const prog = getModuleProgress(item.module_id);
+            const isLocked = !item.is_free && !user?.has_active_sub;
+            const isCompleted = prog?.status === "completed";
+            const progressPercent = prog?.progress_percent ?? 0;
+
+            return (
+              <AssessmentCard
+                key={item.module_id}
+                item={item}
+                latestAttempt={getModuleAttempt(item.module_id)}
+                isLocked={isLocked}
+                isCompleted={isCompleted}
+                progressPercent={progressPercent}
+                onStart={() => router.navigate(`/assessment/quiz?moduleId=${item.module_id}`)}
+                onReview={() => {
+                  const attempt = getModuleAttempt(item.module_id);
+                  if (attempt) {
+                    router.navigate(`/assessment/results?attemptId=${attempt.id}`);
+                  }
+                }}
+              />
+            );
+          })}
         </ScrollView>
       </AnimatedPage>
     </View>

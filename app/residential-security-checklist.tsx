@@ -291,7 +291,7 @@ export default function ResidentialSecurityChecklist() {
           "Compiling handover protocols...",
           "Almost ready..."
         ]}
-        iconType="shield"
+        iconType="guardian"
       />
     );
   }

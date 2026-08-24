@@ -5,7 +5,9 @@ import {
   Bell,
   BookOpen,
   ChevronRight,
+  Lock,
   LucideIcon,
+  User,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
@@ -20,6 +22,8 @@ import {
 } from "react-native";
 import { AnimatedPage } from "../../../components/ui";
 import AlertModal from "../../../components/ui/AlertModal";
+import EditProfileModal from "../../../components/profile/EditProfileModal";
+import ChangePasswordModal from "../../../components/profile/ChangePasswordModal";
 import { useAuth } from "../../../hooks/useAuth";
 import { api } from "../../../lib/api";
 
@@ -122,9 +126,11 @@ const NotificationRow = ({
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function Settings() {
-  const { deleteUserAccount } = useAuth();
+  const { user, deleteUserAccount } = useAuth();
   const router = useRouter();
 
+  const [isEditProfileVisible, setIsEditProfileVisible] = useState(false);
+  const [isChangePasswordVisible, setIsChangePasswordVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -207,8 +213,52 @@ export default function Settings() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 40 }}
         >
+          {/* Account section */}
+          <View className="mx-4 mb-4 bg-[#141E2B] rounded-2xl overflow-hidden">
+            <View className="px-4 pt-4 pb-2">
+              <Text className="text-gray-500 text-[10px] font-bold tracking-widest uppercase">
+                Account
+              </Text>
+            </View>
 
+            {/* Edit Profile Row */}
+            <TouchableOpacity
+              onPress={() => setIsEditProfileVisible(true)}
+              className="flex-row items-center px-4 py-4 border-b border-[#1E2D3D]"
+            >
+              <View className="w-10 h-10 rounded-xl bg-[#2D1010] items-center justify-center mr-3">
+                <User size={18} color="#E05252" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-white font-semibold text-sm mb-0.5">
+                  Edit Profile
+                </Text>
+                <Text className="text-gray-500 text-xs leading-4">
+                  {user?.full_name || "Update your display name"}
+                </Text>
+              </View>
+              <ChevronRight size={18} color="#4B5563" />
+            </TouchableOpacity>
 
+            {/* Change Password Row */}
+            <TouchableOpacity
+              onPress={() => setIsChangePasswordVisible(true)}
+              className="flex-row items-center px-4 py-4"
+            >
+              <View className="w-10 h-10 rounded-xl bg-[#1A1420] items-center justify-center mr-3">
+                <Lock size={18} color="#A855F7" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-white font-semibold text-sm mb-0.5">
+                  Change Password
+                </Text>
+                <Text className="text-gray-500 text-xs leading-4">
+                  Update your account security password
+                </Text>
+              </View>
+              <ChevronRight size={18} color="#4B5563" />
+            </TouchableOpacity>
+          </View>
 
           {/* Notifications section */}
           <View className="mx-4 mb-4 bg-[#141E2B] rounded-2xl overflow-hidden">
@@ -262,6 +312,16 @@ export default function Settings() {
             </TouchableOpacity>
           </View>
         </ScrollView>
+
+        <EditProfileModal
+          visible={isEditProfileVisible}
+          onClose={() => setIsEditProfileVisible(false)}
+        />
+
+        <ChangePasswordModal
+          visible={isChangePasswordVisible}
+          onClose={() => setIsChangePasswordVisible(false)}
+        />
 
         <AlertModal
           visible={isDeleteModalVisible}

@@ -157,20 +157,25 @@ const AnnualCard = ({ plan, isCurrent, onPress, onManage, loading, monthlyPriceA
         </View>
       )}
 
-      <View className="flex-row justify-between items-center mb-4 mt-2">
-        <View className="flex-row items-center gap-3">
+      <View className="flex-row justify-between items-start mb-4 mt-2">
+        <View className="flex-1 flex-row items-center gap-3 mr-3">
           <View className={`w-5 h-5 rounded-full border items-center justify-center border-gray-400`} />
-          <Text className="text-[#1F2937] font-black text-xl tracking-wider uppercase">{plan.plan_name}</Text>
+          <Text numberOfLines={1} className="text-[#1F2937] font-black text-xl tracking-wider uppercase flex-1">
+            {plan.plan_name}
+          </Text>
+        </View>
+
+        <View className="items-end shrink-0">
+          <View className="flex-row items-baseline">
+            <Text className="text-[#D83B3B] font-black text-2xl tracking-tighter">{symbol}{price}</Text>
+            <Text className="text-gray-500 text-xs font-medium ml-1">/{plan.interval}</Text>
+          </View>
 
           {savings && (
-            <View className="bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200">
+            <View className="bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200 mt-1">
               <Text className="text-amber-700 font-bold text-[10px]">Save {symbol}{savings}</Text>
             </View>
           )}
-        </View>
-        <View className="flex-row items-baseline">
-          <Text className="text-[#D83B3B] font-black text-2xl tracking-tighter">{symbol}{price}</Text>
-          <Text className="text-gray-500 text-xs font-medium ml-1">/{plan.interval}</Text>
         </View>
       </View>
 

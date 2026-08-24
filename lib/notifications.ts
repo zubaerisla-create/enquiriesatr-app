@@ -40,3 +40,28 @@ export async function clearAllNotifications(): Promise<{ success: boolean }> {
   const response = await api.post<{ success: boolean }>("/notifications/clear-all/", {}, { requireAuth: true });
   return response.data;
 }
+
+export async function registerDeviceToken(
+  token: string,
+  deviceType: "ios" | "android" | "web" = "android",
+  deviceId?: string
+): Promise<{ success: boolean; message?: string }> {
+  const response = await api.post<{ success: boolean; message?: string }>(
+    "/notifications/devices/register/",
+    { token, device_type: deviceType, device_id: deviceId },
+    { requireAuth: true }
+  );
+  return response.data;
+}
+
+export async function unregisterDeviceToken(
+  token: string
+): Promise<{ success: boolean; message?: string }> {
+  const response = await api.post<{ success: boolean; message?: string }>(
+    "/notifications/devices/unregister/",
+    { token },
+    { requireAuth: true }
+  );
+  return response.data;
+}
+

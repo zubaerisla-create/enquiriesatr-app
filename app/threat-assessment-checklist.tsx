@@ -307,7 +307,7 @@ export default function ThreatAssessmentChecklist() {
           "Compiling protective recommendations...",
           "Almost ready..."
         ]}
-        iconType="shield"
+        iconType="guardian"
       />
     );
   }

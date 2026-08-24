@@ -2,6 +2,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { router, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { Image } from "expo-image";
 import {
   Bell,
   BookOpen,
@@ -21,6 +22,12 @@ import { fetchModuleProgress, fetchModules } from "../../lib/modules";
 import { fetchUnreadCount } from "../../lib/notifications";
 import { fetchUserStats } from "../../lib/stats";
 import { rf, rs } from "../../utils/responsive";
+import { useAuth } from "../../hooks/useAuth";
+import { useBottomSheet } from "../../hooks/useBottomSheet";
+import { usePushNotifications } from "../../hooks/usePushNotifications";
+import AccountMenuBottomSheet from "../../components/profile/AccountMenuBottomSheet";
+import EditProfileModal from "../../components/profile/EditProfileModal";
+import ChangePasswordModal from "../../components/profile/ChangePasswordModal";
 
 interface CircularProgressProps {
   progress: number;
@@ -54,6 +61,24 @@ const getCategoryStyles = (category: string) => {
 export default function Home() {
   const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
+  const { registerForPush } = usePushNotifications();
+  const accountSheet = useBottomSheet();
+  const [isEditProfileVisible, setIsEditProfileVisible] = React.useState(false);
+  const [isChangePasswordVisible, setIsChangePasswordVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    registerForPush();
+  }, []);
+
+
+  const displayName = user?.full_name || "User";
+  const initials = displayName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "U";
 
   const { data: modulesList, isLoading: modulesLoading } = useQuery({
     queryKey: ["modules"],
@@ -82,7 +107,7 @@ export default function Home() {
     return {
       id: String(m.module_id),
       category: m.category,
-      title: m.name,
+      title: `S${(m.order ?? 0) + 1}. ${m.name}`,
       description: m.description,
       progress: prog ? prog.progress_percent : 0,
       status: prog ? prog.status : "not_started",
@@ -210,8 +235,16 @@ export default function Home() {
 
 
 
-            <TouchableOpacity onPress={() => router.push("/profile")} className="w-10 h-10 bg-primary rounded-full items-center justify-center">
-              <Text className="text-white font-bold tracking-widest text-sm">JH</Text>
+            <TouchableOpacity onPress={accountSheet.present} className="w-10 h-10 bg-primary rounded-full items-center justify-center overflow-hidden border border-white/20">
+              {user?.photo ? (
+                <Image
+                  source={{ uri: user.photo }}
+                  style={{ width: "100%", height: "100%" }}
+                  contentFit="cover"
+                />
+              ) : (
+                <Text className="text-white font-bold tracking-widest text-sm">{initials}</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -370,7 +403,7 @@ export default function Home() {
                     <Trophy size={rs(24)} color="#eab308" />
                   </View>
                   <View className="flex-1 mr-2">
-                    <Text style={{ fontSize: rf(14) }} className="text-white font-bold mb-1 leading-tight">New: {newestModule.name}</Text>
+                    <Text style={{ fontSize: rf(14) }} className="text-white font-bold mb-1 leading-tight">New: S{(newestModule.order ?? 0) + 1}. {newestModule.name}</Text>
                     <Text style={{ fontSize: rf(12) }} className="text-gray-400">{newestModule.category} • Now available</Text>
                   </View>
                   <ChevronRight size={rs(20)} color="#9ca3af" />
@@ -381,6 +414,22 @@ export default function Home() {
 
           </View>
         </ScrollView>
+
+        <AccountMenuBottomSheet
+          ref={accountSheet.ref}
+          onEditProfile={() => setIsEditProfileVisible(true)}
+          onChangePassword={() => setIsChangePasswordVisible(true)}
+        />
+
+        <EditProfileModal
+          visible={isEditProfileVisible}
+          onClose={() => setIsEditProfileVisible(false)}
+        />
+
+        <ChangePasswordModal
+          visible={isChangePasswordVisible}
+          onClose={() => setIsChangePasswordVisible(false)}
+        />
       </TabScreenWrapper>
     </View>
   );

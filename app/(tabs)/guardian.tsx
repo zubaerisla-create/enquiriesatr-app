@@ -7,9 +7,9 @@ import {
   History,
   Plus,
   SendHorizontal,
-  Sparkles,
   Square
 } from "lucide-react-native";
+import { GuardianAIIcon } from "../../components/icons";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -71,7 +71,7 @@ const Header = ({
   <View className="flex-row items-center justify-between px-4 py-3 border-b border-[#1E2D45]">
     <View className="flex-row items-center gap-3">
       <View className="w-9 h-9 rounded-full bg-[#7C1A1A] items-center justify-center">
-        <Sparkles size={18} color="white" />
+        <GuardianAIIcon size={20} color="white" />
       </View>
       <View>
         <Text className="text-white font-bold text-base leading-tight">Guardian</Text>
@@ -587,7 +587,7 @@ export default function Guardian() {
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={"padding"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 20}
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <ScrollView

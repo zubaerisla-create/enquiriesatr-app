@@ -15,6 +15,9 @@ export interface Module {
   order: number;
   category: Category;
   description: string;
+  lessons: number;
+  hours: number;
+  minutes: number;
   is_free?: boolean;
 }
 

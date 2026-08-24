@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1050409634231",
+    "project_id": "gtr-close-protection",
+    "storage_bucket": "gtr-close-protection.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1050409634231:android:3a1963b75a634960a7c032",
+        "android_client_info": {
+          "package_name": "com.gtr.guardian"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCe0ehaXipaBw2t0Ui_esN6rJeBrBo0ry4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

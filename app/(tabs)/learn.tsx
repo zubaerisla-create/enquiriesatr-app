@@ -219,6 +219,7 @@ export default function ModulesLibrary() {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<Category | "ALL">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
 
   const { data: modulesList, isLoading: modulesLoading } = useQuery({
     queryKey: ["modules"],
@@ -236,11 +237,11 @@ export default function ModulesLibrary() {
       id: String(m.module_id),
       category: m.category,
       categoryColor: CATEGORY_COLORS[m.category] || "#3B82F6",
-      title: m.name,
+      title: `S${(m.order ?? 0) + 1}. ${m.name}`,
       description: m.description,
-      lessons: 0,
-      hours: 0,
-      minutes: 0,
+      lessons: m.lessons || 0,
+      hours: m.hours || 0,
+      minutes: m.minutes || 0,
       progress: prog ? prog.progress_percent : 0,
       status: prog ? prog.status : "not_started",
       is_free: m.is_free,
@@ -259,24 +260,30 @@ export default function ModulesLibrary() {
     <View className="flex-1 bg-[#0D1520]" style={{ backgroundColor: '#0D1520', paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right }}>
       {isFocused && <StatusBar style="light" />}
       <TabScreenWrapper>
-        <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D] pb-2">
-          <View className="px-5 py-4 pt-6">
-            <Text className="text-slate-100 text-[26px] font-black tracking-widest uppercase">
+        <View className="bg-[#0D1520] z-10 border-b border-[#1E2D3D] pb-2 mb-4">
+          <View className="px-5 py-2 pt-6 flex-row items-center justify-between">
+            <Text className="text-slate-100 text-[28px] font-black tracking-widest uppercase shadow-sm">
               MODULES LIBRARY
             </Text>
+            <TouchableOpacity onPress={() => setShowSearch(!showSearch)} className="p-2 -mr-2">
+              <Search size={24} color={showSearch ? "#D82C15" : "#6B7280"} />
+            </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.searchBar}>
-          <Search size={18} color="#6B7280" style={{ marginRight: 8 }} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search modules..."
-            placeholderTextColor="#6B7280"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
+        {showSearch && (
+          <View style={styles.searchBar}>
+            <Search size={18} color="#6B7280" style={{ marginRight: 8 }} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search modules..."
+              placeholderTextColor="#6B7280"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoFocus
+            />
+          </View>
+        )}
 
         <FilterTabs active={activeTab} onChange={setActiveTab} />
 
@@ -320,14 +327,20 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#161F2E",
+    backgroundColor: "#1A2436",
     borderWidth: 1,
-    borderColor: "#2D3748",
+    borderColor: "#374151",
     borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 8,
     marginHorizontal: 16,
-    marginVertical: 16,
+    marginBottom: 16,
+    marginTop: 0,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   searchIcon: {
     fontSize: 16,
@@ -354,9 +367,14 @@ const styles = StyleSheet.create({
   tabPillActive: {
     backgroundColor: "#D82C15",
     borderColor: "#D82C15",
+    shadowColor: "#D82C15",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 4,
   },
   tabPillInactive: {
-    backgroundColor: "transparent",
+    backgroundColor: "#161F2E",
     borderColor: "#2D3748",
   },
   tabLabel: {
@@ -403,22 +421,23 @@ const styles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
     marginBottom: 16,
-    borderRadius: 20,
+    borderRadius: 24,
     padding: 20,
     borderWidth: 1,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 5,
   },
   cardActive: {
-    backgroundColor: "#161F2E",
-    borderColor: "#2D3748",
+    backgroundColor: "#1A2436",
+    borderColor: "#374151",
   },
   cardLocked: {
-    backgroundColor: "#141B2A",
-    borderColor: "#2D3748",
+    backgroundColor: "#111827",
+    borderColor: "#1F2937",
+    opacity: 0.95,
   },
   cardTopRow: {
     flexDirection: "row",
@@ -492,17 +511,19 @@ const styles = StyleSheet.create({
     color: "#4B5563",
   },
   upgradeBtn: {
-    backgroundColor: "#050505", // Almost pure black
+    backgroundColor: "rgba(216, 44, 21, 0.1)",
     borderWidth: 1,
-    borderColor: "#262626", // Dark gray border
-    borderRadius: 12,
-    paddingVertical: 12,
+    borderColor: "rgba(216, 44, 21, 0.3)",
+    borderRadius: 14,
+    paddingVertical: 14,
     alignItems: "center",
+    marginTop: 8,
   },
   upgradeBtnText: {
-    color: "#e5e5e5", // Off-white text
-    fontSize: 13,
-    fontWeight: "700",
+    color: "#D82C15",
+    fontSize: 14,
+    fontWeight: "800",
+    letterSpacing: 0.5,
   },
   progressFooter: {
     flexDirection: "row",
@@ -515,17 +536,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   assessmentCardBtn: {
-    backgroundColor: "rgba(216, 44, 21, 0.15)",
-    borderWidth: 1,
-    borderColor: "rgba(216, 44, 21, 0.5)",
-    borderRadius: 12,
-    paddingVertical: 12,
+    backgroundColor: "#22C55E",
+    borderRadius: 14,
+    paddingVertical: 14,
     alignItems: "center",
     marginTop: 16,
+    shadowColor: "#22C55E",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   assessmentCardBtnText: {
-    color: "#D82C15",
-    fontSize: 13,
+    color: "#ffffff",
+    fontSize: 14,
     fontWeight: "800",
     letterSpacing: 1,
     textTransform: "uppercase",

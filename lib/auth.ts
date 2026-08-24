@@ -34,6 +34,7 @@ export type UserMe = {
   id: number;
   email: string;
   full_name: string;
+  photo?: string | null;
   created_at: string;
   has_active_sub?: boolean;
   subscription?: {
@@ -135,6 +136,31 @@ export async function socialLoginApple(payload: {
   full_name?: string;
 }): Promise<SocialLoginResponse> {
   const response = await api.post<SocialLoginResponse>("/auth/social/apple/", payload);
+  return response.data;
+}
+
+export async function updateUserProfile(payload: FormData | { full_name?: string }): Promise<UserMe> {
+  const isFormData = typeof FormData !== "undefined" && payload instanceof FormData;
+  const response = await api.patch<UserMe>(
+    "/users/me/update/",
+    payload,
+    {
+      requireAuth: true,
+      headers: isFormData ? { "Content-Type": "multipart/form-data" } : undefined,
+    }
+  );
+  return response.data;
+}
+
+export async function changePassword(payload: {
+  old_password?: string;
+  new_password: string;
+}): Promise<{ message: string }> {
+  const response = await api.post<{ message: string }>(
+    "/auth/change-password/",
+    payload,
+    { requireAuth: true }
+  );
   return response.data;
 }
 

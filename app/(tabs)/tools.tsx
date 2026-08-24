@@ -13,23 +13,25 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TabScreenWrapper from "../../components/ui/TabScreenWrapper";
 
 import {
-  Car,
   ChevronRight,
-  ClipboardList,
   FileText,
-  Home,
-  LucideIcon,
-  MapPin,
-  Search,
-  ShieldCheck
+  LucideIcon
 } from "lucide-react-native";
 import { api } from "../../lib/api";
+import {
+  SearchOperationsIcon,
+  VenueSecurityIcon,
+  ThreatAssessmentIcon,
+  AdvanceWorkIcon,
+  ResidentialSecurityIcon,
+  VehicleScrimIcon,
+} from "../../components/icons";
 
 type TagColor = "operations" | "planning" | "tactical";
 
 interface Tool {
   id: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ size?: number; color?: string }> | LucideIcon;
   iconBg: string;
   title: string;
   tag: string;
@@ -58,9 +60,9 @@ interface ApiDoc {
 const TOOLS: Tool[] = [
   {
     id: "1",
-    icon: Search,
+    icon: SearchOperationsIcon,
     iconBg: "#1E1214",
-    title: "Search\nOperations",
+    title: "Search Operations",
     tag: "OPERATIONS",
     tagColor: "operations",
     description:
@@ -69,9 +71,9 @@ const TOOLS: Tool[] = [
   },
   {
     id: "2",
-    icon: ClipboardList,
+    icon: VenueSecurityIcon,
     iconBg: "#1A1420",
-    title: "Venue\nSecurity",
+    title: "Venue Security",
     tag: "OPERATIONS",
     tagColor: "operations",
     description: "Advance work and security protocols for any venue type.",
@@ -79,9 +81,9 @@ const TOOLS: Tool[] = [
   },
   {
     id: "3",
-    icon: ShieldCheck,
+    icon: ThreatAssessmentIcon,
     iconBg: "#141A1E",
-    title: "Threat\nAssessment",
+    title: "Threat Assessment",
     tag: "PLANNING",
     tagColor: "planning",
     description: "AI-powered threat assessment and risk reporting tool.",
@@ -89,7 +91,7 @@ const TOOLS: Tool[] = [
   },
   {
     id: "4",
-    icon: MapPin,
+    icon: AdvanceWorkIcon,
     iconBg: "#181C14",
     title: "Advance Work",
     tag: "PLANNING",
@@ -100,9 +102,9 @@ const TOOLS: Tool[] = [
   },
   {
     id: "5",
-    icon: Home,
+    icon: ResidentialSecurityIcon,
     iconBg: "#1E1214",
-    title: "Residential\nSecurity",
+    title: "Residential Security",
     tag: "OPERATIONS",
     tagColor: "operations",
     description:
@@ -111,25 +113,14 @@ const TOOLS: Tool[] = [
   },
   {
     id: "6",
-    icon: Car,
+    icon: VehicleScrimIcon,
     iconBg: "#1E1214",
-    title: "Vehicle\nSCRIM",
+    title: "Vehicle SCRIM",
     tag: "OPERATIONS",
     tagColor: "operations",
     description: "Log and identify suspicious vehicles using the SCRIM method.",
     route: "/travel-security-scrim",
   },
-  // {
-  //   id: "7",
-  //   icon: ShieldCheck,
-  //   iconBg: "#141A1E",
-  //   title: "Escort\nProcedures",
-  //   tag: "TACTICAL",
-  //   tagColor: "tactical",
-  //   description:
-  //     "Foot and vehicle escort drills, formations, and protocols.",
-  //   route: "/search-operations",
-  // },
 ];
 
 const tagStyle = (color: TagColor) => {
@@ -152,18 +143,13 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
       onPress={() => router.navigate(tool.route as any)}
       className="mx-4 mb-4 bg-[#141E2B] rounded-2xl p-4 flex-row items-center gap-4"
     >
-      <View
-        style={{ backgroundColor: tool.iconBg }}
-        className="w-12 h-12 rounded-xl items-center justify-center border border-[#2A2A3A]"
-      >
-        <tool.icon size={20} color={tag.text} />
-      </View>
+      <tool.icon size={28} color={tag.text} />
 
       <View className="flex-1">
-        <View className="flex-row items-center gap-2 mb-0.5 flex-wrap">
-          <Text className="text-white font-bold text-base leading-tight">
-            {tool.title}
-          </Text>
+        <Text className="text-white font-bold text-base leading-tight mb-1.5" numberOfLines={1}>
+          {tool.title.replace('\n', ' ')}
+        </Text>
+        <View className="flex-row items-center mb-1.5">
           <View
             style={{ backgroundColor: tag.bg }}
             className="px-2 py-0.5 rounded"
@@ -176,7 +162,7 @@ const ToolCard = ({ tool }: { tool: Tool }) => {
             </Text>
           </View>
         </View>
-        <Text className="text-gray-400 text-xs leading-5 mt-1">
+        <Text className="text-gray-400 text-xs leading-5">
           {tool.description}
         </Text>
       </View>

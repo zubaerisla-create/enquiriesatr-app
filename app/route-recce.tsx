@@ -136,7 +136,7 @@ export default function RouteRecce() {
                     "Mapping safe havens and comms gaps...",
                     "Compiling contingency actions...",
                 ]}
-                iconType="shield"
+                iconType="guardian"
             />
         );
     }

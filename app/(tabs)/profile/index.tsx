@@ -2,6 +2,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { Image } from "expo-image";
 import React from "react";
 import {
   Alert,
@@ -61,12 +62,6 @@ interface MenuRow {
   route?: string;
   onPress?: () => void;
 }
-
-const CONTENT_ROWS: MenuRow[] = [
-  { icon: FileText, label: "My Notes", badge: { text: "3", color: "#fff", bg: "#E05252" }, route: "/profile/my-notes" },
-  { icon: Folder, label: "My Documents", route: "/profile/my-documents" },
-  { icon: Target, label: "Assessments", badge: { text: "1/6 passed", color: "#4CAF82", bg: "#0D2318" }, route: "/profile/assessments" },
-];
 
 const ACCOUNT_ROWS: MenuRow[] = [
   { icon: CreditCard, label: "Subscription & Billing", route: "/profile/subscription-billing" },
@@ -247,7 +242,7 @@ export default function Profile() {
       badge: statsData?.notes_count ? { text: String(statsData.notes_count), color: "#fff", bg: "#E05252" } : undefined,
       route: "/profile/my-notes"
     },
-    { icon: Folder, label: "My Documents", route: "/profile/my-documents" },
+    // { icon: Folder, label: "My Documents", route: "/profile/my-documents" },
     { icon: ClipboardList, label: "Tools Log", route: "/profile/tools-log" },
     {
       icon: Target,
@@ -270,8 +265,16 @@ export default function Profile() {
           <View className="mx-4">
             <View className="flex-row items-center gap-4">
               {/* Avatar */}
-              <View className="w-14 h-14 rounded-2xl bg-[#C0392B] items-center justify-center">
-                <Text className="text-white font-bold text-lg">{initials}</Text>
+              <View className="w-14 h-14 rounded-2xl bg-[#C0392B] items-center justify-center overflow-hidden border border-[#2A374A]">
+                {user?.photo ? (
+                  <Image
+                    source={{ uri: user.photo }}
+                    style={{ width: "100%", height: "100%" }}
+                    contentFit="cover"
+                  />
+                ) : (
+                  <Text className="text-white font-bold text-lg">{initials}</Text>
+                )}
               </View>
 
               {/* Name + email + plan */}

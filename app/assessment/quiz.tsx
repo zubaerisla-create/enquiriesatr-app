@@ -60,7 +60,7 @@ export default function AssessmentQuiz() {
           "Structuring options and explanations...",
           "Almost ready..."
         ]}
-        iconType="sparkles"
+        iconType="guardian"
       />
     );
   }

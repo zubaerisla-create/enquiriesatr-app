@@ -9,6 +9,7 @@ import Toast from "react-native-toast-message";
 import { AuthProvider } from "../contexts/AuthContext";
 import "../global.css";
 import { useAuth } from "../hooks/useAuth";
+import { usePushNotifications } from "../hooks/usePushNotifications";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,7 +20,13 @@ const queryClient = new QueryClient({
   },
 });
 
+function PushNotificationsListener() {
+  usePushNotifications();
+  return null;
+}
+
 function AuthGate({ children }: { children: React.ReactNode }) {
+
   const { accessToken, isBootstrapping } = useAuth();
   const segments = useSegments();
   const router = useRouter();
@@ -58,7 +65,9 @@ export default function RootLayout() {
               merchantIdentifier="merchant.com.rnwind"
             >
               <AuthProvider>
+                <PushNotificationsListener />
                 <AuthGate>
+
                   <Stack screenOptions={{
                     headerShown: false,
                     animation: 'none',

@@ -86,7 +86,7 @@ export default function LessonReadingView() {
       content,
       category: "lessons",
       referance: moduleDetail?.name,
-      title: `Note for ${moduleDetail?.name}`
+      title: `Note for S${(moduleDetail?.order ?? 0) + 1}. ${moduleDetail?.name}`
     }),
     onSuccess: () => {
       setNoteText("");
@@ -286,7 +286,7 @@ export default function LessonReadingView() {
         <AppBottomSheet
           ref={noteSheetRef}
           title="Save Note"
-          subtitle={moduleDetail?.name}
+          subtitle={`S${(moduleDetail?.order ?? 0) + 1}. ${moduleDetail?.name}`}
           variant="light"
           enableDynamicSizing={false}
           snapPoints={["35%", "70%"]}

@@ -126,7 +126,7 @@ export default function VenueSecurityRAG() {
           "Compiling protective recommendations...",
           "Almost ready..."
         ]}
-        iconType="shield"
+        iconType="guardian"
       />
     );
   }

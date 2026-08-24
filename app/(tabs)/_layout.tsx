@@ -1,7 +1,6 @@
 import { Redirect, Tabs } from "expo-router";
 import {
   BookOpen,
-  Cpu,
   Home,
   SquareCheck,
   User,
@@ -12,6 +11,7 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../hooks/useAuth";
 import { rf, rs } from "../../utils/responsive";
+import { GuardianAIIcon } from "../../components/icons";
 
 function AnimatedTabIcon({ focused, children }: { focused: boolean; children: React.ReactNode }) {
   const scale = useSharedValue(1);
@@ -93,7 +93,7 @@ export default function TabLayout() {
           title: "Guardian",
           tabBarIcon: ({ color, focused }) => (
             <AnimatedTabIcon focused={focused}>
-              <Cpu size={rs(22)} color={color} />
+              <GuardianAIIcon size={rs(22)} color={color} />
             </AnimatedTabIcon>
           ),
         }}

@@ -2,11 +2,12 @@ import { StatusBar } from "expo-status-bar";
 import { Shield, Sparkles } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
+import { GuardianAIIcon } from "../icons";
 
 interface GuardianLoaderProps {
   title?: string;
   steps?: string[];
-  iconType?: "sparkles" | "shield";
+  iconType?: "guardian" | "sparkles" | "shield";
 }
 
 export default function GuardianLoader({
@@ -17,7 +18,7 @@ export default function GuardianLoader({
     "Structuring options and explanations...",
     "Almost ready..."
   ],
-  iconType = "sparkles",
+  iconType = "guardian",
 }: GuardianLoaderProps) {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
@@ -61,7 +62,12 @@ export default function GuardianLoader({
     outputRange: [-160, 160],
   });
 
-  const IconComponent = iconType === "shield" ? Shield : Sparkles;
+  const IconComponent =
+    iconType === "guardian"
+      ? GuardianAIIcon
+      : iconType === "shield"
+        ? Shield
+        : Sparkles;
 
   return (
     <View style={styles.loadingContainer}>
@@ -139,14 +145,14 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     borderWidth: 2,
-    borderColor: "#D82C15",
-    backgroundColor: "rgba(216, 44, 21, 0.2)",
+    borderColor: "#3B82F6",
+    backgroundColor: "rgba(59, 130, 246, 0.15)",
   },
   iconGlow: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "rgba(216, 44, 21, 0.4)",
+    backgroundColor: "rgba(59, 130, 246, 0.25)",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -154,7 +160,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: "#7C1A1A",
+    backgroundColor: "#1E40AF",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -167,7 +173,7 @@ const styles = StyleSheet.create({
     lineHeight: 28,
   },
   loadingSubtitle: {
-    color: "#9ca3af",
+    color: "#93C5FD",
     fontSize: 14,
     fontWeight: "500",
     textAlign: "center",
@@ -176,7 +182,7 @@ const styles = StyleSheet.create({
   loadingBarContainer: {
     width: 160,
     height: 4,
-    backgroundColor: "#2D3748",
+    backgroundColor: "#1E293B",
     borderRadius: 2,
     overflow: "hidden",
     marginTop: 24,
@@ -184,7 +190,7 @@ const styles = StyleSheet.create({
   loadingBarFill: {
     width: 100,
     height: "100%",
-    backgroundColor: "#D82C15",
+    backgroundColor: "#3B82F6",
     borderRadius: 2,
   },
 });
